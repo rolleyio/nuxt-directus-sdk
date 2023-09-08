@@ -10,8 +10,8 @@ const { user, logout } = useDirectusAuth()
 const directus = useDirectus()
 
 async function testing() {
-  const test = await directus.request(readItem('chats', '', {
-    fields: ['id', { user: [{ avatar: ['id'] }] }],
+  const test = await directus.request(readItem('cards', '', {
+    fields: ['id', { from: [{ avatar: ['id'] }] }],
   }))
 
   // const test = await directus.auth.refresh()

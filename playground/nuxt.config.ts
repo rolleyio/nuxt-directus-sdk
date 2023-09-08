@@ -1,9 +1,9 @@
 export default defineNuxtConfig({
   modules: ['../src/module'],
-  rolley: {
+  directus: {
     devtools: true,
     fetchUserParams: {
-      fields: ['']
+      fields: ['first_name', 'last_name'],
     },
   },
   typescript: {

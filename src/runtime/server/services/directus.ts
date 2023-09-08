@@ -11,7 +11,7 @@ export function useDirectusAccessToken(event: H3Event): string | undefined {
 }
 
 export function useDirectusUrl(): string {
-  return useRuntimeConfig().public.rolley.url
+  return useRuntimeConfig().public.directus.url
 }
 
 export function useDirectus(token?: string): DirectusClient<DirectusCollections> & AuthenticationClient<DirectusCollections> & RestClient<DirectusCollections> {
@@ -29,17 +29,10 @@ export function useDirectus(token?: string): DirectusClient<DirectusCollections>
 }
 
 export function useAdminDirectus(): DirectusClient<DirectusCollections> & AuthenticationClient<DirectusCollections> & RestClient<DirectusCollections> {
-  const url = useDirectusUrl()
+  const config = useRuntimeConfig().directus
 
-  if (!url)
-    throw new Error('DIRECTUS_URL is not set in config options or .env file')
-
-  if (!process.env.DIRECTUS_ADMIN_TOKEN)
+  if (!config.adminToken)
     throw new Error('DIRECTUS_ADMIN_TOKEN is not set in config options or .env file')
 
-  const directus = createDirectus<DirectusCollections>(url).with(authentication('json', { autoRefresh: false })).with(rest())
-
-  directus.setToken(process.env.DIRECTUS_ADMIN_TOKEN)
-
-  return directus
+  return useDirectus(config.adminToken)
 }

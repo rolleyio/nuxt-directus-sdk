@@ -1,80 +1,15 @@
 import { snakeCase } from 'change-case'
+import type { OpenAPI3 } from 'openapi-typescript'
+import openApiTs from 'openapi-typescript'
 import { authentication, createDirectus, readOpenApiSpec, rest } from '@directus/sdk'
 
-import type { GenerateTypeOptions, SchemaProperty, SchemaPropertyOneOf, SchemaPropertyOneOfReference, SchemaPropertySingle, SchemaPropertyType, SchemasRecord } from './types'
-
-export function mapPropertyType(propertyType: SchemaPropertyType) {
-  return propertyType === 'integer' ? 'number' : propertyType
+export interface OASOptions {
+  url: string
+  token: string
+  collections?: string[]
 }
 
-export function processOneOfProperty(schemas: SchemasRecord, name: string, property: SchemaPropertyOneOf): string | undefined {
-  const ref = property.oneOf.find((item) => {
-    return '$ref' in item
-  })
-
-  if (ref) {
-    const $ref = (ref as SchemaPropertyOneOfReference).$ref
-
-    const $refKey = $ref.split('/').pop()
-
-    if ($refKey) {
-      const $refSchema = `DirectusCollections['${schemas[$refKey]?.['x-collection']}']`
-
-      if ($refSchema)
-        return $refSchema
-    }
-  }
-
-  const firstValue = property.oneOf?.[0] as unknown as SchemaPropertySingle
-
-  if ('type' in firstValue) {
-    const firstType = mapPropertyType(firstValue.type!)
-
-    if (firstType)
-      return firstType
-  }
-
-  console.error('Unknown schema for oneOf', name, property)
-
-  return ''
-}
-
-export function processProperty(schemas: SchemasRecord, name: string, property: SchemaProperty): string | undefined {
-  if ('type' in property) {
-    if (property.type === 'array' && property.items) {
-      if (!property.items.oneOf)
-        return processProperty(schemas, name, property.items)
-
-      return `
-      "${name}": ${processOneOfProperty(schemas, name, property.items)};
-    `
-    }
-    else {
-      return `
-      ${property.format ? `/* ${property.format} */` : ''}
-      "${name}": ${mapPropertyType(property.type ?? 'string')};
-    `
-    }
-  }
-  else if ('oneOf' in property) {
-    const value = processOneOfProperty(schemas, name, property)
-
-    if (!value)
-      return
-
-    const simpleTypes = ['string', 'number', 'boolean']
-    const valueType = simpleTypes.includes(value) ? value : `Single<${value}>`
-
-    return `
-      "${name}": ${valueType};
-    `
-  }
-
-  // Debug
-  // console.log('Unknown property type', name, property)
-}
-
-export async function generateTypes(options: GenerateTypeOptions): Promise<string> {
+export async function generateTypes(options: OASOptions): Promise<string> {
   const directus = createDirectus(options.url)
     .with(authentication('json', { autoRefresh: false }))
     .with(rest())
@@ -82,59 +17,48 @@ export async function generateTypes(options: GenerateTypeOptions): Promise<strin
   directus.setToken(options.token)
 
   const data = await directus.request(readOpenApiSpec())
-  const types: string[] = []
+  const baseSource = await openApiTs(data as OpenAPI3, {})
+  const itemPattern = /^ {4}Items([^:]*)/
 
-  const schemas = data.components.schemas as SchemasRecord
+  const exportProperties = baseSource
+    .split('\n')
+    .map((line: string) => {
+      const match = line.match(itemPattern)
+      if (!match)
+        return null
 
-  const schemaNames: string[] = []
+      const [, collectionName] = match
+      const propertyKey = snakeCase(collectionName)
 
-  Object.entries(schemas).forEach(([_, schema]) => {
-    const schemaName = schema['x-collection']
+      if (options.collections && !options.collections.includes(propertyKey))
+        return null
 
-    if (!schemaName)
-      return
-
-    if (schema.type !== 'object') {
-      console.error(schemaName, 'is not an object')
-      return
-    }
-
-    if (schemaNames.includes(schemaName))
-      return
-
-    schemaNames.push(schemaName)
-
-    const properties: string[] = []
-
-    Object.entries(schema.properties).forEach(([name, property]) => {
-      const propertyType = processProperty(schemas, name, property)
-
-      if (propertyType)
-        properties.push(propertyType.trim())
+      // TODO: maybe changes this to allow singles
+      return `${propertyKey}: components["schemas"]["Items${collectionName}"][];`
     })
+    .filter((line: any): line is string => {
+      return typeof line === 'string'
+    })
+    .join('\n')
 
-    types.push(`${snakeCase(schemaName)}: {
-      ${properties.join('\n')}
-    }[];\n`)
-  })
+  // Not sure if this is a good idea but only way it lets me use the types
+  const exportSource = `
+export type Single<T extends any[]> = T extends (infer U)[] ? U : never;
 
-  const exportProperties = types.join('\n')
-
-  return `
-  export type Single<T extends any[]> = T extends (infer U)[] ? U : never;
-
-  export type DirectusCollections = {
-    ${exportProperties}
-  };
-
-  export type DirectusCollectionUser = Single<DirectusCollections['directus_users']>;
+export interface DirectusCollections {
+  ${exportProperties}
+  directus_users: components["schemas"]["Users"][];
+};
 
 declare global {
-  type Single = Single
-  type DirectusCollections = DirectusCollections
-  type DirectusCollectionUser = DirectusCollectionUser
-}
+  interface DirectusCollections {
+    ${exportProperties}
+    directus_users: components["schemas"]["Users"][];
+  };
+};
 
-  export {};
+export {};
 `
+
+  return [baseSource, exportSource].join('\n')
 }

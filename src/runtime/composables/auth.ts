@@ -7,27 +7,29 @@ import type { ComputedRef, Ref } from '#imports'
 import { computed, useState } from '#imports'
 import { useRouter, useRuntimeConfig } from '#app'
 
-import type { DirectusCollectionUser } from '#build/types/directus'
+import type { DirectusCollections, Single } from '#build/types/directus'
 
-export function useDirectusUser(): Ref<DirectusCollectionUser | null> {
+type DirectusUser = Single<DirectusCollections['directus_users']>
+
+export function useDirectusUser(): Ref<DirectusUser | null> {
   return useState('directus.user', () => null)
 }
 
 export interface DirectusAuth {
-  user: Ref<DirectusCollectionUser | null>
+  user: Ref<DirectusUser | null>
   loggedIn: ComputedRef<boolean>
   refreshTokens(): Promise<void>
-  fetchUser(): Promise<DirectusCollectionUser | null>
-  updateUser(data: Partial<DirectusCollectionUser>): Promise<DirectusCollectionUser | null>
+  fetchUser(): Promise<DirectusUser | null>
+  updateUser(data: Partial<DirectusUser>): Promise<DirectusUser | null>
   login(email: string, password: string): Promise<{
-    user: DirectusCollectionUser | null
+    user: DirectusUser | null
     access_token: string
     refreshToken: string | null
     expires: number
     redirect(defaultPath?: string): void
   }>
   logout(): Promise<void>
-  register(data: Partial<DirectusCollectionUser>): Promise<DirectusCollectionUser>
+  register(data: Partial<DirectusUser>): Promise<DirectusUser>
   requestPasswordReset(email: string, resetUrl?: string | null | undefined): Promise<void>
   resetPassword(token: string, password: string): Promise<void>
 }
@@ -46,7 +48,7 @@ export function useDirectusAuth(): DirectusAuth {
         throw new Error('No refresh token')
 
       await directus.refresh()
-      user.value = await directus.request(readMe(config.public.rolley.fetchUserParams)) as any
+      user.value = await directus.request(readMe(config.public.directus.fetchUserParams)) as any
     }
     catch (e) {
       user.value = null
@@ -55,13 +57,13 @@ export function useDirectusAuth(): DirectusAuth {
     return user.value
   }
 
-  async function updateUser(data: Partial<DirectusCollectionUser>) {
+  async function updateUser(data: Partial<DirectusUser>) {
     const currentUser = user.value
 
     if (!currentUser?.id)
       throw new Error('No user available')
 
-    user.value = (await directus.request(updateMe(data as any, config.public.rolley.fetchUserParams))) as any
+    user.value = (await directus.request(updateMe(data as any, config.public.directus.fetchUserParams))) as any
 
     return user.value
   }
@@ -90,7 +92,7 @@ export function useDirectusAuth(): DirectusAuth {
   }
 
   // Alias for createUser
-  async function register(data: Partial<DirectusCollectionUser>) {
+  async function register(data: Partial<DirectusUser>) {
     return directus.request(createUser(data as any))
   }
 

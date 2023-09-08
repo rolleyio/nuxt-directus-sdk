@@ -32,9 +32,9 @@ export interface ModuleOptions {
   /**
   * Directus Auth Options
   * @default {}
-  * @type Query<DirectusCollections, 'directus_users'>
+  * @type Query<DirectusCollections, DirectusCollections['directus_users']>
  */
-  fetchUserParams?: Query<DirectusCollections, 'directus_users'>
+  fetchUserParams?: Query<DirectusCollections, DirectusCollections['directus_users']>
 
   /**
    * Add Directus Admin in Nuxt Devtools
@@ -104,8 +104,9 @@ export default defineNuxtModule<ModuleOptions>({
   defaults: {
     url: process.env.DIRECTUS_URL,
     adminToken: process.env.DIRECTUS_ADMIN_TOKEN,
-    fetchUser: true,
     devtools: false,
+    fetchUser: true,
+    fetchUserParams: {},
     cookieNameToken: 'directus_token',
     cookieNameRefreshToken: 'directus_refresh_token',
 
@@ -116,6 +117,7 @@ export default defineNuxtModule<ModuleOptions>({
     cookieSecure: false,
   },
   async setup(options, nuxt) {
+    nuxt.options.runtimeConfig[configKey] = { adminToken: options.adminToken ?? '' }
     nuxt.options.runtimeConfig.public = nuxt.options.runtimeConfig.public || {}
     nuxt.options.runtimeConfig.public[configKey] = defu(nuxt.options.runtimeConfig.public[configKey] as any, {
       url: options.url,
@@ -210,8 +212,8 @@ export default defineNuxtModule<ModuleOptions>({
             filename: `types/${configKey}.d.ts`,
             getContents() {
               return generateTypes({
-                url: options.url ?? '',
-                token: options.adminToken ?? '',
+                url: options.url!,
+                token: options.adminToken!,
               })
             },
           }).dst

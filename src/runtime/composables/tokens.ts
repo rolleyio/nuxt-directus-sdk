@@ -30,7 +30,7 @@ export interface DirectusTokens {
 }
 
 export function useDirectusTokens(): DirectusTokens {
-  const config = useRuntimeConfig().public.rolley
+  const config = useRuntimeConfig().public.directus
 
   const sharedOptions: CookieOptions = {
     sameSite: config.cookieSameSite,

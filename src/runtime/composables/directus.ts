@@ -6,7 +6,7 @@ import { useRuntimeConfig } from '#app'
 import type { DirectusCollections } from '#build/types/directus'
 
 export function useDirectusUrl(): string {
-  return useRuntimeConfig().public.rolley.url
+  return useRuntimeConfig().public.directus.url
 }
 
 function createDirectusStorage(): AuthenticationStorage {

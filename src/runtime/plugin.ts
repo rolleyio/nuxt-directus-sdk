@@ -28,7 +28,7 @@ export default defineNuxtPlugin(async (nuxt) => {
 
   const config = useRuntimeConfig()
 
-  if (config.public.rolley.fetchUser)
+  if (config.public.directus.fetchUser)
     await useDirectusAuth().fetchUser()
 
   // Auth middleware
