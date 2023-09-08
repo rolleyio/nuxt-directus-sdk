@@ -1,0 +1,54 @@
+{
+  "name": "nuxt-directus-sdk",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "A nuxt module that uses the directus SDK",
+  "author": "Matthew Rollinson <matt@rolley.io>",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/module.mjs",
+      "require": "./dist/module.cjs"
+    }
+  },
+  "main": "./dist/module.cjs",
+  "types": "./dist/types.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "nuxt-module-build",
+    "dev": "nuxi dev playground",
+    "dev:build": "nuxi build playground",
+    "dev:prepare": "nuxt-module-build --stub && nuxi prepare playground",
+    "release": "npm run lint && npm run test && npm run prepack && changelogen --release && npm publish && git push --follow-tags",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest watch"
+  },
+  "dependencies": {
+    "@directus/sdk": "^11.0.3",
+    "@nuxt/kit": "^3.7.1",
+    "change-case": "^4.1.2",
+    "defu": "^6.1.1",
+    "parse-domain": "^7.0.1",
+    "tippy.js": "^6.3.7",
+    "ufo": "^1.1.1",
+    "vue-toastification": "2.0.0-rc.5"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "@nuxt/eslint-config": "^0.2.0",
+    "@nuxt/module-builder": "^0.5.1",
+    "@nuxt/schema": "^3.7.1",
+    "@nuxt/test-utils": "^3.7.1",
+    "@types/node": "^18.17.14",
+    "changelogen": "^0.5.5",
+    "nuxt": "^3.7.1",
+    "vitest": "^0.34.2"
+  },
+  "unbuild": {
+    "failOnWarn": false
+  }
+}

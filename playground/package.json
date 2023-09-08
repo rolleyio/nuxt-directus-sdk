@@ -1,0 +1,13 @@
+{
+  "name": "my-module-playground",
+  "private": true,
+  "scripts": {
+    "dev": "nuxi dev",
+    "build": "nuxi build",
+    "generate": "nuxi generate"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "^0.8.0",
+    "nuxt": "latest"
+  }
+}
