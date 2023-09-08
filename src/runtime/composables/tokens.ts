@@ -39,7 +39,7 @@ export function useDirectusTokens(): DirectusTokens {
   }
 
   function accessToken(): CookieRef<string | null> {
-    return directusCookie(config.cookieNameToken, {
+    return directusCookie(config.cookieNameAccessToken, {
       ...sharedOptions,
       maxAge: config.cookieMaxAge,
     })

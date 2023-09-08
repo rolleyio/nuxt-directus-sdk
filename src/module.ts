@@ -4,8 +4,8 @@ import { joinURL } from 'ufo'
 import type { Query } from '@directus/sdk'
 
 import { name, version } from '../package.json'
-import { generateTypes } from './runtime/oas'
-import type { DirectusCollections } from '#build/types/directus'
+import { generateTypes } from './runtime/types'
+import type { AllCollections } from '#build/types/directus'
 
 export interface ModuleOptions {
   /**
@@ -32,9 +32,9 @@ export interface ModuleOptions {
   /**
   * Directus Auth Options
   * @default {}
-  * @type Query<DirectusCollections, DirectusCollections['directus_users']>
+  * @type Query<AllCollections, AllCollections['directus_users']>
  */
-  fetchUserParams?: Query<DirectusCollections, DirectusCollections['directus_users']>
+  fetchUserParams?: Query<AllCollections, AllCollections['directus_users']>
 
   /**
    * Add Directus Admin in Nuxt Devtools
@@ -46,9 +46,9 @@ export interface ModuleOptions {
   /**
    * Token Cookie Name
    * @type string
-   * @ default 'directus_token'
+   * @default 'directus_access_token'
    */
-  cookieNameToken?: string
+  cookieNameAccessToken?: string
 
   /**
      * Refresh Token Cookie Name
@@ -107,7 +107,7 @@ export default defineNuxtModule<ModuleOptions>({
     devtools: false,
     fetchUser: true,
     fetchUserParams: {},
-    cookieNameToken: 'directus_token',
+    cookieNameAccessToken: 'directus_access_token',
     cookieNameRefreshToken: 'directus_refresh_token',
 
     // Nuxt Cookies Docs @ https://nuxt.com/docs/api/composables/use-cookie
@@ -124,7 +124,7 @@ export default defineNuxtModule<ModuleOptions>({
       fetchUser: options.fetchUser,
       fetchUserParams: options.fetchUserParams,
       devtools: options.devtools,
-      cookieNameToken: options.cookieNameToken,
+      cookieNameAccessToken: options.cookieNameAccessToken,
       cookieNameRefreshToken: options.cookieNameRefreshToken,
       cookieMaxAge: options.cookieMaxAge,
       cookieMaxAgeRefreshToken: options.cookieMaxAgeRefreshToken,

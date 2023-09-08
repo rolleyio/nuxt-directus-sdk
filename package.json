@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@directus/sdk": "^11.0.3",
+    "@directus/shared": "^9.24.0",
     "@nuxt/kit": "^3.7.1",
     "change-case": "^4.1.2",
     "defu": "^6.1.1",

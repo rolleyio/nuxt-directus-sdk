@@ -3,7 +3,7 @@ import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
 import { useDirectusTokens } from './tokens'
 import { useRuntimeConfig } from '#app'
 
-import type { DirectusCollections } from '#build/types/directus'
+import type { AllCollections } from '#build/types/directus'
 
 export function useDirectusUrl(): string {
   return useRuntimeConfig().public.directus.url
@@ -30,10 +30,10 @@ function createDirectusStorage(): AuthenticationStorage {
   } satisfies AuthenticationStorage
 }
 
-export function useDirectus(token?: string): DirectusClient<DirectusCollections> & AuthenticationClient<DirectusCollections> & RestClient<DirectusCollections> & WebSocketClient<DirectusCollections> {
+export function useDirectus(token?: string): DirectusClient<AllCollections> & AuthenticationClient<AllCollections> & RestClient<AllCollections> & WebSocketClient<AllCollections> {
   const url = useDirectusUrl()
 
-  const directus = createDirectus<DirectusCollections>(url)
+  const directus = createDirectus<AllCollections>(url)
     .with(authentication('json', {
       storage: createDirectusStorage(),
       autoRefresh: token !== '',

@@ -7,29 +7,27 @@ import type { ComputedRef, Ref } from '#imports'
 import { computed, useState } from '#imports'
 import { useRouter, useRuntimeConfig } from '#app'
 
-import type { DirectusCollections, Single } from '#build/types/directus'
+import type { DirectusUsers } from '#build/types/directus'
 
-type DirectusUser = Single<DirectusCollections['directus_users']>
-
-export function useDirectusUser(): Ref<DirectusUser | null> {
+export function useDirectusUser(): Ref<DirectusUsers | null> {
   return useState('directus.user', () => null)
 }
 
 export interface DirectusAuth {
-  user: Ref<DirectusUser | null>
+  user: Ref<DirectusUsers | null>
   loggedIn: ComputedRef<boolean>
   refreshTokens(): Promise<void>
-  fetchUser(): Promise<DirectusUser | null>
-  updateUser(data: Partial<DirectusUser>): Promise<DirectusUser | null>
+  fetchUser(): Promise<DirectusUsers | null>
+  updateUser(data: Partial<DirectusUsers>): Promise<DirectusUsers | null>
   login(email: string, password: string): Promise<{
-    user: DirectusUser | null
+    user: DirectusUsers | null
     access_token: string
     refreshToken: string | null
     expires: number
     redirect(defaultPath?: string): void
   }>
   logout(): Promise<void>
-  register(data: Partial<DirectusUser>): Promise<DirectusUser>
+  register(data: Partial<DirectusUsers>): Promise<DirectusUsers>
   requestPasswordReset(email: string, resetUrl?: string | null | undefined): Promise<void>
   resetPassword(token: string, password: string): Promise<void>
 }
@@ -57,7 +55,7 @@ export function useDirectusAuth(): DirectusAuth {
     return user.value
   }
 
-  async function updateUser(data: Partial<DirectusUser>) {
+  async function updateUser(data: Partial<DirectusUsers>) {
     const currentUser = user.value
 
     if (!currentUser?.id)
@@ -92,7 +90,7 @@ export function useDirectusAuth(): DirectusAuth {
   }
 
   // Alias for createUser
-  async function register(data: Partial<DirectusUser>) {
+  async function register(data: Partial<DirectusUsers>) {
     return directus.request(createUser(data as any))
   }
 
