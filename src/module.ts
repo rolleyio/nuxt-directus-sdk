@@ -1,13 +1,11 @@
 import { defu } from 'defu'
-import { addComponentsDir, addImportsDir, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, logger } from '@nuxt/kit'
+import { addComponentsDir, addImportsDir, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { Query } from '@directus/sdk'
 
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/oas'
 import type { DirectusCollections } from '#build/types/directus'
-
-const configKey = 'rolley'
 
 export interface ModuleOptions {
   /**
@@ -90,6 +88,9 @@ export interface ModuleOptions {
   cookieSecure?: boolean
 }
 
+const configKey = 'directus'
+const logger = useLogger('nuxt-directus-sdk')
+
 export default defineNuxtModule<ModuleOptions>({
   meta: {
     name,
@@ -116,7 +117,7 @@ export default defineNuxtModule<ModuleOptions>({
   },
   async setup(options, nuxt) {
     nuxt.options.runtimeConfig.public = nuxt.options.runtimeConfig.public || {}
-    nuxt.options.runtimeConfig.public[configKey] = defu(nuxt.options.runtimeConfig.public[configKey], {
+    nuxt.options.runtimeConfig.public[configKey] = defu(nuxt.options.runtimeConfig.public[configKey] as any, {
       url: options.url,
       fetchUser: options.fetchUser,
       fetchUserParams: options.fetchUserParams,
@@ -161,21 +162,26 @@ export default defineNuxtModule<ModuleOptions>({
       nitroConfig.alias[`#${configKey}`] = resolver.resolve('./runtime/server/services')
     })
 
-    addTypeTemplate({
-      filename: `types/${configKey}.d.ts`,
-      getContents: () => [
-        `declare module '#${configKey}' {`,
+    try {
+      const typesPath = addTypeTemplate({
+        filename: `types/${configKey}-server.d.ts`,
+        getContents: () => [
+        `declare module '#${configKey}-server' {`,
         `  const useDirectus: typeof import('${resolver.resolve('./runtime/server/services')}').useDirectus`,
         `  const useAdminDirectus: typeof import('${resolver.resolve('./runtime/server/services')}').useAdminDirectus`,
         `  const useDirectusUrl: typeof import('${resolver.resolve('./runtime/server/services')}').useDirectusUrl`,
         `  const useDirectusAccessToken: typeof import('${resolver.resolve('./runtime/server/services')}').useDirectusAccessToken`,
         '}',
-      ].join('\n'),
-    })
+        ].join('\n'),
+      }).dst
 
-    nuxt.hook('prepare:types', (options) => {
-      options.references.push({ path: resolver.resolve(nuxt.options.buildDir, `types/${configKey}.d.ts`) })
-    })
+      nuxt.hook('prepare:types', (options) => {
+        options.references.push({ path: typesPath })
+      })
+    }
+    catch (error) {
+      logger.error((error as Error).message)
+    }
 
     if (options.url) {
       const adminUrl = joinURL(options.url, '/admin/')
@@ -201,7 +207,7 @@ export default defineNuxtModule<ModuleOptions>({
 
         try {
           const typesPath = addTypeTemplate({
-            filename: 'types/directus.d.ts',
+            filename: `types/${configKey}.d.ts`,
             getContents() {
               return generateTypes({
                 url: options.url ?? '',

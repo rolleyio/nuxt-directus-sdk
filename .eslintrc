@@ -1,4 +1,10 @@
 {
   "root": true,
-  "extends": ["@nuxt/eslint-config"]
+  "extends": ["@antfu"],
+  "overrides": [
+    {
+      "files": ["*.vue"],
+      "parser": "vue-eslint-parser"
+    }
+  ]
 }

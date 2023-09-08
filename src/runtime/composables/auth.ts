@@ -9,8 +9,8 @@ import { useRouter, useRuntimeConfig } from '#app'
 
 import type { DirectusCollectionUser } from '#build/types/directus'
 
-export function useDirectusUser() {
-  return useState('directus.user', () => null) as Ref<DirectusCollectionUser | null>
+export function useDirectusUser(): Ref<DirectusCollectionUser | null> {
+  return useState('directus.user', () => null)
 }
 
 export interface DirectusAuth {

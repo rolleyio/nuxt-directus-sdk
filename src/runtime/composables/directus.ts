@@ -1,4 +1,4 @@
-import type { AuthenticationStorage } from '@directus/sdk'
+import type { AuthenticationClient, AuthenticationStorage, DirectusClient, RestClient, WebSocketClient } from '@directus/sdk'
 import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
 import { useDirectusTokens } from './tokens'
 import { useRuntimeConfig } from '#app'
@@ -30,7 +30,7 @@ function createDirectusStorage(): AuthenticationStorage {
   } satisfies AuthenticationStorage
 }
 
-export function useDirectus(token?: string) {
+export function useDirectus(token?: string): DirectusClient<DirectusCollections> & AuthenticationClient<DirectusCollections> & RestClient<DirectusCollections> & WebSocketClient<DirectusCollections> {
   const url = useDirectusUrl()
 
   const directus = createDirectus<DirectusCollections>(url)
