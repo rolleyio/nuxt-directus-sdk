@@ -1,18 +1,42 @@
+import type { Query } from '@directus/sdk'
 import { uploadFiles } from '@directus/sdk'
-import type { DirectusThumbnailOptions } from '../types'
 import { useDirectus, useDirectusUrl } from './directus'
 
-// TODO: might be options to pass here?
-export async function uploadDirectusFile(file: File, folder?: string) {
+import type { AllCollections, DirectusFiles } from '#build/types/directus'
+
+export type DirectusThumbnailFormat = 'jpg' | 'png' | 'webp' | 'tiff'
+export type DirectusThumbnailFit = 'cover' | 'contain' | 'inside' | 'outside'
+
+export interface DirectusThumbnailOptions {
+  width?: number
+  height?: number
+  quality?: number
+  fit?: DirectusThumbnailFit
+  format?: DirectusThumbnailFormat
+  withoutEnlargement?: boolean
+  token?: string
+}
+
+interface FileUpload {
+  file: File
+  data?: Record<keyof DirectusFiles, string>
+}
+
+export async function uploadDirectusFile(files: FileUpload[], query: Query<AllCollections, AllCollections['directus_files']>) {
   const directus = useDirectus()
   const formData = new FormData()
 
-  formData.set('file', file)
+  files.forEach(({ file, data }, i) => {
+    if (data) {
+      Object.entries(data).forEach(([key, value]) => {
+        formData.set(`file_${i + 1}_${key}`, value)
+      })
+    }
 
-  if (folder)
-    formData.set('folder', folder)
+    formData.set('file', file)
+  })
 
-  return directus.request(uploadFiles(formData))
+  return await directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFiles[]
 }
 
 // NOTE: Any reason to update these?
@@ -26,10 +50,7 @@ export function getDirectusAssetUrl(fileId: string, options?: { token?: string }
   return url.href
 }
 
-export function getDirectusThumbnailUrl(
-  fileId: string,
-  options?: DirectusThumbnailOptions,
-): string {
+export function getDirectusThumbnailUrl(fileId: string, options?: DirectusThumbnailOptions): string {
   const directusUrl = useDirectusUrl()
   const url = new URL(`${directusUrl}assets/${fileId}`)
 
