@@ -1,4 +1,4 @@
-# directus-nuxt-sdk
+# nuxt-directus-sdk
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
@@ -16,28 +16,28 @@
 
 ## Quick Setup
 
-1. Add `directus-nuxt-sdk` dependency to your project
+1. Add `nuxt-directus-sdk` dependency to your project
 
 ```bash
 # Using pnpm
-pnpm add -D directus-nuxt-sdk
+pnpm add -D nuxt-directus-sdk
 
 # Using yarn
-yarn add --dev directus-nuxt-sdk
+yarn add --dev nuxt-directus-sdk
 
 # Using npm
-npm install --save-dev directus-nuxt-sdk
+npm install --save-dev nuxt-directus-sdk
 
 # Using bun
-bun install --save-dev directus-nuxt-sdk
+bun install --save-dev nuxt-directus-sdk
 ```
 
-2. Add `directus-nuxt-sdk` to the `modules` section of `nuxt.config.ts`
+2. Add `nuxt-directus-sdk` to the `modules` section of `nuxt.config.ts`
 
 ```js
 export default defineNuxtConfig({
   modules: [
-    'directus-nuxt-sdk'
+    'nuxt-directus-sdk'
   ]
 })
 ```
@@ -71,14 +71,14 @@ npm run release
 ```
 
 <!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/directus-nuxt-sdk/latest.svg?style=flat&colorA=18181B&colorB=28CF8D
-[npm-version-href]: https://npmjs.com/package/directus-nuxt-sdk
+[npm-version-src]: https://img.shields.io/npm/v/nuxt-directus-sdk/latest.svg?style=flat&colorA=18181B&colorB=28CF8D
+[npm-version-href]: https://npmjs.com/package/nuxt-directus-sdk
 
-[npm-downloads-src]: https://img.shields.io/npm/dm/directus-nuxt-sdk.svg?style=flat&colorA=18181B&colorB=28CF8D
-[npm-downloads-href]: https://npmjs.com/package/directus-nuxt-sdk
+[npm-downloads-src]: https://img.shields.io/npm/dm/nuxt-directus-sdk.svg?style=flat&colorA=18181B&colorB=28CF8D
+[npm-downloads-href]: https://npmjs.com/package/nuxt-directus-sdk
 
-[license-src]: https://img.shields.io/npm/l/directus-nuxt-sdk.svg?style=flat&colorA=18181B&colorB=28CF8D
-[license-href]: https://npmjs.com/package/directus-nuxt-sdk
+[license-src]: https://img.shields.io/npm/l/nuxt-directus-sdk.svg?style=flat&colorA=18181B&colorB=28CF8D
+[license-href]: https://npmjs.com/package/nuxt-directus-sdk
 
 [nuxt-src]: https://img.shields.io/badge/Nuxt-18181B?logo=nuxt.js
 [nuxt-href]: https://nuxt.com
