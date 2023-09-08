@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { readItem, readMe } from '@directus/sdk'
+import { readItem, readMe, readUser } from '@directus/sdk'
 import { definePageMeta, useDirectus, useDirectusAuth, useRouter } from '#imports'
 
 definePageMeta({
@@ -12,6 +12,10 @@ const directus = useDirectus()
 async function testing() {
   const test = await directus.request(readItem('cards', '', {
     fields: ['id', { from: [{ avatar: ['id'] }] }],
+  }))
+
+  const user = await directus.request(readUser('', {
+    fields: ['id', { avatar: ['id'] }],
   }))
 
   // const test = await directus.auth.refresh()

@@ -4,7 +4,7 @@ import type { H3Event } from 'h3'
 import { getCookie } from 'h3'
 import { useRuntimeConfig } from '#imports'
 
-import type { AllCollections } from '#build/types/directus'
+import type { UsersCollections } from '#build/types/directus'
 
 export function useDirectusAccessToken(event: H3Event): string | undefined {
   return getCookie(event, useRuntimeConfig().public.directus.cookieNameAccessToken)
@@ -14,13 +14,13 @@ export function useDirectusUrl(): string {
   return useRuntimeConfig().public.directus.url
 }
 
-export function useDirectus(token?: string): DirectusClient<AllCollections> & AuthenticationClient<AllCollections> & RestClient<AllCollections> {
+export function useDirectus(token?: string): DirectusClient<UsersCollections> & AuthenticationClient<UsersCollections> & RestClient<UsersCollections> {
   const url = useDirectusUrl()
 
   if (!url)
     throw new Error('DIRECTUS_URL is not set in config options or .env file')
 
-  const directus = createDirectus<AllCollections>(url).with(authentication('json', { autoRefresh: false })).with(rest())
+  const directus = createDirectus<UsersCollections>(url).with(authentication('json', { autoRefresh: false })).with(rest())
 
   if (token)
     directus.setToken(token)
@@ -28,7 +28,7 @@ export function useDirectus(token?: string): DirectusClient<AllCollections> & Au
   return directus
 }
 
-export function useAdminDirectus(): DirectusClient<AllCollections> & AuthenticationClient<AllCollections> & RestClient<AllCollections> {
+export function useAdminDirectus(): DirectusClient<UsersCollections> & AuthenticationClient<UsersCollections> & RestClient<UsersCollections> {
   const config = useRuntimeConfig().directus
 
   if (!config.adminToken)

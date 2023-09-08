@@ -33,10 +33,13 @@ export async function generateTypes(options: OASOptions) {
     collection.fields.forEach((field) => {
       if (field.meta?.interface?.startsWith('presentation-'))
         return
+
       typeValues += '  '
       typeValues += field.field.includes('-') ? `"${field.field}"` : field.field
+
       if (field.schema?.is_nullable)
         typeValues += '?'
+
       typeValues += ': '
       typeValues += getType(field)
       typeValues += ';\n'
@@ -47,6 +50,10 @@ export async function generateTypes(options: OASOptions) {
   typeValues += `export interface AllCollections {\n${
      types.map(x => `  ${x};`).join('\n')
      }\n};
+
+     interface UsersCollections {\n${
+      types.filter(item => !item.startsWith('directus_')).map(x => `  ${x};`).join('\n')
+      }\n};
 
      declare global {
       interface DirectusCollections {\n${
