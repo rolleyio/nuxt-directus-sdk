@@ -5,14 +5,14 @@
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-> A bunch of directus helpers for nuxt applications
+> A Nuxt 3 Directus module that uses the official Directus 11 SDK
 
 - [✨ &nbsp;Release Notes](/CHANGELOG.md)
 
 ## Features
 
-- ⛰ &nbsp;Built-in Directus auth and type generation
-- 🚠 &nbsp;Built-in helpers and utils 
+- ⛰ &nbsp;Directus authentication out of the box
+- 🚠 &nbsp;Automatic type generation based on Directus collections
 
 ## Quick Setup
 
