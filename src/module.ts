@@ -1,5 +1,5 @@
 import { defu } from 'defu'
-import { addComponentsDir, addImportsDir, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
+import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, tryResolveModule, useLogger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { Query } from '@directus/sdk'
 
@@ -39,7 +39,7 @@ export interface ModuleOptions {
   /**
    * Add Directus Admin in Nuxt Devtools
    *
-   * @default false
+   * @default true
   */
   devtools?: boolean
 
@@ -104,7 +104,7 @@ export default defineNuxtModule<ModuleOptions>({
   defaults: {
     url: process.env.DIRECTUS_URL,
     adminToken: process.env.DIRECTUS_ADMIN_TOKEN,
-    devtools: false,
+    devtools: true,
     fetchUser: true,
     fetchUserParams: {},
     cookieNameAccessToken: 'directus_access_token',
@@ -117,19 +117,16 @@ export default defineNuxtModule<ModuleOptions>({
     cookieSecure: false,
   },
   async setup(options, nuxt) {
+    if (!tryResolveModule('@directus/sdK')) {
+      logger.error('nuxt-directus-sdk requries @directus/sdk^11.0.3, install it with `yarn add @directus/sdk` or `npm i @directus/sdk`')
+      return
+    }
+
     nuxt.options.runtimeConfig[configKey] = { adminToken: options.adminToken ?? '' }
     nuxt.options.runtimeConfig.public = nuxt.options.runtimeConfig.public || {}
     nuxt.options.runtimeConfig.public[configKey] = defu(nuxt.options.runtimeConfig.public[configKey] as any, {
-      url: options.url,
-      fetchUser: options.fetchUser,
-      fetchUserParams: options.fetchUserParams,
-      devtools: options.devtools,
-      cookieNameAccessToken: options.cookieNameAccessToken,
-      cookieNameRefreshToken: options.cookieNameRefreshToken,
-      cookieMaxAge: options.cookieMaxAge,
-      cookieMaxAgeRefreshToken: options.cookieMaxAgeRefreshToken,
-      cookieSameSite: options.cookieSameSite,
-      cookieSecure: options.cookieSecure,
+      ...options,
+      adminToken: null,
     })
 
     const resolver = createResolver(import.meta.url)
@@ -150,7 +147,7 @@ export default defineNuxtModule<ModuleOptions>({
       global: true,
     })
 
-    // Add notifications as it's also required in most modules
+    // Adds notifications but not sure it's the scope of this project - leave it in for now?
     nuxt.options.css.push('vue-toastification/dist/index.css')
     nuxt.options.build.transpile.push('vue-toastification')
 
@@ -230,5 +227,60 @@ export default defineNuxtModule<ModuleOptions>({
         logger.info('Add DIRECTUS_ADMIN_TOKEN to the .env file to generate directus types')
       }
     }
+
+    // Import useful directus functions
+    // Just found, we should look to merge?
+    // https://github.com/becem-gharbi/nuxt-directus
+    addImportsSources({
+      from: '@directus/sdk',
+      imports: [
+        'createComment',
+        'updateComment',
+        'deleteComment',
+        'createField',
+        'createItem',
+        'createItems',
+        'deleteField',
+        'deleteFile',
+        'deleteFiles',
+        'readActivities',
+        'readActivity',
+        'deleteItem',
+        'deleteItems',
+        'deleteUser',
+        'deleteUsers',
+        'importFile',
+        'readCollection',
+        'readCollections',
+        'createCollection',
+        'updateCollection',
+        'deleteCollection',
+        'readField',
+        'readFieldsByCollection',
+        'readFields',
+        'readFile',
+        'readFiles',
+        'readItem',
+        'readItems',
+        'readSingleton',
+        'readMe',
+        'createUser',
+        'createUsers',
+        'readUser',
+        'readUsers',
+        'updateField',
+        'updateFile',
+        'updateFiles',
+        'updateFolder',
+        'updateFolders',
+        'updateItem',
+        'updateItems',
+        'updateSingleton',
+        'updateMe',
+        'updateUser',
+        'updateUsers',
+        'withToken',
+      ],
+    })
   },
 })

@@ -8,7 +8,7 @@ import { authentication, createDirectus, readCollections, readFields, readRelati
 import type { Collections, Field } from './generate.types'
 
 function warn(message: string) {
-  useLogger(message)
+  useLogger('nuxt-directus-sdk').warn(message)
 }
 
 export interface OASOptions {
@@ -100,7 +100,6 @@ function getType(field: Field) {
   if (field.schema?.is_nullable) {
     if (field.relation)
       type = `${type} | null`
-
     else
       type += ' | null'
   }
@@ -114,8 +113,9 @@ export async function getCollections(options: OASOptions) {
 
   directus.setToken(options.token)
 
-  const rawCollections: DirectusCollection[] = await directus.request(readCollections()) as any
   const collections: Collections = {}
+
+  const rawCollections: DirectusCollection[] = await directus.request(readCollections()) as any
   rawCollections
     .sort((a, b) => a.collection.localeCompare(b.collection))
     .forEach(
