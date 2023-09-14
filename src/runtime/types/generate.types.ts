@@ -11,3 +11,9 @@ export type Field = DirectusField & {
 }
 export type Collection = DirectusCollection & { fields: Field[] }
 export interface Collections { [collection: string]: Collection }
+
+export interface GenerateOptions {
+  url: string
+  token: string
+  prefix: string
+}

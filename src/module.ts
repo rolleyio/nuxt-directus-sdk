@@ -5,7 +5,7 @@ import type { Query } from '@directus/sdk'
 
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
-import type { AllDirectusCollections } from '#build/types/directus'
+import type { DirectusSchema } from '#build/types/directus'
 
 export interface ModuleOptions {
   /**
@@ -32,9 +32,9 @@ export interface ModuleOptions {
   /**
    * Directus Auth Options
    * @default {}
-   * @type Query<AllDirectusCollections, AllDirectusCollections['directus_users']>
+   * @type Query<DirectusSchema, DirectusSchema['directus_users']>
    */
-  fetchUserParams?: Query<AllDirectusCollections, AllDirectusCollections['directus_users']>
+  fetchUserParams?: Query<DirectusSchema, DirectusSchema['directus_users']>
 
   /**
    * Add Directus Admin in Nuxt Devtools
@@ -88,11 +88,18 @@ export interface ModuleOptions {
   cookieSecure?: boolean
 
   /**
-   * The Secure attribute for auth cookies.
+   * The prefix to your custom types
    * @type string
    * @default ''
    */
   typePrefix?: string
+
+  /**
+   * A path to redirect a user to when not logged in using auth middleware
+   * @type string
+   * @default '/login'
+   */
+  loginPath?: string
 }
 
 const configKey = 'directus'
@@ -123,6 +130,7 @@ export default defineNuxtModule<ModuleOptions>({
     cookieSameSite: 'lax',
     cookieSecure: false,
     typePrefix: '',
+    loginPath: '/login',
   },
   async setup(options, nuxt) {
     if (!tryResolveModule('@directus/sdk')) {

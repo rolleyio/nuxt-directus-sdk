@@ -15,7 +15,7 @@ async function testing() {
   }))
 
   const user = await directus.request(readUser('', {
-    fields: ['id', { avatar: ['id'] }],
+    fields: ['id', { avatar: ['id'] }, { cards: [''] }],
   }))
 
   // const test = await directus.auth.refresh()
