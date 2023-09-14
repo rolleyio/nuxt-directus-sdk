@@ -5,7 +5,7 @@ import type { Query } from '@directus/sdk'
 
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
-import type { AllCollections } from '#build/types/directus'
+import type { AllDirectusCollections } from '#build/types/directus'
 
 export interface ModuleOptions {
   /**
@@ -24,23 +24,23 @@ export interface ModuleOptions {
 
   /**
    * Fetch the user serverside
-  *
-  * @default true
-  */
+   *
+   * @default true
+   */
   fetchUser?: boolean
 
   /**
-  * Directus Auth Options
-  * @default {}
-  * @type Query<AllCollections, AllCollections['directus_users']>
- */
-  fetchUserParams?: Query<AllCollections, AllCollections['directus_users']>
+   * Directus Auth Options
+   * @default {}
+   * @type Query<AllDirectusCollections, AllDirectusCollections['directus_users']>
+   */
+  fetchUserParams?: Query<AllDirectusCollections, AllDirectusCollections['directus_users']>
 
   /**
    * Add Directus Admin in Nuxt Devtools
    *
    * @default true
-  */
+   */
   devtools?: boolean
 
   /**
@@ -51,41 +51,48 @@ export interface ModuleOptions {
   cookieNameAccessToken?: string
 
   /**
-     * Refresh Token Cookie Name
-     * @type string
-     * @default 'directus_refresh_token'
-     */
+   * Refresh Token Cookie Name
+   * @type string
+   * @default 'directus_refresh_token'
+   */
   cookieNameRefreshToken?: string
 
   /**
-     * The max age for auth cookies in seconds.
-     * This should match your directus env key AUTH_TOKEN_TTL
-     * @type string
-     * @default 900
-     */
+   * The max age for auth cookies in seconds.
+   * This should match your directus env key AUTH_TOKEN_TTL
+   * @type string
+   * @default 900
+   */
   cookieMaxAge?: number
 
   /**
-     * The max age for auth cookies in seconds.
-     * This should match your directus env key REFRESH_TOKEN_TTL
-     * @type string
-     * @default 604800
-     */
+   * The max age for auth cookies in seconds.
+   * This should match your directus env key REFRESH_TOKEN_TTL
+   * @type string
+   * @default 604800
+   */
   cookieMaxAgeRefreshToken?: number
 
   /**
-     * The SameSite attribute for auth cookies.
-     * @type string
-     * @default 'lax'
-     */
+   * The SameSite attribute for auth cookies.
+   * @type string
+   * @default 'lax'
+   */
   cookieSameSite?: 'strict' | 'lax' | 'none' | undefined
 
   /**
-     * The Secure attribute for auth cookies.
-     * @type boolean
-     * @default false
-     */
+   * The Secure attribute for auth cookies.
+   * @type boolean
+   * @default false
+   */
   cookieSecure?: boolean
+
+  /**
+   * The Secure attribute for auth cookies.
+   * @type string
+   * @default ''
+   */
+  typePrefix?: string
 }
 
 const configKey = 'directus'
@@ -102,8 +109,8 @@ export default defineNuxtModule<ModuleOptions>({
     },
   },
   defaults: {
-    url: process.env.DIRECTUS_URL,
-    adminToken: process.env.DIRECTUS_ADMIN_TOKEN,
+    url: process.env.DIRECTUS_URL ?? '',
+    adminToken: process.env.DIRECTUS_ADMIN_TOKEN ?? '',
     devtools: true,
     fetchUser: true,
     fetchUserParams: {},
@@ -115,10 +122,11 @@ export default defineNuxtModule<ModuleOptions>({
     cookieMaxAgeRefreshToken: 604800,
     cookieSameSite: 'lax',
     cookieSecure: false,
+    typePrefix: '',
   },
   async setup(options, nuxt) {
-    if (!tryResolveModule('@directus/sdK')) {
-      logger.error('nuxt-directus-sdk requries @directus/sdk^11.0.3, install it with `yarn add @directus/sdk` or `npm i @directus/sdk`')
+    if (!tryResolveModule('@directus/sdk')) {
+      logger.error('nuxt-directus-sdk requries @directus/sdk^11.0.3, install it with `npm i @directus/sdk`, `yarn add @directus/sdk`, `pnpm add @directus/sdk` or `bun install @directus/sdk`')
       return
     }
 
@@ -126,6 +134,7 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.runtimeConfig.public = nuxt.options.runtimeConfig.public || {}
     nuxt.options.runtimeConfig.public[configKey] = defu(nuxt.options.runtimeConfig.public[configKey] as any, {
       ...options,
+      // Don't add the admin token to the public key
       adminToken: null,
     })
 
@@ -211,6 +220,7 @@ export default defineNuxtModule<ModuleOptions>({
               return generateTypes({
                 url: options.url!,
                 token: options.adminToken!,
+                prefix: options.typePrefix ?? '',
               })
             },
           }).dst

@@ -5,7 +5,8 @@ import { useCookie, useNuxtApp, useRuntimeConfig } from '#app'
 export function getCookieDomain(): string | undefined {
   const domain = useDomain()
 
-  return !domain.value.includes('localhost') ? `.${domain.value}` : undefined
+  // TODO: better way to do this and all domains
+  return domain.value.includes('localhost') || domain.value.includes('127.0.0.1') || domain.value.includes('0.0.0.0') ? undefined : `.${domain.value}`
 }
 
 function directusCookie<T>(name: string, cookieOptions: CookieOptions): CookieRef<T> {

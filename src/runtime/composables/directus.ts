@@ -3,10 +3,16 @@ import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
 import { useDirectusTokens } from './tokens'
 import { useRuntimeConfig } from '#app'
 
-import type { UsersCollections } from '#build/types/directus'
+import type { DirectusSchema } from '#build/types/directus'
 
+// Add last slash if missing
 export function useDirectusUrl(): string {
-  return useRuntimeConfig().public.directus.url
+  const url = useRuntimeConfig().public.directus.url
+
+  if (url[url.length - 1] !== '/')
+    return `${url}/`
+
+  return url
 }
 
 function createDirectusStorage(): AuthenticationStorage {
@@ -30,10 +36,11 @@ function createDirectusStorage(): AuthenticationStorage {
   } satisfies AuthenticationStorage
 }
 
-export function useDirectus(token?: string): DirectusClient<UsersCollections> & AuthenticationClient<UsersCollections> & RestClient<UsersCollections> & WebSocketClient<UsersCollections> {
+// TODO: Might need to change this to allow for conditional type based on auth, rest etc.
+export function useDirectus(token?: string): DirectusClient<DirectusSchema> & AuthenticationClient<DirectusSchema> & RestClient<DirectusSchema> & WebSocketClient<DirectusSchema> {
   const url = useDirectusUrl()
 
-  const directus = createDirectus<UsersCollections>(url)
+  const directus = createDirectus<DirectusSchema>(url)
     .with(authentication('json', {
       storage: createDirectusStorage(),
       autoRefresh: token !== '',

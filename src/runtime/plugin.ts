@@ -7,6 +7,7 @@ export default defineNuxtPlugin(async (nuxt) => {
   const domain = useDomain()
   const subdomain = useSubdomain()
 
+  // TODO: This is a hacky way to get the domain and subdomain
   if (nuxt.ssrContext) {
     const { host } = nuxt.ssrContext.event.node.req.headers
 
@@ -17,12 +18,14 @@ export default defineNuxtPlugin(async (nuxt) => {
 
       if (mainDomain)
         domain.value = `${mainDomain}.${topLevelDomains.join('.')}`
+      else if (host.includes('127.0.0.1') || host.includes('0.0.0.0'))
+        domain.value = host.split(':')?.[0] ?? ''
       else if (host.includes('localhost'))
-        domain.value = host.split('.').at(-1) ?? ''
+        domain.value = host.split('.')?.at(-1) ?? ''
       else
         domain.value = host
 
-      subdomain.value = labels[0]
+      subdomain.value = labels?.[0] ?? ''
     }
   }
 

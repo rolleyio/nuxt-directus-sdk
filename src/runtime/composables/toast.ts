@@ -3,9 +3,9 @@ import { useToast as useToastFn } from 'vue-toastification'
 export function useToast() {
   const toast = useToastFn()
 
-  async function log(message: string) {
+  async function log(message: string, options?: Parameters<typeof toast>[1]) {
     if (process.client)
-      toast(message)
+      toast(message, options)
     else
       // eslint-disable-next-line no-console
       console.log(message)

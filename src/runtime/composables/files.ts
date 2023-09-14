@@ -2,7 +2,8 @@ import type { Query } from '@directus/sdk'
 import { uploadFiles } from '@directus/sdk'
 import { useDirectus, useDirectusUrl } from './directus'
 
-import type { AllCollections, DirectusFiles } from '#build/types/directus'
+import { useDirectusTokens } from './tokens'
+import type { AllDirectusCollections, DirectusFiles } from '#build/types/directus'
 
 export type DirectusThumbnailFormat = 'jpg' | 'png' | 'webp' | 'tiff'
 export type DirectusThumbnailFit = 'cover' | 'contain' | 'inside' | 'outside'
@@ -14,7 +15,7 @@ export interface DirectusThumbnailOptions {
   fit?: DirectusThumbnailFit
   format?: DirectusThumbnailFormat
   withoutEnlargement?: boolean
-  token?: string
+  token?: string | boolean
 }
 
 interface FileUpload {
@@ -22,7 +23,13 @@ interface FileUpload {
   data?: Record<keyof DirectusFiles, string>
 }
 
-export async function uploadDirectusFile(files: FileUpload[], query: Query<AllCollections, AllCollections['directus_files']>) {
+export async function uploadDirectusFile(file: FileUpload, query?: Query<AllDirectusCollections, AllDirectusCollections['directus_files']>): Promise<DirectusFiles | null> {
+  const result = await uploadDirectusFiles([file], query)
+
+  return result[0] ?? null
+}
+
+export async function uploadDirectusFiles(files: FileUpload[], query?: Query<AllDirectusCollections, AllDirectusCollections['directus_files']>) {
   const directus = useDirectus()
   const formData = new FormData()
 
@@ -39,20 +46,21 @@ export async function uploadDirectusFile(files: FileUpload[], query: Query<AllCo
   return await directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFiles[]
 }
 
-// NOTE: Any reason to update these?
-export function getDirectusAssetUrl(fileId: string, options?: { token?: string }): string {
-  const directusUrl = useDirectusUrl()
-  const url = new URL(`${directusUrl}assets/${fileId}`)
+export function getDirectusAssetUrl(fileId: string, options?: { token?: string | boolean }): string {
+  const url = new URL(`${useDirectusUrl()}assets/${fileId}`)
 
-  if (options?.token)
-    url.searchParams.append('access_token', options.token)
+  if (options?.token) {
+    if (typeof options.token === 'string')
+      url.searchParams.append('access_token', options.token)
+    else
+      url.searchParams.append('access_token', useDirectusTokens().accessToken.value ?? '')
+  }
 
   return url.href
 }
 
 export function getDirectusThumbnailUrl(fileId: string, options?: DirectusThumbnailOptions): string {
-  const directusUrl = useDirectusUrl()
-  const url = new URL(`${directusUrl}assets/${fileId}`)
+  const url = new URL(`${useDirectusUrl()}assets/${fileId}`)
 
   if (options) {
     if (options.width)
@@ -67,8 +75,12 @@ export function getDirectusThumbnailUrl(fileId: string, options?: DirectusThumbn
       url.searchParams.append('fit', options.fit)
     if (options.format)
       url.searchParams.append('format', options.format)
-    if (options.token)
-      url.searchParams.append('access_token', options.token)
+    if (options?.token) {
+      if (typeof options.token === 'string')
+        url.searchParams.append('access_token', options.token)
+      else
+        url.searchParams.append('access_token', useDirectusTokens().accessToken.value ?? '')
+    }
   }
 
   return url.href

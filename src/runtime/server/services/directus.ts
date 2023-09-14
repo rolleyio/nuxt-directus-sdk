@@ -4,7 +4,7 @@ import type { H3Event } from 'h3'
 import { getCookie } from 'h3'
 import { useRuntimeConfig } from '#imports'
 
-import type { UsersCollections } from '#build/types/directus'
+import type { DirectusSchema } from '#build/types/directus'
 
 export function useDirectusAccessToken(event: H3Event): string | undefined {
   return getCookie(event, useRuntimeConfig().public.directus.cookieNameAccessToken)
@@ -14,13 +14,14 @@ export function useDirectusUrl(): string {
   return useRuntimeConfig().public.directus.url
 }
 
-export function useDirectus(token?: string): DirectusClient<UsersCollections> & AuthenticationClient<UsersCollections> & RestClient<UsersCollections> {
+// TODO: Might need to change this to allow for conditional type based on auth, rest etc.
+export function useDirectus(token?: string): DirectusClient<DirectusSchema> & AuthenticationClient<DirectusSchema> & RestClient<DirectusSchema> {
   const url = useDirectusUrl()
 
   if (!url)
     throw new Error('DIRECTUS_URL is not set in config options or .env file')
 
-  const directus = createDirectus<UsersCollections>(url).with(authentication('json', { autoRefresh: false })).with(rest())
+  const directus = createDirectus<DirectusSchema>(url).with(authentication('json', { autoRefresh: false })).with(rest())
 
   if (token)
     directus.setToken(token)
@@ -28,7 +29,8 @@ export function useDirectus(token?: string): DirectusClient<UsersCollections> & 
   return directus
 }
 
-export function useAdminDirectus(): DirectusClient<UsersCollections> & AuthenticationClient<UsersCollections> & RestClient<UsersCollections> {
+// TODO: Might need to change this to allow for conditional type based on auth, rest etc.
+export function useAdminDirectus(): DirectusClient<DirectusSchema> & AuthenticationClient<DirectusSchema> & RestClient<DirectusSchema> {
   const config = useRuntimeConfig().directus
 
   if (!config.adminToken)
