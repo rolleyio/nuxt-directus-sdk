@@ -1,7 +1,7 @@
 import {
   defineNuxtRouteMiddleware,
   navigateTo,
-  useDirectusAuth,
+  useDirectusUser,
   useRuntimeConfig,
 } from '#imports'
 
@@ -22,7 +22,7 @@ declare module '#app/../pages/runtime/composables' {
 
 export default defineNuxtRouteMiddleware((to) => {
   const config = useRuntimeConfig()
-  const user = useDirectusAuth().user
+  const user = useDirectusUser()
 
   if (!user.value) {
     return navigateTo({
