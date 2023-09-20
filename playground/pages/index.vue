@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { definePageMeta, reactive, useDirectus, useDirectusAuth } from '#imports'
+import { reactive, useDirectusAuth } from '#imports'
 
 // definePageMeta({
 //   middleware: ['auth'],
