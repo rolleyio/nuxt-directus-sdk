@@ -1,5 +1,9 @@
 <script lang="ts" setup>
-import { reactive, useDirectusAuth } from '#imports'
+import { definePageMeta, reactive, useDirectus, useDirectusAuth } from '#imports'
+
+// definePageMeta({
+//   middleware: ['auth'],
+// })
 
 const { user, login, loggedIn } = useDirectusAuth()
 

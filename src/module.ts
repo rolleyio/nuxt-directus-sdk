@@ -134,7 +134,7 @@ export default defineNuxtModule<ModuleOptions>({
   },
   async setup(options, nuxt) {
     if (!tryResolveModule('@directus/sdk')) {
-      logger.error('nuxt-directus-sdk requries @directus/sdk^11.0.3, install it with `npm i @directus/sdk`, `yarn add @directus/sdk`, `pnpm add @directus/sdk` or `bun install @directus/sdk`')
+      logger.error('nuxt-directus-sdk requires @directus/sdk^12.0.0, install it with `npm i @directus/sdk`, `yarn add @directus/sdk`, `pnpm add @directus/sdk` or `bun install @directus/sdk`')
       return
     }
 
@@ -182,7 +182,7 @@ export default defineNuxtModule<ModuleOptions>({
       const typesPath = addTypeTemplate({
         filename: `types/${configKey}-server.d.ts`,
         getContents: () => [
-        `declare module '#${configKey}-server' {`,
+        `declare module '#${configKey}' {`,
         `  const useDirectus: typeof import('${resolver.resolve('./runtime/server/services')}').useDirectus`,
         `  const useAdminDirectus: typeof import('${resolver.resolve('./runtime/server/services')}').useAdminDirectus`,
         `  const useDirectusUrl: typeof import('${resolver.resolve('./runtime/server/services')}').useDirectusUrl`,
@@ -252,6 +252,8 @@ export default defineNuxtModule<ModuleOptions>({
     addImportsSources({
       from: '@directus/sdk',
       imports: [
+        'aggregate',
+        'generateUid',
         'createComment',
         'updateComment',
         'deleteComment',
