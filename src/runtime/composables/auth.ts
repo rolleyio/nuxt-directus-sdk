@@ -1,11 +1,11 @@
 import type { LoginOptions } from '@directus/sdk'
 import { createUser, passwordRequest, passwordReset, readMe, updateMe } from '@directus/sdk'
 
+import type { DirectusUsers } from 'nuxt/app'
 import { useDirectus } from './directus'
 import { useDirectusTokens } from './tokens'
 import type { ComputedRef, Ref } from '#imports'
 import { computed, useState } from '#imports'
-import type { DirectusUsers } from '#app'
 import { useRouter, useRuntimeConfig } from '#app'
 
 export function useDirectusUser(): Ref<DirectusUsers | null> {

@@ -34,7 +34,7 @@ export function useDirectusTokens(): DirectusTokens {
   const config = useRuntimeConfig().public.directus
 
   const sharedOptions: CookieOptions = {
-    sameSite: config.cookieSameSite,
+    sameSite: config.cookieSameSite as any,
     secure: config.cookieSecure,
     domain: getCookieDomain(),
   }

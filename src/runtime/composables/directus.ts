@@ -1,7 +1,7 @@
 import type { AuthenticationClient, AuthenticationStorage, DirectusClient, RestClient, WebSocketClient } from '@directus/sdk'
 import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
+import type { DirectusSchema } from 'nuxt/app'
 import { useDirectusTokens } from './tokens'
-import type { DirectusSchema } from '#app'
 import { useRuntimeConfig } from '#app'
 
 // Add last slash if missing

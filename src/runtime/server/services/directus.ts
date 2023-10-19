@@ -2,9 +2,8 @@ import type { AuthenticationClient, DirectusClient, RestClient } from '@directus
 import { authentication, createDirectus, rest } from '@directus/sdk'
 import type { H3Event } from 'h3'
 import { getCookie } from 'h3'
+import type { DirectusSchema } from 'nuxt/app'
 import { useRuntimeConfig } from '#imports'
-
-import type { DirectusSchema } from '#app'
 
 export function useDirectusAccessToken(event: H3Event): string | undefined {
   return getCookie(event, useRuntimeConfig().public.directus.cookieNameAccessToken)

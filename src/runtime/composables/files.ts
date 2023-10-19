@@ -1,9 +1,9 @@
 import type { Query } from '@directus/sdk'
 import { uploadFiles } from '@directus/sdk'
+import type { AllDirectusCollections, DirectusFiles } from 'nuxt/app'
 import { useDirectus, useDirectusUrl } from './directus'
 
 import { useDirectusTokens } from './tokens'
-import type { AllDirectusCollections, DirectusFiles } from '#app'
 
 export type DirectusThumbnailFormat = 'jpg' | 'png' | 'webp' | 'tiff'
 export type DirectusThumbnailFit = 'cover' | 'contain' | 'inside' | 'outside'
@@ -33,7 +33,7 @@ export async function uploadDirectusFiles(files: FileUpload[], query?: Query<All
   const directus = useDirectus()
   const formData = new FormData()
 
-  files.forEach(({ file, data }, i) => {
+  files.forEach(({ file, data }) => {
     if (data) {
       Object.entries(data).forEach(([key, value]) => {
         formData.set(key, value)

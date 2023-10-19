@@ -4,9 +4,9 @@ import { joinURL } from 'ufo'
 import type { Query } from '@directus/sdk'
 
 import type { ImportPresetWithDeprecation } from '@nuxt/schema'
+import type { DirectusSchema } from 'nuxt/app'
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
-import type { DirectusSchema } from '#app'
 
 export interface ModuleOptions {
   /**
@@ -231,36 +231,22 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.hook('nitro:config', (nitroConfig) => {
       nitroConfig.alias = nitroConfig.alias || {}
 
-      // Inline module runtime in Nitro bundle
       nitroConfig.externals = defu(typeof nitroConfig.externals === 'object' ? nitroConfig.externals : {}, {
         inline: [resolver.resolve('./runtime')],
       })
       nitroConfig.imports = nitroConfig.imports || {}
       nitroConfig.imports.presets = nitroConfig.imports.presets || []
       nitroConfig.imports.presets.push(directusSdkImports)
-    })
-
-    try {
-      const typesPath = addTypeTemplate({
-        filename: `types/${configKey}-server.d.ts`,
-        getContents: () => [
-          'declare global {',
-        `  const useDirectus: typeof import('${resolver.resolve('./runtime/server/services')}').useDirectus`,
-        `  const useAdminDirectus: typeof import('${resolver.resolve('./runtime/server/services')}').useAdminDirectus`,
-        `  const useDirectusUrl: typeof import('${resolver.resolve('./runtime/server/services')}').useDirectusUrl`,
-        `  const useDirectusAccessToken: typeof import('${resolver.resolve('./runtime/server/services')}').useDirectusAccessToken`,
-        '}',
-        `export { useDirectus, useAdminDirectus, useDirectusUrl, useDirectusAccessToken } from '${resolver.resolve('./runtime/server/services')}';`,
-        ].join('\n'),
-      }).dst
-
-      nuxt.hook('prepare:types', (options) => {
-        options.references.push({ path: typesPath })
+      nitroConfig.imports.presets.push({
+        from: resolver.resolve('./runtime/server/services'),
+        imports: [
+          'useDirectus',
+          'useAdminDirectus',
+          'useDirectusUrl',
+          'useDirectusAccessToken',
+        ],
       })
-    }
-    catch (error) {
-      logger.error((error as Error).message)
-    }
+    })
 
     if (options.url) {
       const adminUrl = joinURL(options.url, '/admin/')
