@@ -3,9 +3,10 @@ import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeT
 import { joinURL } from 'ufo'
 import type { Query } from '@directus/sdk'
 
+import type { ImportPresetWithDeprecation } from '@nuxt/schema'
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
-import type { DirectusSchema } from '#build/types/directus'
+import type { DirectusSchema } from '#app'
 
 export interface ModuleOptions {
   /**
@@ -168,6 +169,65 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.css.push('vue-toastification/dist/index.css')
     nuxt.options.build.transpile.push('vue-toastification')
 
+    // Import useful directus functions
+    // Just found, maybe we should look to merge?
+    // https://github.com/becem-gharbi/nuxt-directus
+    const directusSdkImports: ImportPresetWithDeprecation = {
+      from: '@directus/sdk',
+      imports: [
+        'aggregate',
+        'generateUid',
+        'createComment',
+        'updateComment',
+        'deleteComment',
+        'createField',
+        'createItem',
+        'createItems',
+        'deleteField',
+        'deleteFile',
+        'deleteFiles',
+        'readActivities',
+        'readActivity',
+        'deleteItem',
+        'deleteItems',
+        'deleteUser',
+        'deleteUsers',
+        'importFile',
+        'readCollection',
+        'readCollections',
+        'createCollection',
+        'updateCollection',
+        'deleteCollection',
+        'readField',
+        'readFieldsByCollection',
+        'readFields',
+        'readFile',
+        'readFiles',
+        'readItem',
+        'readItems',
+        'readSingleton',
+        'readMe',
+        'createUser',
+        'createUsers',
+        'readUser',
+        'readUsers',
+        'updateField',
+        'updateFile',
+        'updateFiles',
+        'updateFolder',
+        'updateFolders',
+        'updateItem',
+        'updateItems',
+        'updateSingleton',
+        'updateMe',
+        'updateUser',
+        'updateUsers',
+        'withToken',
+      ],
+    }
+
+    addImportsSources(directusSdkImports)
+
     nuxt.hook('nitro:config', (nitroConfig) => {
       nitroConfig.alias = nitroConfig.alias || {}
 
@@ -175,19 +235,22 @@ export default defineNuxtModule<ModuleOptions>({
       nitroConfig.externals = defu(typeof nitroConfig.externals === 'object' ? nitroConfig.externals : {}, {
         inline: [resolver.resolve('./runtime')],
       })
-      nitroConfig.alias[`#${configKey}`] = resolver.resolve('./runtime/server/services')
+      nitroConfig.imports = nitroConfig.imports || {}
+      nitroConfig.imports.presets = nitroConfig.imports.presets || []
+      nitroConfig.imports.presets.push(directusSdkImports)
     })
 
     try {
       const typesPath = addTypeTemplate({
         filename: `types/${configKey}-server.d.ts`,
         getContents: () => [
-        `declare module '#${configKey}' {`,
+          'declare global {',
         `  const useDirectus: typeof import('${resolver.resolve('./runtime/server/services')}').useDirectus`,
         `  const useAdminDirectus: typeof import('${resolver.resolve('./runtime/server/services')}').useAdminDirectus`,
         `  const useDirectusUrl: typeof import('${resolver.resolve('./runtime/server/services')}').useDirectusUrl`,
         `  const useDirectusAccessToken: typeof import('${resolver.resolve('./runtime/server/services')}').useDirectusAccessToken`,
         '}',
+        `export { useDirectus, useAdminDirectus, useDirectusUrl, useDirectusAccessToken } from '${resolver.resolve('./runtime/server/services')}';`,
         ].join('\n'),
       }).dst
 
@@ -245,62 +308,5 @@ export default defineNuxtModule<ModuleOptions>({
         logger.info('Add DIRECTUS_ADMIN_TOKEN to the .env file to generate directus types')
       }
     }
-
-    // Import useful directus functions
-    // Just found, we should look to merge?
-    // https://github.com/becem-gharbi/nuxt-directus
-    addImportsSources({
-      from: '@directus/sdk',
-      imports: [
-        'aggregate',
-        'generateUid',
-        'createComment',
-        'updateComment',
-        'deleteComment',
-        'createField',
-        'createItem',
-        'createItems',
-        'deleteField',
-        'deleteFile',
-        'deleteFiles',
-        'readActivities',
-        'readActivity',
-        'deleteItem',
-        'deleteItems',
-        'deleteUser',
-        'deleteUsers',
-        'importFile',
-        'readCollection',
-        'readCollections',
-        'createCollection',
-        'updateCollection',
-        'deleteCollection',
-        'readField',
-        'readFieldsByCollection',
-        'readFields',
-        'readFile',
-        'readFiles',
-        'readItem',
-        'readItems',
-        'readSingleton',
-        'readMe',
-        'createUser',
-        'createUsers',
-        'readUser',
-        'readUsers',
-        'updateField',
-        'updateFile',
-        'updateFiles',
-        'updateFolder',
-        'updateFolders',
-        'updateItem',
-        'updateItems',
-        'updateSingleton',
-        'updateMe',
-        'updateUser',
-        'updateUsers',
-        'withToken',
-      ],
-    })
   },
 })

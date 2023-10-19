@@ -1,9 +1,8 @@
 import type { AuthenticationClient, AuthenticationStorage, DirectusClient, RestClient, WebSocketClient } from '@directus/sdk'
 import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
 import { useDirectusTokens } from './tokens'
+import type { DirectusSchema } from '#app'
 import { useRuntimeConfig } from '#app'
-
-import type { DirectusSchema } from '#build/types/directus'
 
 // Add last slash if missing
 export function useDirectusUrl(): string {

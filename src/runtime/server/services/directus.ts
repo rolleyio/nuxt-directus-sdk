@@ -4,7 +4,7 @@ import type { H3Event } from 'h3'
 import { getCookie } from 'h3'
 import { useRuntimeConfig } from '#imports'
 
-import type { DirectusSchema } from '#build/types/directus'
+import type { DirectusSchema } from '#app'
 
 export function useDirectusAccessToken(event: H3Event): string | undefined {
   return getCookie(event, useRuntimeConfig().public.directus.cookieNameAccessToken)

@@ -3,7 +3,7 @@ import { uploadFiles } from '@directus/sdk'
 import { useDirectus, useDirectusUrl } from './directus'
 
 import { useDirectusTokens } from './tokens'
-import type { AllDirectusCollections, DirectusFiles } from '#build/types/directus'
+import type { AllDirectusCollections, DirectusFiles } from '#app'
 
 export type DirectusThumbnailFormat = 'jpg' | 'png' | 'webp' | 'tiff'
 export type DirectusThumbnailFit = 'cover' | 'contain' | 'inside' | 'outside'
@@ -23,10 +23,10 @@ interface FileUpload {
   data?: Record<keyof DirectusFiles, string>
 }
 
-export async function uploadDirectusFile(file: FileUpload, query?: Query<AllDirectusCollections, AllDirectusCollections['directus_files']>): Promise<DirectusFiles | null> {
+export async function uploadDirectusFile(file: FileUpload, query?: Query<AllDirectusCollections, AllDirectusCollections['directus_files']>) {
   const result = await uploadDirectusFiles([file], query)
 
-  return result[0] ?? null
+  return (Array.isArray(result) ? result[0] : result)
 }
 
 export async function uploadDirectusFiles(files: FileUpload[], query?: Query<AllDirectusCollections, AllDirectusCollections['directus_files']>) {
@@ -36,24 +36,29 @@ export async function uploadDirectusFiles(files: FileUpload[], query?: Query<All
   files.forEach(({ file, data }, i) => {
     if (data) {
       Object.entries(data).forEach(([key, value]) => {
-        formData.set(`file_${i + 1}_${key}`, value)
+        formData.set(key, value)
       })
     }
 
     formData.set('file', file)
   })
 
-  return await directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFiles[]
+  return await directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFiles[] | DirectusFiles
 }
 
 export function getDirectusAssetUrl(fileId: string, options?: { token?: string | boolean }): string {
   const url = new URL(`${useDirectusUrl()}assets/${fileId}`)
 
   if (options?.token) {
-    if (typeof options.token === 'string')
+    if (typeof options.token === 'string') {
       url.searchParams.append('access_token', options.token)
-    else
-      url.searchParams.append('access_token', useDirectusTokens().accessToken.value ?? '')
+    }
+    else if (typeof options.token === 'boolean') {
+      const token = useDirectusTokens().accessToken.value
+
+      if (token)
+        url.searchParams.append('access_token', token)
+    }
   }
 
   return url.href

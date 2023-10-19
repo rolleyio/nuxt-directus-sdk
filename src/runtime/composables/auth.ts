@@ -1,13 +1,12 @@
-import type { loginOptions } from '@directus/sdk'
+import type { LoginOptions } from '@directus/sdk'
 import { createUser, passwordRequest, passwordReset, readMe, updateMe } from '@directus/sdk'
 
 import { useDirectus } from './directus'
 import { useDirectusTokens } from './tokens'
 import type { ComputedRef, Ref } from '#imports'
 import { computed, useState } from '#imports'
+import type { DirectusUsers } from '#app'
 import { useRouter, useRuntimeConfig } from '#app'
-
-import type { DirectusUsers } from '#build/types/directus'
 
 export function useDirectusUser(): Ref<DirectusUsers | null> {
   return useState('directus.user', () => null)
@@ -66,7 +65,7 @@ export function useDirectusAuth(): DirectusAuth {
     return user.value
   }
 
-  async function login(email: string, password: string, options: loginOptions = {}) {
+  async function login(email: string, password: string, options: LoginOptions = {}) {
     const response = await directus.login(email, password, options)
 
     if (!response.access_token)
