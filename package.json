@@ -25,7 +25,10 @@
     "release": "npm run lint && npm run prepack && changelogen --release && npm publish && git push --follow-tags",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "@directus/sdk": "^12.0.01",
@@ -48,6 +51,7 @@
     "@types/node": "^18.17.14",
     "changelogen": "^0.5.5",
     "nuxt": "^3.7.1",
+    "vitepress": "^1.0.0-rc.24",
     "vitest": "^0.34.2"
   },
   "unbuild": {
