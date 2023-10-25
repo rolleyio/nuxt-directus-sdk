@@ -153,7 +153,8 @@ export default defineNuxtModule<ModuleOptions>({
     await installModule('@nuxt/image', {
       provider: 'directus',
       directus: {
-        baseURL: `${options.url}/assets/`,
+        // TODO: might need to remove any trailing slashes before assets?
+        baseURL: `${options.url}assets/`,
       },
     })
 
