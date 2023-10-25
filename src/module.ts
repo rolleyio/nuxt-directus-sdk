@@ -151,11 +151,9 @@ export default defineNuxtModule<ModuleOptions>({
 
     // Install nuxt image with directus provider
     await installModule('@nuxt/image', {
-      image: {
-        provider: 'directus',
-        directus: {
-          baseURL: `${options.url}/assets/`,
-        },
+      provider: 'directus',
+      directus: {
+        baseURL: `${options.url}/assets/`,
       },
     })
 
