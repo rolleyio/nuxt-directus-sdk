@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.0.16
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v0.0.15...v0.0.16)
+
+### 🩹 Fixes
+
+- Remove double slash ([bf6e157](https://github.com/rolleyio/nuxt-directus-sdk/commit/bf6e157))
+
+### ❤️ Contributors
+
+- Matthew Rollinson <matt@rolley.io>
+
 ## v0.0.15
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v0.0.14...v0.0.15)
