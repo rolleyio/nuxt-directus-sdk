@@ -127,7 +127,7 @@ async function getCollections(options: GenerateOptions) {
   const directusCollections = await directus.request(readCollections()) as DirectusCollection[]
   directusCollections.sort((a, b) => a.collection.localeCompare(b.collection))
     .forEach((collection) => {
-      collections[collection.collection] = { ...collection, fields: [] }
+      collections[collection.collection] = { ...collection, fields: [] } as any
     })
 
   const fields = await directus.request(readFields()) as Field[]

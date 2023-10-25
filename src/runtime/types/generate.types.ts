@@ -1,7 +1,7 @@
 import type {
   Collection as DirectusCollection,
   Field as DirectusField,
-} from '@directus/shared/types'
+} from '@directus/types'
 
 export type Field = DirectusField & {
   relation?: {
@@ -9,6 +9,7 @@ export type Field = DirectusField & {
     collection: string
   }
 }
+
 export type Collection = DirectusCollection & { fields: Field[] }
 export interface Collections { [collection: string]: Collection }
 

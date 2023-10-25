@@ -31,8 +31,9 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
-    "@directus/sdk": "^12.0.01",
-    "@directus/shared": "^9.24.0",
+    "@directus/sdk": "^13.0.0",
+    "@directus/types": "^11.0.1",
+    "@nuxt/image": "^1.0.0",
     "@nuxt/kit": "^3.7.1",
     "change-case": "^4.1.2",
     "defu": "^6.1.1",

@@ -1,5 +1,5 @@
 import { defu } from 'defu'
-import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, tryResolveModule, useLogger } from '@nuxt/kit'
+import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, installModule, tryResolveModule, useLogger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { Query } from '@directus/sdk'
 
@@ -135,7 +135,7 @@ export default defineNuxtModule<ModuleOptions>({
   },
   async setup(options, nuxt) {
     if (!tryResolveModule('@directus/sdk')) {
-      logger.error('nuxt-directus-sdk requires @directus/sdk^12.0.0, install it with `npm i @directus/sdk`, `yarn add @directus/sdk`, `pnpm add @directus/sdk` or `bun install @directus/sdk`')
+      logger.error('nuxt-directus-sdk requires @directus/sdk^13.0.0, install it with `npm i @directus/sdk`, `yarn add @directus/sdk`, `pnpm add @directus/sdk` or `bun install @directus/sdk`')
       return
     }
 
@@ -148,6 +148,16 @@ export default defineNuxtModule<ModuleOptions>({
     })
 
     const resolver = createResolver(import.meta.url)
+
+    // Install nuxt image with directus provider
+    await installModule('@nuxt/image', {
+      image: {
+        provider: 'directus',
+        directus: {
+          baseURL: `${options.url}/assets/`,
+        },
+      },
+    })
 
     // Add plugin to load user before bootstrap
     addPlugin(resolver.resolve('./runtime/plugin'))
