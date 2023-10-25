@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.0.14
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v0.0.13...v0.0.14)
+
+### 🚀 Enhancements
+
+- Added nuxt image and updated directus sdk to 13 ([ef90eb1](https://github.com/rolleyio/nuxt-directus-sdk/commit/ef90eb1))
+
+### 📦 Build
+
+- Fixed eslint fixes ([203b0f4](https://github.com/rolleyio/nuxt-directus-sdk/commit/203b0f4))
+
+### ❤️ Contributors
+
+- Matthew Rollinson <matt@rolley.io>
+
 ## v0.0.13
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v0.0.12...v0.0.13)
