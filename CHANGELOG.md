@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.0.15
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v0.0.14...v0.0.15)
+
+### 🩹 Fixes
+
+- Changed inline image for nuxtimage ([2d4cc60](https://github.com/rolleyio/nuxt-directus-sdk/commit/2d4cc60))
+
+### ❤️ Contributors
+
+- Matthew Rollinson <matt@rolley.io>
+
 ## v0.0.14
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v0.0.13...v0.0.14)
