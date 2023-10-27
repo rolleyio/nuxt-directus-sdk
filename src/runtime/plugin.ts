@@ -3,7 +3,7 @@ import { useDirectus } from './composables/directus'
 import { useDirectusAuth, useDirectusUser } from './composables/auth'
 import { addRouteMiddleware, defineNuxtPlugin, refreshNuxtData, useRoute, useRuntimeConfig } from '#app'
 
-export default defineNuxtPlugin(async (nuxt) => {
+export default defineNuxtPlugin(async (nuxtApp) => {
   const route = useRoute()
   const config = useRuntimeConfig()
 
@@ -17,15 +17,26 @@ export default defineNuxtPlugin(async (nuxt) => {
 	if (preview && token) {
 		useDirectus().setToken(token);
 
-		nuxt.hook('page:finish', () => {
+		nuxtApp.hook('page:finish', () => {
 			refreshNuxtData();
 		});
 	}
 
-  if (config.public.directus.fetchUser)
-    await useDirectusAuth().fetchUser()
+	// TEST the hook is used somewhere else, but not sure it is needed
+	async function fetchUser() {
+		if (config.public.directus.fetchUser)
+			await useDirectusAuth().fetchUser()
+	}
 
-  await nuxt.callHook('directus:loggedIn', useDirectusUser().value)
+	await fetchUser()
+
+	nuxtApp.hook('page:start', async () => {
+		if (process.client) {
+			await fetchUser()
+		}
+	})
+
+  await nuxtApp.callHook('directus:loggedIn', useDirectusUser().value)
 
   addRouteMiddleware('auth', auth)
 })

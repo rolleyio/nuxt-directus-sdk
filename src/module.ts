@@ -1,6 +1,5 @@
 import { defu } from 'defu'
-import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, extendRouteRules, installModule, tryResolveModule, useLogger } from '@nuxt/kit'
-import { joinURL } from 'ufo'
+import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, installModule, tryResolveModule, useLogger } from '@nuxt/kit'
 import type { Query } from '@directus/sdk'
 
 import type { ImportPresetWithDeprecation } from '@nuxt/schema'
@@ -141,7 +140,7 @@ export default defineNuxtModule<ModuleOptions>({
     typePrefix: '',
     loginPath: '/login',
   },
-  async setup(options, nuxt) {
+  async setup(options, nuxtApp) {
     if (!options.url) {
       logger.error('nuxt-directus-sdk requires a url to your Directus instance, set it in the config options or .env file as DIRECTUS_URL')
       return
@@ -152,9 +151,9 @@ export default defineNuxtModule<ModuleOptions>({
       return
     }
 
-    nuxt.options.runtimeConfig[configKey] = { adminToken: options.adminToken ?? '' }
-    nuxt.options.runtimeConfig.public = nuxt.options.runtimeConfig.public || {}
-    nuxt.options.runtimeConfig.public[configKey] = defu(nuxt.options.runtimeConfig.public[configKey] as any, {
+    nuxtApp.options.runtimeConfig[configKey] = { adminToken: options.adminToken ?? '' }
+    nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
+    nuxtApp.options.runtimeConfig.public[configKey] = defu(nuxtApp.options.runtimeConfig.public[configKey] as any, {
       ...options,
       // Don't add the admin token to the public key
       adminToken: null,
@@ -241,7 +240,7 @@ export default defineNuxtModule<ModuleOptions>({
 
     addImportsSources(directusSdkImports)
 
-    nuxt.hook('nitro:config', (nitroConfig) => {
+    nuxtApp.hook('nitro:config', (nitroConfig) => {
       nitroConfig.alias = nitroConfig.alias || {}
 
       nitroConfig.externals = defu(typeof nitroConfig.externals === 'object' ? nitroConfig.externals : {}, {
@@ -266,7 +265,7 @@ export default defineNuxtModule<ModuleOptions>({
 
     if (options.devtools) {
       // @ts-expect-error - private API
-      nuxt.hook('devtools:customTabs', (iframeTabs) => {
+      nuxtApp.hook('devtools:customTabs', (iframeTabs) => {
         iframeTabs.push({
           name: 'directus',
           title: 'Directus',
@@ -294,7 +293,7 @@ export default defineNuxtModule<ModuleOptions>({
           },
         }).dst
 
-        nuxt.hook('prepare:types', (options) => {
+        nuxtApp.hook('prepare:types', (options) => {
           options.references.push({ path: typesPath })
         })
       }

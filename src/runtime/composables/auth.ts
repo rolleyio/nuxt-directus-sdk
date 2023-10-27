@@ -1,5 +1,5 @@
 import type { LoginOptions } from '@directus/sdk'
-import { createUser, passwordRequest, passwordReset, readMe, updateMe } from '@directus/sdk'
+import { createUser as directusCreateUser, inviteUser as directusInviteUser, acceptUserInvite as directusAcceptUserInvite, passwordRequest as directusPasswordRequest, passwordReset as directusPasswordReset, readMe as directusReadMe, updateMe as directusUpdateMe } from '@directus/sdk'
 import type { RouteLocationRaw } from '#vue-router'
 
 import type { DirectusUsers } from 'nuxt/app'
@@ -12,8 +12,8 @@ import { navigateTo, useRouter, useRuntimeConfig } from '#app'
 export interface DirectusAuth {
   user: Ref<DirectusUsers | null>
   loggedIn: ComputedRef<boolean>
-  fetchUser(): Promise<DirectusUsers | null>
-  updateUser(data: Partial<DirectusUsers>): Promise<DirectusUsers | null>
+  readMe(): Promise<DirectusUsers | null>
+  updateMe(data: Partial<DirectusUsers>): Promise<DirectusUsers | null>
   login(email: string, password: string, options: LoginOptions & { redirect?: boolean | RouteLocationRaw }): Promise<{
     user: DirectusUsers | null
     accessToken: string
@@ -21,10 +21,14 @@ export interface DirectusAuth {
     expires: number | null
     expiresAt: number | null
   }>
+  loginWithProvider(provider: string, redirectOnLogin?: string): Promise<void>
   logout(): Promise<void>
+  createUser(data: Partial<DirectusUsers>): Promise<DirectusUsers>
   register(data: Partial<DirectusUsers>): Promise<DirectusUsers>
-  requestPasswordReset(email: string, resetUrl?: string | null | undefined): Promise<void>
-  resetPassword(token: string, password: string): Promise<void>
+  inviteUser(email: string, role: string, inviteUrl?: string | undefined): Promise<void>
+  acceptUserInvite(token: string, password: string): Promise<void>
+  passwordRequest(email: string, resetUrl?: string | null | undefined): Promise<void>
+  passwordReset(token: string, password: string): Promise<void>
 }
 
 export function useDirectusUser(): Ref<DirectusUsers | null> {
@@ -40,7 +44,7 @@ export function useDirectusAuth(): DirectusAuth {
 
   const loggedIn = computed(() => user.value !== null)
 
-  async function fetchUser() {
+  async function readMe() {
     try {
       // TEST is this logic right? trying to minimize refresh tokens
       if (!tokens.accessToken.value && !tokens.refreshToken.value)
@@ -49,7 +53,7 @@ export function useDirectusAuth(): DirectusAuth {
       if (!tokens.accessToken.value)
         await directus.refresh()
 
-      user.value = await directus.request(readMe(config.public.directus.fetchUserParams))
+      user.value = await directus.request(directusReadMe(config.public.directus.fetchUserParams))
     }
     catch (e) {
       user.value = null
@@ -58,13 +62,13 @@ export function useDirectusAuth(): DirectusAuth {
     return user.value
   }
 
-  async function updateUser(data: Partial<DirectusUsers>) {
+  async function updateMe(data: Partial<DirectusUsers>) {
     const currentUser = user.value
 
     if (!currentUser?.id)
       throw new Error('No user available')
 
-    user.value = (await directus.request(updateMe(data, config.public.directus.fetchUserParams)))
+    user.value = await directus.request(directusUpdateMe(data, config.public.directus.fetchUserParams))
 
     return user.value
   }
@@ -75,7 +79,7 @@ export function useDirectusAuth(): DirectusAuth {
     if (!response.access_token)
       throw new Error('Login failed, please check your credentials.')
 
-    await fetchUser()
+    await readMe()
 
     // TEST
     if (options.redirect) {
@@ -96,17 +100,36 @@ export function useDirectusAuth(): DirectusAuth {
     }
   }
 
+  // TEST this
+  async function loginWithProvider(provider: string, redirectOnLogin?: string) {
+    await logout()
+    const redirect = `${window.location.origin}${redirectOnLogin ?? router.currentRoute.value.fullPath}`
+    await navigateTo(`${useDirectusUrl()}/auth/login/${provider}?redirect=${encodeURIComponent(redirect)}`, { external: true })
+  }
+
+  async function createUser(data: Partial<DirectusUsers>) {
+    return directus.request(directusCreateUser(data))
+  }
+  
   // Alias for createUser
   async function register(data: Partial<DirectusUsers>) {
-    return directus.request(createUser(data as any))
+    return createUser(data)
   }
 
-  async function requestPasswordReset(email: string, resetUrl?: string | undefined) {
-    directus.request(passwordRequest(email, resetUrl))
+  async function inviteUser(email: string, role: string, inviteUrl?: string | undefined): Promise<void> {
+    return directus.request(directusInviteUser(email, role, inviteUrl))
   }
 
-  async function resetPassword(token: string, password: string) {
-    directus.request(passwordReset(token, password))
+  async function acceptUserInvite(token: string, password: string): Promise<void> {
+    return directus.request(directusAcceptUserInvite(token, password))
+  }
+
+  async function passwordRequest(email: string, resetUrl?: string | undefined) {
+    directus.request(directusPasswordRequest(email, resetUrl))
+  }
+
+  async function passwordReset(token: string, password: string) {
+    directus.request(directusPasswordReset(token, password))
   }
 
   async function logout(): Promise<void> {
@@ -125,12 +148,16 @@ export function useDirectusAuth(): DirectusAuth {
   return {
     user,
     loggedIn,
-    fetchUser,
-    updateUser,
+    readMe,
+    updateMe,
+    createUser,
     register,
     login,
+    loginWithProvider,
     logout,
-    requestPasswordReset,
-    resetPassword,
+    inviteUser,
+    acceptUserInvite,
+    passwordRequest,
+    passwordReset,
   }
 }
