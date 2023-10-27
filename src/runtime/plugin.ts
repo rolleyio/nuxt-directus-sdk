@@ -25,7 +25,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 	// TEST the hook is used somewhere else, but not sure it is needed
 	async function fetchUser() {
 		if (config.public.directus.fetchUser)
-			await useDirectusAuth().fetchUser()
+			await useDirectusAuth().readMe()
 	}
 
 	await fetchUser()
