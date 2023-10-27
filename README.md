@@ -5,7 +5,7 @@
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-> A Nuxt 3 Directus sdk module that uses the official SDK
+> A Nuxt 3 Directus module that uses the Directus SDK to enhance your Nuxt application
 
 - [✨ &nbsp;Release Notes](/CHANGELOG.md)
 - [🔗 &nbsp;Documentation - Coming soon!](http://nuxt-directus-sdk.vercel.app)
