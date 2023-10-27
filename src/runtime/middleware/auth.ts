@@ -5,11 +5,11 @@ import {
   useRuntimeConfig,
 } from '#imports'
 
-// // TODO: could open this up and extend
-// // type MiddlewareMeta = boolean | {
-// //   unauthenticatedOnly: true
-// //   navigateAuthenticatedTo?: string
-// // }
+// TODO: could open this up and extend
+// type MiddlewareMeta = boolean | {
+//   unauthenticatedOnly: true
+//   navigateAuthenticatedTo?: string
+// }
 
 // type MiddlewareMeta = boolean
 
@@ -20,6 +20,7 @@ import {
 //   }
 // }
 
+// FIXME: this isn't correctly generating the auth middleware type (showing as invalid middleware)
 export default defineNuxtRouteMiddleware((to) => {
   const config = useRuntimeConfig()
   const user = useDirectusUser()

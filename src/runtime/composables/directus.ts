@@ -1,17 +1,13 @@
 import type { AuthenticationClient, AuthenticationStorage, DirectusClient, RestClient, WebSocketClient } from '@directus/sdk'
 import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
+import { joinURL, withTrailingSlash, cleanDoubleSlashes } from 'ufo'
+
 import type { DirectusSchema } from 'nuxt/app'
 import { useDirectusTokens } from './tokens'
 import { useRuntimeConfig } from '#app'
 
-// Add last slash if missing
-export function useDirectusUrl(): string {
-  const url = useRuntimeConfig().public.directus.url
-
-  if (url[url.length - 1] !== '/')
-    return `${url}/`
-
-  return url
+export function useDirectusUrl(path?: string): string {
+  return cleanDoubleSlashes(withTrailingSlash(joinURL(useRuntimeConfig().public.directus.url, '/', path ?? '')))
 }
 
 function createDirectusStorage(): AuthenticationStorage {

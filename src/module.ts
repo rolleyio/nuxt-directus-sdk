@@ -14,7 +14,7 @@ export interface ModuleOptions {
    * @default process.env.DIRECTUS_URL
    * @type string
    */
-  url?: string
+  url: string
 
   /**
    * Admin Auth Token used for generating types and server functions
@@ -134,6 +134,11 @@ export default defineNuxtModule<ModuleOptions>({
     loginPath: '/login',
   },
   async setup(options, nuxt) {
+    if (!options.url) {
+      logger.error('nuxt-directus-sdk requires a url to your Directus instance, set it in the config options or .env file as DIRECTUS_URL')
+      return
+    }
+
     if (!tryResolveModule('@directus/sdk')) {
       logger.error('nuxt-directus-sdk requires @directus/sdk^13.0.0, install it with `npm i @directus/sdk`, `yarn add @directus/sdk`, `pnpm add @directus/sdk` or `bun install @directus/sdk`')
       return
@@ -153,17 +158,12 @@ export default defineNuxtModule<ModuleOptions>({
     await installModule('@nuxt/image', {
       provider: 'directus',
       directus: {
-        // TODO: might need to remove any trailing slashes before assets?
-        baseURL: `${options.url}assets/`,
+        baseURL: useDirectusUrl('assets'),
       },
     })
 
     // Add plugin to load user before bootstrap
     addPlugin(resolver.resolve('./runtime/plugin'))
-    addPlugin({
-      src: resolver.resolve('./runtime/plugin.client'),
-      mode: 'client',
-    })
 
     // Add composables
     addImportsDir(resolver.resolve('./runtime/composables'))
@@ -174,13 +174,6 @@ export default defineNuxtModule<ModuleOptions>({
       global: true,
     })
 
-    // Adds notifications but not sure it's the scope of this project - leave it in for now?
-    nuxt.options.css.push('vue-toastification/dist/index.css')
-    nuxt.options.build.transpile.push('vue-toastification')
-
-    // Import useful directus functions
-    // Just found, maybe we should look to merge?
-    // https://github.com/becem-gharbi/nuxt-directus
     const directusSdkImports: ImportPresetWithDeprecation = {
       from: '@directus/sdk',
       imports: [
@@ -220,6 +213,9 @@ export default defineNuxtModule<ModuleOptions>({
         'createUsers',
         'readUser',
         'readUsers',
+        'readProviders',
+        'readFolder',
+        'readFolders',
         'updateField',
         'updateFile',
         'updateFiles',
@@ -257,51 +253,49 @@ export default defineNuxtModule<ModuleOptions>({
       })
     })
 
-    if (options.url) {
-      const adminUrl = joinURL(options.url, '/admin/')
-      logger.info(`Directus Admin URL: ${adminUrl}`)
+    const adminUrl = useDirectusUrl('admin')
+    logger.info(`Directus Admin URL: ${adminUrl}`)
 
-      if (options.devtools) {
-        // @ts-expect-error - private API
-        nuxt.hook('devtools:customTabs', (iframeTabs) => {
-          iframeTabs.push({
-            name: 'directus',
-            title: 'Directus',
-            icon: 'simple-icons:directus',
-            view: {
-              type: 'iframe',
-              src: adminUrl,
-            },
-          })
+    if (options.devtools) {
+      // @ts-expect-error - private API
+      nuxt.hook('devtools:customTabs', (iframeTabs) => {
+        iframeTabs.push({
+          name: 'directus',
+          title: 'Directus',
+          icon: 'simple-icons:directus',
+          view: {
+            type: 'iframe',
+            src: adminUrl,
+          },
+        })
+      })
+    }
+
+    if (options.adminToken) {
+      logger.info('Generating Directus types')
+
+      try {
+        const typesPath = addTypeTemplate({
+          filename: `types/${configKey}.d.ts`,
+          getContents() {
+            return generateTypes({
+              url: useDirectusUrl(),
+              token: options.adminToken!,
+              prefix: options.typePrefix ?? '',
+            })
+          },
+        }).dst
+
+        nuxt.hook('prepare:types', (options) => {
+          options.references.push({ path: typesPath })
         })
       }
-
-      if (options.adminToken) {
-        logger.info('Generating Directus types')
-
-        try {
-          const typesPath = addTypeTemplate({
-            filename: `types/${configKey}.d.ts`,
-            getContents() {
-              return generateTypes({
-                url: options.url!,
-                token: options.adminToken!,
-                prefix: options.typePrefix ?? '',
-              })
-            },
-          }).dst
-
-          nuxt.hook('prepare:types', (options) => {
-            options.references.push({ path: typesPath })
-          })
-        }
-        catch (error) {
-          logger.error((error as Error).message)
-        }
+      catch (error) {
+        logger.error((error as Error).message)
       }
-      else {
-        logger.info('Add DIRECTUS_ADMIN_TOKEN to the .env file to generate directus types')
-      }
+    }
+    else {
+      logger.info('Add DIRECTUS_ADMIN_TOKEN to the .env file to generate directus types')
     }
   },
 })

@@ -38,10 +38,7 @@
     "change-case": "^4.1.2",
     "defu": "^6.1.1",
     "openapi-typescript": "^6.5.5",
-    "parse-domain": "^7.0.1",
-    "tippy.js": "^6.3.7",
-    "ufo": "^1.1.1",
-    "vue-toastification": "2.0.0-rc.5"
+    "ufo": "^1.1.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.41.0",

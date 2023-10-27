@@ -5,14 +5,17 @@
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-> A Nuxt 3 Directus module that uses the official Directus 11 SDK
+> A Nuxt 3 Directus module that uses the official Directus 12 SDK - Documentation coming soon
 
 - [✨ &nbsp;Release Notes](/CHANGELOG.md)
+- [ Documentation - Coming soon!](#)
 
 ## Features
 
 - ⛰ &nbsp;Directus authentication out of the box
 - 🚠 &nbsp;Automatic type generation based on Directus collections
+- &nbsp;Directus websocket enabled on clients
+- &nbsp;Installs and configures Nuxt Image
 
 ## Quick Setup
 

@@ -3,9 +3,9 @@ import type {
   Relation,
 } from '@directus/shared/types'
 import { useLogger } from '@nuxt/kit'
-
 import { authentication, createDirectus, readCollections, readFields, readRelations, rest } from '@directus/sdk'
 import { pascalCase } from 'change-case'
+
 import type { Collections, Field, GenerateOptions } from './generate.types'
 
 function warn(message: string) {
@@ -16,6 +16,7 @@ function joinTypes(types: string[]) {
   return types.map(x => `  ${x};`).join('\n')
 }
 
+// TODO: looks like the directus SDK might be getting it's own type generator, look to use that instead.
 // Previously used openapi-typescript but it wasn't flexible enough, this should work better?
 // BASED ON: https://github.com/maltejur/directus-extension-generate-types
 export async function generateTypes(options: GenerateOptions) {

@@ -1,12 +1,13 @@
 import type { LoginOptions } from '@directus/sdk'
 import { createUser, passwordRequest, passwordReset, readMe, updateMe } from '@directus/sdk'
+import type { RouteLocationRaw } from '#vue-router'
 
 import type { DirectusUsers } from 'nuxt/app'
 import { useDirectus } from './directus'
 import { useDirectusTokens } from './tokens'
 import type { ComputedRef, Ref } from '#imports'
-import { computed, useState } from '#imports'
-import { useRouter, useRuntimeConfig } from '#app'
+import { computed, useState, } from '#imports'
+import { navigateTo, useRouter, useRuntimeConfig } from '#app'
 
 export function useDirectusUser(): Ref<DirectusUsers | null> {
   return useState('directus.user', () => null)
@@ -18,12 +19,12 @@ export interface DirectusAuth {
   refreshTokens(): Promise<void>
   fetchUser(): Promise<DirectusUsers | null>
   updateUser(data: Partial<DirectusUsers>): Promise<DirectusUsers | null>
-  login(email: string, password: string): Promise<{
+  login(email: string, password: string, options: LoginOptions & { redirect?: boolean | RouteLocationRaw }): Promise<{
     user: DirectusUsers | null
-    access_token: string
+    accessToken: string
     refreshToken: string | null
     expires: number
-    redirect(defaultPath?: string): void
+    expiresAt: number | null
   }>
   logout(): Promise<void>
   register(data: Partial<DirectusUsers>): Promise<DirectusUsers>
@@ -33,6 +34,7 @@ export interface DirectusAuth {
 
 export function useDirectusAuth(): DirectusAuth {
   const config = useRuntimeConfig()
+  const router = useRouter()
   const directus = useDirectus()
   const tokens = useDirectusTokens()
   const user = useDirectusUser()
@@ -65,7 +67,7 @@ export function useDirectusAuth(): DirectusAuth {
     return user.value
   }
 
-  async function login(email: string, password: string, options: LoginOptions = {}) {
+  async function login(email: string, password: string, options: LoginOptions & { redirect?: boolean | RouteLocationRaw } = {}) {
     const response = await directus.login(email, password, options)
 
     if (!response.access_token)
@@ -73,18 +75,22 @@ export function useDirectusAuth(): DirectusAuth {
 
     await fetchUser()
 
+    
+    if (options.redirect) {
+      const route = router.currentRoute.value
+      
+      if (options.redirect === true && route?.query?.redirect)
+        navigateTo({ path: decodeURIComponent(route.query.redirect as string) })
+      else 
+        navigateTo(options.redirect as any)
+    }
+
     return {
       user: user.value,
       accessToken: response.access_token,
       refreshToken: response.refresh_token,
       expires: response.expires,
       expiresAt: response.expires_at,
-      // Allow redirecting to a specific page after login
-      redirect(defaultPath = '/') {
-        const router = useRouter()
-        const route = router.currentRoute.value
-        router.replace({ path: route.query.redirect ? decodeURIComponent(route.query.redirect as string) : defaultPath })
-      },
     }
   }
 

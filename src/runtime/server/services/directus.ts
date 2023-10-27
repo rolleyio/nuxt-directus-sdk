@@ -2,6 +2,8 @@ import type { AuthenticationClient, DirectusClient, RestClient } from '@directus
 import { authentication, createDirectus, rest } from '@directus/sdk'
 import type { H3Event } from 'h3'
 import { getCookie } from 'h3'
+import { joinURL, withTrailingSlash, cleanDoubleSlashes } from 'ufo'
+
 import type { DirectusSchema } from 'nuxt/app'
 import { useRuntimeConfig } from '#imports'
 
@@ -9,9 +11,11 @@ export function useDirectusAccessToken(event: H3Event): string | undefined {
   return getCookie(event, useRuntimeConfig().public.directus.cookieNameAccessToken)
 }
 
-export function useDirectusUrl(): string {
-  return useRuntimeConfig().public.directus.url
+// TODO: this is duplicated with frontend version, could be good to cleanup?
+export function useDirectusUrl(path?: string): string {
+  return cleanDoubleSlashes(withTrailingSlash(joinURL(useRuntimeConfig().public.directus.url, '/', path ?? '')))
 }
+
 
 // TODO: Might need to change this to allow for conditional type based on auth, rest etc.
 export function useDirectus(token?: string): DirectusClient<DirectusSchema> & AuthenticationClient<DirectusSchema> & RestClient<DirectusSchema> {
