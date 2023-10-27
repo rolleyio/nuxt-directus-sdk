@@ -8,7 +8,7 @@
 > A Nuxt 3 Directus sdk module that uses the official SDK
 
 - [✨ &nbsp;Release Notes](/CHANGELOG.md)
-- [🔗 Documentation - Coming soon!](http://nuxt-directus-sdk.vercel.app)
+- [🔗 &nbsp;Documentation - Coming soon!](http://nuxt-directus-sdk.vercel.app)
 
 ## Features
 
