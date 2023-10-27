@@ -9,10 +9,6 @@ import type { ComputedRef, Ref } from '#imports'
 import { computed, useState, } from '#imports'
 import { navigateTo, useRouter, useRuntimeConfig } from '#app'
 
-export function useDirectusUser(): Ref<DirectusUsers | null> {
-  return useState('directus.user', () => null)
-}
-
 export interface DirectusAuth {
   user: Ref<DirectusUsers | null>
   loggedIn: ComputedRef<boolean>
@@ -29,6 +25,10 @@ export interface DirectusAuth {
   register(data: Partial<DirectusUsers>): Promise<DirectusUsers>
   requestPasswordReset(email: string, resetUrl?: string | null | undefined): Promise<void>
   resetPassword(token: string, password: string): Promise<void>
+}
+
+export function useDirectusUser(): Ref<DirectusUsers | null> {
+  return useState('directus.user', () => null)
 }
 
 export function useDirectusAuth(): DirectusAuth {

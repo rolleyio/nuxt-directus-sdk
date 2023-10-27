@@ -1,6 +1,6 @@
 import auth from './middleware/auth'
 import { useDirectus } from './composables/directus'
-import { useDirectusAuth } from './composables/auth'
+import { useDirectusAuth, useDirectusUser } from './composables/auth'
 import { addRouteMiddleware, defineNuxtPlugin, refreshNuxtData, useRoute, useRuntimeConfig } from '#app'
 
 export default defineNuxtPlugin(async (nuxt) => {
@@ -24,6 +24,8 @@ export default defineNuxtPlugin(async (nuxt) => {
 
   if (config.public.directus.fetchUser)
     await useDirectusAuth().fetchUser()
+
+  await nuxt.callHook('directus:loggedIn', useDirectusUser().value)
 
   addRouteMiddleware('auth', auth)
 })
