@@ -5,17 +5,18 @@
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-> A Nuxt 3 Directus module that uses the official Directus 12 SDK - Documentation coming soon
+> A Nuxt 3 Directus sdk module that uses the official SDK
 
 - [✨ &nbsp;Release Notes](/CHANGELOG.md)
-- [ Documentation - Coming soon!](#)
+- [🔗 Documentation - Coming soon!](http://nuxt-directus-sdk.vercel.app)
 
 ## Features
 
-- ⛰ &nbsp;Directus authentication out of the box
-- 🚠 &nbsp;Automatic type generation based on Directus collections
-- &nbsp;Directus websocket enabled on clients
-- &nbsp;Installs and configures Nuxt Image
+- ⛰ &nbsp;Authentication out of the box
+- 🚠 &nbsp;Type generation based on Directus collections
+- 🔥 &nbsp;Client websockets enabled
+- 🌉 &nbsp;Automatically configures Nuxt Image for directus
+- 🗂️ &nbsp;Directus Admin panel added to Devtools
 
 ## Quick Setup
 
@@ -41,36 +42,43 @@ bun install --save-dev nuxt-directus-sdk
 export default defineNuxtConfig({
   modules: [
     'nuxt-directus-sdk'
-  ]
+  ],
+  directus: {
+    url: '',
+  }
 })
 ```
 
-That's it! You can now use Directus your Nuxt app ✨
+3. OPTIONAL: Add an Directus admin token to .env file for additional goodies (Type generation, admin server directus)
+
+DIRECTUS_ADMIN_TOKEN=""
+
+That's it! You can now use Directus within your Nuxt app ✨
 
 ## Development
 
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Generate type stubs
-npm run dev:prepare
+bun run dev:prepare
 
 # Develop with the playground
-npm run dev
+bun run dev
 
 # Build the playground
-npm run dev:build
+bun run dev:build
 
 # Run ESLint
-npm run lint
+bun run lint
 
 # Run Vitest
-npm run test
-npm run test:watch
+bun run test
+bun run test:watch
 
 # Release new version
-npm run release
+bun run release
 ```
 
 <!-- Badges -->
