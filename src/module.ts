@@ -1,5 +1,5 @@
 import { defu } from 'defu'
-import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, installModule, tryResolveModule, useLogger } from '@nuxt/kit'
+import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, extendRouteRules, installModule, tryResolveModule, useLogger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { Query } from '@directus/sdk'
 
@@ -89,6 +89,13 @@ export interface ModuleOptions {
   cookieSecure?: boolean
 
   /**
+   * The Domain attribute for auth cookies.
+   * @type string
+   * @default undefined
+   */
+  cookieDomain?: boolean
+
+  /**
    * The prefix to your custom types
    * @type string
    * @default ''
@@ -130,6 +137,7 @@ export default defineNuxtModule<ModuleOptions>({
     cookieMaxAgeRefreshToken: 604800,
     cookieSameSite: 'lax',
     cookieSecure: false,
+    cookieDomain: undefined,
     typePrefix: '',
     loginPath: '/login',
   },

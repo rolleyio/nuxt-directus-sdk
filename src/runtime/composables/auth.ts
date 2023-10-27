@@ -16,14 +16,13 @@ export function useDirectusUser(): Ref<DirectusUsers | null> {
 export interface DirectusAuth {
   user: Ref<DirectusUsers | null>
   loggedIn: ComputedRef<boolean>
-  refreshTokens(): Promise<void>
   fetchUser(): Promise<DirectusUsers | null>
   updateUser(data: Partial<DirectusUsers>): Promise<DirectusUsers | null>
   login(email: string, password: string, options: LoginOptions & { redirect?: boolean | RouteLocationRaw }): Promise<{
     user: DirectusUsers | null
     accessToken: string
     refreshToken: string | null
-    expires: number
+    expires: number | null
     expiresAt: number | null
   }>
   logout(): Promise<void>
@@ -43,11 +42,14 @@ export function useDirectusAuth(): DirectusAuth {
 
   async function fetchUser() {
     try {
-      if (!tokens.refreshToken.value)
+      // TEST is this logic right? trying to minimize refresh tokens
+      if (!tokens.accessToken.value && !tokens.refreshToken.value)
         throw new Error('No refresh token')
 
-      await directus.refresh()
-      user.value = await directus.request(readMe(config.public.directus.fetchUserParams)) as any
+      if (!tokens.accessToken.value)
+        await directus.refresh()
+
+      user.value = await directus.request(readMe(config.public.directus.fetchUserParams))
     }
     catch (e) {
       user.value = null
@@ -62,7 +64,7 @@ export function useDirectusAuth(): DirectusAuth {
     if (!currentUser?.id)
       throw new Error('No user available')
 
-    user.value = (await directus.request(updateMe(data as any, config.public.directus.fetchUserParams))) as any
+    user.value = (await directus.request(updateMe(data, config.public.directus.fetchUserParams)))
 
     return user.value
   }
@@ -75,14 +77,14 @@ export function useDirectusAuth(): DirectusAuth {
 
     await fetchUser()
 
-    
+    // TEST
     if (options.redirect) {
       const route = router.currentRoute.value
       
-      if (options.redirect === true && route?.query?.redirect)
+      if (typeof options.redirect !== 'boolean')
+        navigateTo(options.redirect)
+      else if (route?.query?.redirect)
         navigateTo({ path: decodeURIComponent(route.query.redirect as string) })
-      else 
-        navigateTo(options.redirect as any)
     }
 
     return {

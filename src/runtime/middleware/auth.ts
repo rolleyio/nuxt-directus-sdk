@@ -5,21 +5,6 @@ import {
   useRuntimeConfig,
 } from '#imports'
 
-// TODO: could open this up and extend
-// type MiddlewareMeta = boolean | {
-//   unauthenticatedOnly: true
-//   navigateAuthenticatedTo?: string
-// }
-
-// type MiddlewareMeta = boolean
-
-// // https://github.com/sidebase/nuxt-auth/blob/main/src/runtime/middleware/auth.ts
-// declare module '#app/../pages/runtime/composables' {
-//   interface PageMeta {
-//     auth?: MiddlewareMeta
-//   }
-// }
-
 // FIXME: this isn't correctly generating the auth middleware type (showing as invalid middleware)
 export default defineNuxtRouteMiddleware((to) => {
   const config = useRuntimeConfig()

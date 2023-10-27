@@ -5,7 +5,7 @@ import { useDirectus, useDirectusUrl } from './directus'
 
 import { useDirectusTokens } from './tokens'
 
-export interface DirectusFileUpload {
+interface DirectusFileUpload {
   file: File
   data?: Record<keyof DirectusFiles, string>
 }

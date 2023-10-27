@@ -11,20 +11,18 @@ export function useDirectusAccessToken(event: H3Event): string | undefined {
   return getCookie(event, useRuntimeConfig().public.directus.cookieNameAccessToken)
 }
 
+// TEST
 // TODO: this is duplicated with frontend version, could be good to cleanup?
 export function useDirectusUrl(path?: string): string {
   return cleanDoubleSlashes(withTrailingSlash(joinURL(useRuntimeConfig().public.directus.url, '/', path ?? '')))
 }
 
-
+// TEST generic type overwrites custom?
 // TODO: Might need to change this to allow for conditional type based on auth, rest etc.
-export function useDirectus(token?: string): DirectusClient<DirectusSchema> & AuthenticationClient<DirectusSchema> & RestClient<DirectusSchema> {
-  const url = useDirectusUrl()
-
-  if (!url)
-    throw new Error('DIRECTUS_URL is not set in config options or .env file')
-
-  const directus = createDirectus<DirectusSchema>(url).with(authentication('json', { autoRefresh: false })).with(rest())
+export function useDirectus<T extends object = DirectusSchema>(token?: string): DirectusClient<T> & AuthenticationClient<T> & RestClient<T> {
+  const directus = createDirectus<T>(useDirectusUrl())
+    .with(authentication('json', { autoRefresh: false }))
+    .with(rest())
 
   if (token)
     directus.setToken(token)
@@ -32,12 +30,12 @@ export function useDirectus(token?: string): DirectusClient<DirectusSchema> & Au
   return directus
 }
 
-// TODO: Might need to change this to allow for conditional type based on auth, rest etc.
-export function useAdminDirectus(): DirectusClient<DirectusSchema> & AuthenticationClient<DirectusSchema> & RestClient<DirectusSchema> {
+// TEST generic type overwrites custom?
+export function useAdminDirectus<T extends object = DirectusSchema>() {
   const config = useRuntimeConfig().directus
 
   if (!config.adminToken)
     throw new Error('DIRECTUS_ADMIN_TOKEN is not set in config options or .env file')
 
-  return useDirectus(config.adminToken)
+  return useDirectus<T>(config.adminToken)
 }

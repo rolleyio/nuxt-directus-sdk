@@ -1,13 +1,5 @@
-import { useDomain } from './domain'
 import type { CookieOptions, CookieRef } from '#app'
 import { useCookie, useNuxtApp, useRuntimeConfig } from '#app'
-
-export function getCookieDomain(): string | undefined {
-  const domain = useDomain()
-
-  // TODO: better way to do this and all domains
-  return domain.value.includes('localhost') || domain.value.includes('127.0.0.1') || domain.value.includes('0.0.0.0') ? undefined : `.${domain.value}`
-}
 
 function directusCookie<T>(name: string, cookieOptions: CookieOptions): CookieRef<T> {
   const nuxtApp = useNuxtApp() as { _cookies?: Record<string, CookieRef<T>> }
@@ -36,7 +28,7 @@ export function useDirectusTokens(): DirectusTokens {
   const sharedOptions: CookieOptions = {
     sameSite: config.cookieSameSite as any,
     secure: config.cookieSecure,
-    domain: getCookieDomain(),
+    domain: config.cookieDomain,
   }
 
   function accessToken(): CookieRef<string | null> {

@@ -1,4 +1,4 @@
-import type { AuthenticationClient, AuthenticationStorage, DirectusClient, RestClient, WebSocketClient } from '@directus/sdk'
+import type { AuthenticationClient, AuthenticationStorage, DirectusClient, RestClient, RestCommand, WebSocketClient } from '@directus/sdk'
 import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
 import { joinURL, withTrailingSlash, cleanDoubleSlashes } from 'ufo'
 
@@ -6,6 +6,7 @@ import type { DirectusSchema } from 'nuxt/app'
 import { useDirectusTokens } from './tokens'
 import { useRuntimeConfig } from '#app'
 
+// TEST
 export function useDirectusUrl(path?: string): string {
   return cleanDoubleSlashes(withTrailingSlash(joinURL(useRuntimeConfig().public.directus.url, '/', path ?? '')))
 }
@@ -31,11 +32,12 @@ function createDirectusStorage(): AuthenticationStorage {
   } satisfies AuthenticationStorage
 }
 
+// TEST generic type overwrites custom?
 // TODO: Might need to change this to allow for conditional type based on auth, rest etc.
-export function useDirectus(token?: string): DirectusClient<DirectusSchema> & AuthenticationClient<DirectusSchema> & RestClient<DirectusSchema> & WebSocketClient<DirectusSchema> {
+export function useDirectus<T extends object = DirectusSchema>(token?: string): DirectusClient<T> & AuthenticationClient<T> & RestClient<T> & WebSocketClient<T> {
   const url = useDirectusUrl()
 
-  const directus = createDirectus<DirectusSchema>(url)
+  const directus = createDirectus<T>(url)
     .with(authentication('json', {
       storage: createDirectusStorage(),
       autoRefresh: token !== '',
