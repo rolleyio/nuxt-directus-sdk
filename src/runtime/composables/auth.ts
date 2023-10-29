@@ -7,8 +7,10 @@ import { useDirectus } from './directus'
 import { useDirectusTokens } from './tokens'
 import type { ComputedRef, Ref } from '#imports'
 import { computed, useState, } from '#imports'
-import { navigateTo, useRouter, useRuntimeConfig } from '#app'
+import { navigateTo, useNuxtApp, useRouter, useRuntimeConfig } from '#app'
 
+// Auto types don't seem to be generating correctly here, so we need to specify the return type
+// Would be better if this wasn't needed
 export interface DirectusAuth {
   user: Ref<DirectusUsers | null>
   loggedIn: ComputedRef<boolean>
@@ -58,6 +60,9 @@ export function useDirectusAuth(): DirectusAuth {
     catch (e) {
       user.value = null
     }
+
+    // TEST - can you use this hook?
+    await useNuxtApp().callHook('directus:loggedIn', user.value)
 
     return user.value
   }
@@ -124,12 +129,12 @@ export function useDirectusAuth(): DirectusAuth {
     return directus.request(directusAcceptUserInvite(token, password))
   }
 
-  async function passwordRequest(email: string, resetUrl?: string | undefined) {
-    directus.request(directusPasswordRequest(email, resetUrl))
+  async function passwordRequest(email: string, resetUrl?: string | undefined): Promise<void> {
+    return directus.request(directusPasswordRequest(email, resetUrl))
   }
 
-  async function passwordReset(token: string, password: string) {
-    directus.request(directusPasswordReset(token, password))
+  async function passwordReset(token: string, password: string): Promise<void> {
+    return directus.request(directusPasswordReset(token, password))
   }
 
   async function logout(): Promise<void> {
@@ -143,6 +148,9 @@ export function useDirectusAuth(): DirectusAuth {
       tokens.expires.value = null
       tokens.expiresAt.value = null
     }
+
+    // TEST - can you use this hook?
+    await useNuxtApp().callHook('directus:loggedIn', user.value)
   }
 
   return {
