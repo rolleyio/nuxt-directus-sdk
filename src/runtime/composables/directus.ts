@@ -34,7 +34,6 @@ function createDirectusStorage(): AuthenticationStorage {
 }
 
 // TEST generic type overwrites custom?
-// TODO: Might need to change this to allow for conditional type based on auth, rest etc.
 export function useDirectus<T extends object = DirectusSchema>(token?: string): DirectusClient<T> & AuthenticationClient<T> & RestClient<T> & WebSocketClient<T> {
   const directus = createDirectus<T>(withTrailingSlash(useDirectusUrl()))
     .with(authentication('json', {
