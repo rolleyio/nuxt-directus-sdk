@@ -13,13 +13,11 @@ export function useDirectusAccessToken(event: H3Event): string | undefined {
 }
 
 // TEST
-// TODO: this is duplicated with frontend version, could be good to cleanup?
 export function useDirectusUrl(path?: string): string {
-  return useUrl(useRuntimeConfig().public.directus.url, '/', path ?? '')
+  return useUrl(useRuntimeConfig().public.directus.url, path ?? '')
 }
 
 // TEST generic type overwrites custom?
-// TODO: Might need to change this to allow for conditional type based on auth, rest etc.
 export function useDirectus<T extends object = DirectusSchema>(token?: string): DirectusClient<T> & AuthenticationClient<T> & RestClient<T> {
   const directus = createDirectus<T>(withTrailingSlash(useDirectusUrl()))
     .with(authentication('json', { autoRefresh: false }))

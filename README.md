@@ -14,7 +14,7 @@
 
 - ⛰ &nbsp;Authentication out of the box
 - 🚠 &nbsp;Type generation based on Directus collections
-- 🔥 &nbsp;Client websockets enabled
+- 🔥 &nbsp;Typesafe Client Websockets enabled
 - 🌉 &nbsp;Automatically configures Nuxt Image for directus
 - 🗂️ &nbsp;Directus Admin panel added to Devtools
 

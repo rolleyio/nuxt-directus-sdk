@@ -9,7 +9,7 @@ import { useRuntimeConfig } from '#app'
 
 // TEST
 export function useDirectusUrl(path?: string): string {
-  return useUrl(useRuntimeConfig().public.directus.url, '/', path ?? '')
+  return useUrl(useRuntimeConfig().public.directus.url, path ?? '')
 }
 
 function createDirectusStorage(): AuthenticationStorage {
