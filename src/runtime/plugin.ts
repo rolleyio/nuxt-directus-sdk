@@ -9,34 +9,33 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
   // TEST that live preview works with token
   // ** Live Preview Bits **
-	// Check if we are in preview mode
-	const preview = route.query.preview && route.query.preview === 'true';
-	const token = route.query.token as string | undefined;
+  // Check if we are in preview mode
+  const preview = route.query.preview && route.query.preview === 'true'
+  const token = route.query.token as string | undefined
 
-	// If we are in preview mode, we need to use the token from the query string
-	if (preview && token) {
-		useDirectus().setToken(token);
+  // If we are in preview mode, we need to use the token from the query string
+  if (preview && token) {
+    useDirectus().setToken(token)
 
-		nuxtApp.hook('page:finish', () => {
-			refreshNuxtData();
-		});
-	}
+    nuxtApp.hook('page:finish', () => {
+      refreshNuxtData()
+    })
+  }
 
-	// TEST the hook is used somewhere else, but not sure it is needed
-	async function fetchUser() {
-		if (config.public.directus.fetchUser)
-			await useDirectusAuth().readMe()
-	}
+  // TEST the hook is used somewhere else, but not sure it is needed
+  async function fetchUser() {
+    if (config.public.directus.fetchUser)
+      await useDirectusAuth().readMe()
+  }
 
-	await fetchUser()
+  await fetchUser()
 
-	nuxtApp.hook('page:start', async () => {
-		if (process.client) {
-			await fetchUser()
-		}
-	})
+  nuxtApp.hook('page:start', async () => {
+    if (process.client)
+      await fetchUser()
+  })
 
-	// TEST - if can't use in auth module, use here instead
+  // TEST - if can't use in auth module, use here instead
   // await nuxtApp.callHook('directus:loggedIn', useDirectusUser().value)
 
   addRouteMiddleware('auth', auth)

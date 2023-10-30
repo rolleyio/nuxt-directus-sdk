@@ -34,7 +34,7 @@ export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Q
 }
 
 export function getDirectusFileUrl(fileId: string, options?: { token?: string | boolean }): string {
-  const url = new URL(`${useDirectusUrl('assets/')}${fileId}`)
+  const url = new URL(useDirectusUrl(`assets/${fileId}`))
 
   if (options?.token) {
     if (typeof options.token === 'string') {

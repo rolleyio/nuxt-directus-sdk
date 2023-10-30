@@ -1,12 +1,12 @@
 import type { LoginOptions } from '@directus/sdk'
-import { createUser as directusCreateUser, inviteUser as directusInviteUser, acceptUserInvite as directusAcceptUserInvite, passwordRequest as directusPasswordRequest, passwordReset as directusPasswordReset, readMe as directusReadMe, updateMe as directusUpdateMe } from '@directus/sdk'
-import type { RouteLocationRaw } from '#vue-router'
+import { acceptUserInvite as directusAcceptUserInvite, createUser as directusCreateUser, inviteUser as directusInviteUser, passwordRequest as directusPasswordRequest, passwordReset as directusPasswordReset, readMe as directusReadMe, updateMe as directusUpdateMe } from '@directus/sdk'
 
 import type { DirectusUsers } from 'nuxt/app'
 import { useDirectus } from './directus'
 import { useDirectusTokens } from './tokens'
+import type { RouteLocationRaw } from '#vue-router'
 import type { ComputedRef, Ref } from '#imports'
-import { computed, useState, } from '#imports'
+import { computed, useState } from '#imports'
 import { navigateTo, useNuxtApp, useRouter, useRuntimeConfig } from '#app'
 
 // Auto types don't seem to be generating correctly here, so we need to specify the return type
@@ -89,7 +89,7 @@ export function useDirectusAuth(): DirectusAuth {
     // TEST
     if (options.redirect) {
       const route = router.currentRoute.value
-      
+
       if (typeof options.redirect !== 'boolean')
         navigateTo(options.redirect)
       else if (route?.query?.redirect)
@@ -115,7 +115,7 @@ export function useDirectusAuth(): DirectusAuth {
   async function createUser(data: Partial<DirectusUsers>) {
     return directus.request(directusCreateUser(data))
   }
-  
+
   // Alias for createUser
   async function register(data: Partial<DirectusUsers>) {
     return createUser(data)

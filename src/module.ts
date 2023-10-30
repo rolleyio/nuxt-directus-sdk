@@ -4,8 +4,10 @@ import type { Query } from '@directus/sdk'
 
 import type { ImportPresetWithDeprecation } from '@nuxt/schema'
 import type { DirectusSchema } from 'nuxt/app'
+import { withTrailingSlash } from 'ufo'
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
+import { useUrl } from './runtime/utils'
 
 export interface ModuleOptions {
   /**
@@ -155,7 +157,7 @@ export default defineNuxtModule<ModuleOptions>({
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
     nuxtApp.options.runtimeConfig.public[configKey] = defu(nuxtApp.options.runtimeConfig.public[configKey] as any, {
       ...options,
-      // Don't add the admin token to the public key
+      // Don't add the admin token to the public config
       adminToken: null,
     })
 
@@ -165,7 +167,7 @@ export default defineNuxtModule<ModuleOptions>({
     await installModule('@nuxt/image', {
       provider: 'directus',
       directus: {
-        baseURL: useDirectusUrl('assets'),
+        baseURL: withTrailingSlash(useUrl(options.url, 'assets')),
       },
     })
 
@@ -260,10 +262,10 @@ export default defineNuxtModule<ModuleOptions>({
       })
     })
 
-    const adminUrl = useDirectusUrl('admin')
-    logger.info(`Directus Admin URL: ${adminUrl}`)
-
     if (options.devtools) {
+      const adminUrl = withTrailingSlash(useUrl(options.url, 'admin'))
+      logger.info(`Directus Admin URL: ${adminUrl}`)
+
       // @ts-expect-error - private API
       nuxtApp.hook('devtools:customTabs', (iframeTabs) => {
         iframeTabs.push({
@@ -277,6 +279,9 @@ export default defineNuxtModule<ModuleOptions>({
         })
       })
     }
+    else {
+      logger.info('Set devtools to true to view the Directus admin panel from inside Nuxt Devtools')
+    }
 
     if (options.adminToken) {
       logger.info('Generating Directus types')
@@ -286,7 +291,7 @@ export default defineNuxtModule<ModuleOptions>({
           filename: `types/${configKey}.d.ts`,
           getContents() {
             return generateTypes({
-              url: useDirectusUrl(),
+              url: withTrailingSlash(useUrl(options.url)),
               token: options.adminToken!,
               prefix: options.typePrefix ?? '',
             })
