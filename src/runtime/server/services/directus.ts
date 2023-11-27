@@ -3,7 +3,6 @@ import { authentication, createDirectus, rest } from '@directus/sdk'
 import type { H3Event } from 'h3'
 import { getCookie } from 'h3'
 import type { DirectusSchema } from 'nuxt/app'
-import { withTrailingSlash } from 'ufo'
 
 import { useUrl } from '../../utils'
 import { useRuntimeConfig } from '#imports'
@@ -13,13 +12,13 @@ export function useDirectusAccessToken(event: H3Event): string | undefined {
 }
 
 // TEST
-export function useDirectusUrl(path?: string): string {
-  return useUrl(useRuntimeConfig().public.directus.url, path ?? '')
+export function useDirectusUrl(path = ''): string {
+  return useUrl(useRuntimeConfig().public.directus.url, path)
 }
 
 // TEST generic type overwrites custom?
 export function useDirectus<T extends object = DirectusSchema>(token?: string): DirectusClient<T> & AuthenticationClient<T> & RestClient<T> {
-  const directus = createDirectus<T>(withTrailingSlash(useDirectusUrl()))
+  const directus = createDirectus<T>(useDirectusUrl())
     .with(authentication('json', { autoRefresh: false }))
     .with(rest())
 

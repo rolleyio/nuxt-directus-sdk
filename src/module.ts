@@ -4,7 +4,6 @@ import type { Query } from '@directus/sdk'
 
 import type { ImportPresetWithDeprecation } from '@nuxt/schema'
 import type { DirectusSchema } from 'nuxt/app'
-import { withTrailingSlash } from 'ufo'
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
 import { useUrl } from './runtime/utils'
@@ -167,7 +166,7 @@ export default defineNuxtModule<ModuleOptions>({
     await installModule('@nuxt/image', {
       provider: 'directus',
       directus: {
-        baseURL: withTrailingSlash(useUrl(options.url, 'assets')),
+        baseURL: useUrl(options.url, 'assets'),
       },
     })
 
@@ -263,7 +262,7 @@ export default defineNuxtModule<ModuleOptions>({
     })
 
     if (options.devtools) {
-      const adminUrl = withTrailingSlash(useUrl(options.url, 'admin'))
+      const adminUrl = useUrl(options.url, 'admin')
       logger.info(`Directus Admin URL: ${adminUrl}`)
 
       // @ts-expect-error - private API
@@ -291,7 +290,7 @@ export default defineNuxtModule<ModuleOptions>({
           filename: `types/${configKey}.d.ts`,
           getContents() {
             return generateTypes({
-              url: withTrailingSlash(useUrl(options.url)),
+              url: useUrl(options.url),
               token: options.adminToken!,
               prefix: options.typePrefix ?? '',
             })

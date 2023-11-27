@@ -48,7 +48,7 @@
     "@types/node": "^18.17.14",
     "changelogen": "^0.5.5",
     "nuxt": "^3.7.1",
-    "vitepress": "^1.0.0-rc.24",
+    "vitepress": "^1.0.0-rc.31",
     "vitest": "^0.34.2"
   },
   "unbuild": {

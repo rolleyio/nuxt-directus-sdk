@@ -109,7 +109,7 @@ export function useDirectusAuth(): DirectusAuth {
   async function loginWithProvider(provider: string, redirectOnLogin?: string) {
     await logout()
     const redirect = `${window.location.origin}${redirectOnLogin ?? router.currentRoute.value.fullPath}`
-    await navigateTo(`${useDirectusUrl()}/auth/login/${provider}?redirect=${encodeURIComponent(redirect)}`, { external: true })
+    await navigateTo(useDirectusUrl(`/auth/login/${provider}?redirect=${encodeURIComponent(redirect)}`), { external: true })
   }
 
   async function createUser(data: Partial<DirectusUsers>) {
@@ -121,23 +121,23 @@ export function useDirectusAuth(): DirectusAuth {
     return createUser(data)
   }
 
-  async function inviteUser(email: string, role: string, inviteUrl?: string | undefined): Promise<void> {
+  async function inviteUser(email: string, role: string, inviteUrl?: string | undefined) {
     return directus.request(directusInviteUser(email, role, inviteUrl))
   }
 
-  async function acceptUserInvite(token: string, password: string): Promise<void> {
+  async function acceptUserInvite(token: string, password: string) {
     return directus.request(directusAcceptUserInvite(token, password))
   }
 
-  async function passwordRequest(email: string, resetUrl?: string | undefined): Promise<void> {
+  async function passwordRequest(email: string, resetUrl?: string | undefined) {
     return directus.request(directusPasswordRequest(email, resetUrl))
   }
 
-  async function passwordReset(token: string, password: string): Promise<void> {
+  async function passwordReset(token: string, password: string) {
     return directus.request(directusPasswordReset(token, password))
   }
 
-  async function logout(): Promise<void> {
+  async function logout() {
     try {
       await directus.logout()
     }
@@ -148,9 +148,6 @@ export function useDirectusAuth(): DirectusAuth {
       tokens.expires.value = null
       tokens.expiresAt.value = null
     }
-
-    // TEST - can you use this hook?
-    await useNuxtApp().callHook('directus:loggedIn', user.value)
   }
 
   return {
