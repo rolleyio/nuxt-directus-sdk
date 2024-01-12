@@ -6,7 +6,6 @@ import { useUrl } from '../utils'
 import { useDirectusTokens } from './tokens'
 import { useRuntimeConfig } from '#app'
 
-// TEST
 export function useDirectusUrl(path = ''): string {
   return useUrl(useRuntimeConfig().public.directus.url, path)
 }
@@ -32,7 +31,6 @@ function createDirectusStorage(): AuthenticationStorage {
   } satisfies AuthenticationStorage
 }
 
-// TEST generic type overwrites custom?
 export function useDirectus<T extends object = DirectusSchema>(token?: string): DirectusClient<T> & AuthenticationClient<T> & RestClient<T> & WebSocketClient<T> {
   const directus = createDirectus<T>(useDirectusUrl())
     .with(authentication('json', {

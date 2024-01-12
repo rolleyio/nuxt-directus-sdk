@@ -11,12 +11,10 @@ export function useDirectusAccessToken(event: H3Event): string | undefined {
   return getCookie(event, useRuntimeConfig().public.directus.cookieNameAccessToken)
 }
 
-// TEST
 export function useDirectusUrl(path = ''): string {
   return useUrl(useRuntimeConfig().public.directus.url, path)
 }
 
-// TEST generic type overwrites custom?
 export function useDirectus<T extends object = DirectusSchema>(token?: string): DirectusClient<T> & AuthenticationClient<T> & RestClient<T> {
   const directus = createDirectus<T>(useDirectusUrl())
     .with(authentication('json', { autoRefresh: false }))
@@ -28,7 +26,6 @@ export function useDirectus<T extends object = DirectusSchema>(token?: string): 
   return directus
 }
 
-// TEST generic type overwrites custom?
 export function useAdminDirectus<T extends object = DirectusSchema>() {
   const config = useRuntimeConfig().directus
 

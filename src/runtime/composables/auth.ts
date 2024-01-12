@@ -10,13 +10,12 @@ import { computed, useState } from '#imports'
 import { navigateTo, useNuxtApp, useRouter, useRuntimeConfig } from '#app'
 
 // Auto types don't seem to be generating correctly here, so we need to specify the return type
-// Would be better if this wasn't needed
 export interface DirectusAuth {
   user: Ref<DirectusUsers | null>
   loggedIn: ComputedRef<boolean>
   readMe(): Promise<DirectusUsers | null>
   updateMe(data: Partial<DirectusUsers>): Promise<DirectusUsers | null>
-  login(email: string, password: string, options: LoginOptions & { redirect?: boolean | RouteLocationRaw }): Promise<{
+  login(email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }): Promise<{
     user: DirectusUsers | null
     accessToken: string
     refreshToken: string | null
@@ -43,17 +42,18 @@ export function useDirectusAuth(): DirectusAuth {
   const directus = useDirectus()
   const tokens = useDirectusTokens()
   const user = useDirectusUser()
+  const nuxtApp = useNuxtApp()
 
   const loggedIn = computed(() => user.value !== null)
 
   async function readMe() {
     try {
-      // TEST is this logic right? trying to minimize refresh tokens
-      if (!tokens.accessToken.value && !tokens.refreshToken.value)
-        throw new Error('No refresh token')
+      if (!tokens.accessToken.value) {
+        if (!tokens.refreshToken.value)
+          throw new Error('No refresh token')
 
-      if (!tokens.accessToken.value)
         await directus.refresh()
+      }
 
       user.value = await directus.request(directusReadMe(config.public.directus.fetchUserParams))
     }
@@ -61,8 +61,7 @@ export function useDirectusAuth(): DirectusAuth {
       user.value = null
     }
 
-    // TEST - can you use this hook?
-    await useNuxtApp().callHook('directus:loggedIn', user.value)
+    await nuxtApp.callHook('directus:loggedIn', user.value)
 
     return user.value
   }
@@ -78,7 +77,7 @@ export function useDirectusAuth(): DirectusAuth {
     return user.value
   }
 
-  async function login(email: string, password: string, options: LoginOptions & { redirect?: boolean | RouteLocationRaw } = {}) {
+  async function login(email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) {
     const response = await directus.login(email, password, options)
 
     if (!response.access_token)
@@ -86,12 +85,13 @@ export function useDirectusAuth(): DirectusAuth {
 
     await readMe()
 
-    // TEST
-    if (options.redirect) {
+    const redirect = options?.redirect ?? true
+
+    if (redirect !== false) {
       const route = router.currentRoute.value
 
-      if (typeof options.redirect !== 'boolean')
-        navigateTo(options.redirect)
+      if (typeof redirect !== 'boolean')
+        navigateTo(redirect)
       else if (route?.query?.redirect)
         navigateTo({ path: decodeURIComponent(route.query.redirect as string) })
     }
@@ -105,7 +105,6 @@ export function useDirectusAuth(): DirectusAuth {
     }
   }
 
-  // TEST this
   async function loginWithProvider(provider: string, redirectOnLogin?: string) {
     await logout()
     const redirect = `${window.location.origin}${redirectOnLogin ?? router.currentRoute.value.fullPath}`

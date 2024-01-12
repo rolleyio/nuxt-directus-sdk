@@ -6,7 +6,7 @@ import { useLogger } from '@nuxt/kit'
 import { authentication, createDirectus, readCollections, readFields, readRelations, rest } from '@directus/sdk'
 import { pascalCase } from 'change-case'
 
-import type { Collections, Field, GenerateOptions } from './generate.types'
+import type { Collections, Field, GenerateOptions } from './types'
 
 function warn(message: string) {
   useLogger('nuxt-directus-sdk').warn(message)
@@ -16,7 +16,6 @@ function joinTypes(types: string[]) {
   return types.map(x => `  ${x};`).join('\n')
 }
 
-// TODO: looks like the directus SDK might be getting it's own type generator, look to use that instead.
 // Previously used openapi-typescript but it wasn't flexible enough, this should work better?
 // BASED ON: https://github.com/maltejur/directus-extension-generate-types
 export async function generateTypes(options: GenerateOptions) {
@@ -28,6 +27,7 @@ export async function generateTypes(options: GenerateOptions) {
   Object.values(collections).forEach((collection) => {
     const name = collection.collection
     const typeName = name.startsWith('directus_') ? pascalCase(name) : pascalCase(`${options.prefix}${name}`)
+    const isSingleton = collection.meta?.singleton === true
 
     types += `export type ${typeName} = {\n`
     collection.fields.forEach((field) => {
@@ -46,7 +46,7 @@ export async function generateTypes(options: GenerateOptions) {
     })
     types += '};\n\n'
 
-    aliases.push(`${name}: ${typeName}[]`)
+    aliases.push(`${name}: ${typeName}${isSingleton ? '' : '[]'}`)
   })
 
   const allTypes = joinTypes(aliases)
@@ -89,10 +89,7 @@ export async function generateTypes(options: GenerateOptions) {
 function getType(field: Field) {
   let type: string = ''
 
-  if (field.relation && field.relation.type === 'many') {
-    type = 'any[]'
-  }
-  else if (field.relation) {
+  if (field.relation) {
     type += field.relation.collection ? pascalCase(field.relation.collection) : 'any'
     if (field.relation.type === 'many')
       type += '[]'
@@ -107,12 +104,6 @@ function getType(field: Field) {
     else type = 'string'
   }
 
-  if (field.schema?.is_nullable) {
-    if (field.relation)
-      type = `${type} | null`
-    else
-      type += ' | null'
-  }
   return type
 }
 
@@ -148,12 +139,12 @@ async function getCollections(options: GenerateOptions) {
   const relations = await directus.request(readRelations()) as Relation[]
   relations.forEach((relation) => {
     if (!relation.meta) {
-      warn(`Relation on field '${relation.field}' in collection '${relation.collection}' has no meta. Maybe missing a relation inside directus_relations table.`)
+      warn(`Not yet implemented: Relation on field '${relation.field}' in collection '${relation.collection}' has no meta. Maybe missing a relation inside directus_relations table.`)
       return
     }
 
     if (!relation.meta.one_collection) {
-      warn('No one collection')
+      warn('Not yet implemented: Missing one collection')
       return
     }
 

@@ -10,9 +10,11 @@ const { user, logout } = useDirectusAuth()
 const directus = useDirectus()
 
 async function testing() {
-  const test = await directus.request(readItem('cards', '', {
-    fields: ['id', { from: [{ avatar: ['id'] }] }],
+  const test = await directus.request(readItem('os_projects', '', {
+    fields: ['id', { organization: ['*'] }],
   }))
+
+  // test.organization?.owner?.auth_data
 
   const user = await directus.request(readUser('', {
     fields: ['id', { avatar: ['id'] }, { cards: [''] }],
