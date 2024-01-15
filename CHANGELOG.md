@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.0.0
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v0.0.16...v1.0.0)
+
+### 🚀 Enhancements
+
+- Added hook to get user when logged in ([688dc45](https://github.com/rolleyio/nuxt-directus-sdk/commit/688dc45))
+
+### 🏡 Chore
+
+- Updated readme ([16c5d44](https://github.com/rolleyio/nuxt-directus-sdk/commit/16c5d44))
+
+### ❤️ Contributors
+
+- Matthew Rollinson <matt@rolley.io>
+
 ## v0.0.16
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v0.0.15...v0.0.16)
