@@ -244,9 +244,8 @@ export default defineNuxtModule<ModuleOptions>({
     nuxtApp.hook('nitro:config', (nitroConfig) => {
       nitroConfig.alias = nitroConfig.alias || {}
 
-      nitroConfig.externals = defu(typeof nitroConfig.externals === 'object' ? nitroConfig.externals : {}, {
-        inline: [resolver.resolve('./runtime')],
-      })
+      // Adding this into nitro.nuxt.d.ts lets types work in the server? 
+      // /// <reference path="./directus.d.ts" />
       nitroConfig.imports = nitroConfig.imports || {}
       nitroConfig.imports.presets = nitroConfig.imports.presets || []
       nitroConfig.imports.presets.push(directusSdkImports)
