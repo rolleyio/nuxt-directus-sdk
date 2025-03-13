@@ -1,9 +1,8 @@
-import { defu } from 'defu'
-import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, installModule, tryResolveModule, useLogger } from '@nuxt/kit'
 import type { Query } from '@directus/sdk'
-
 import type { ImportPresetWithDeprecation } from '@nuxt/schema'
-import type { DirectusSchema } from 'nuxt/app'
+
+import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, hasNuxtModule, installModule, useLogger } from '@nuxt/kit'
+import { defu } from 'defu'
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
 import { useUrl } from './runtime/utils'
@@ -124,8 +123,8 @@ export default defineNuxtModule<ModuleOptions>({
     },
   },
   defaults: {
-    url: process.env.DIRECTUS_URL ?? '',
-    adminToken: process.env.DIRECTUS_ADMIN_TOKEN ?? '',
+    url: import.meta.env.DIRECTUS_URL ?? '',
+    adminToken: import.meta.env.DIRECTUS_ADMIN_TOKEN ?? '',
     devtools: true,
     fetchUser: true,
     fetchUserParams: {},
@@ -147,11 +146,6 @@ export default defineNuxtModule<ModuleOptions>({
       return
     }
 
-    if (!tryResolveModule('@directus/sdk')) {
-      logger.error('nuxt-directus-sdk requires @directus/sdk^13.0.0, install it with `npm i @directus/sdk`, `yarn add @directus/sdk`, `pnpm add @directus/sdk` or `bun install @directus/sdk`')
-      return
-    }
-
     nuxtApp.options.runtimeConfig[configKey] = { adminToken: options.adminToken ?? '' }
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
     nuxtApp.options.runtimeConfig.public[configKey] = defu(nuxtApp.options.runtimeConfig.public[configKey] as any, {
@@ -162,9 +156,9 @@ export default defineNuxtModule<ModuleOptions>({
 
     const resolver = createResolver(import.meta.url)
 
-    // Install nuxt image with directus provider
+    console.log(hasNuxtModule('@nuxt/image'))
+
     await installModule('@nuxt/image', {
-      provider: 'directus',
       directus: {
         baseURL: useUrl(options.url, 'assets'),
       },
@@ -244,8 +238,6 @@ export default defineNuxtModule<ModuleOptions>({
     nuxtApp.hook('nitro:config', (nitroConfig) => {
       nitroConfig.alias = nitroConfig.alias || {}
 
-      // Adding this into nitro.nuxt.d.ts lets types work in the server? 
-      // /// <reference path="./directus.d.ts" />
       nitroConfig.imports = nitroConfig.imports || {}
       nitroConfig.imports.presets = nitroConfig.imports.presets || []
       nitroConfig.imports.presets.push(directusSdkImports)
@@ -264,7 +256,6 @@ export default defineNuxtModule<ModuleOptions>({
       const adminUrl = useUrl(options.url, 'admin')
       logger.info(`Directus Admin URL: ${adminUrl}`)
 
-      // @ts-expect-error - private API
       nuxtApp.hook('devtools:customTabs', (iframeTabs) => {
         iframeTabs.push({
           name: 'directus',
@@ -294,7 +285,7 @@ export default defineNuxtModule<ModuleOptions>({
               prefix: options.typePrefix ?? '',
             })
           },
-        }).dst
+        }, { nitro: true, nuxt: true }).dst
 
         nuxtApp.hook('prepare:types', (options) => {
           options.references.push({ path: typesPath })
@@ -309,3 +300,12 @@ export default defineNuxtModule<ModuleOptions>({
     }
   },
 })
+
+declare module '@nuxt/schema' {
+  interface ConfigSchema {
+    directus?: ModuleOptions
+    publicRuntimeConfig?: {
+      directus?: ModuleOptions
+    }
+  }
+}

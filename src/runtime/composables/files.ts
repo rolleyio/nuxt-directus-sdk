@@ -1,6 +1,5 @@
 import type { Query } from '@directus/sdk'
 import { uploadFiles } from '@directus/sdk'
-import type { AllDirectusCollections, DirectusFiles } from 'nuxt/app'
 import { useDirectus, useDirectusUrl } from './directus'
 
 import { useDirectusTokens } from './tokens'
@@ -33,7 +32,7 @@ export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Q
   return await directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFiles[] | DirectusFiles
 }
 
-export function getDirectusFileUrl(fileId: string, options?: { token?: string | boolean }): string {
+export function getDirectusFileUrl(fileId: string, options?: { key?: string, token?: string | boolean }): string {
   const url = new URL(useDirectusUrl(`assets/${fileId}`))
 
   if (options?.token) {
@@ -46,6 +45,10 @@ export function getDirectusFileUrl(fileId: string, options?: { token?: string | 
       if (token)
         url.searchParams.append('access_token', token)
     }
+  }
+
+  if (options?.key) {
+    url.searchParams.append('key', options.key)
   }
 
   return url.href

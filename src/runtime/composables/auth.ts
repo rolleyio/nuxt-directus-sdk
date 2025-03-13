@@ -1,35 +1,34 @@
-import type { LoginOptions } from '@directus/sdk'
-import { acceptUserInvite as directusAcceptUserInvite, createUser as directusCreateUser, inviteUser as directusInviteUser, passwordRequest as directusPasswordRequest, passwordReset as directusPasswordReset, readMe as directusReadMe, updateMe as directusUpdateMe } from '@directus/sdk'
+import type { ComputedRef, Ref } from '#imports'
+import type { RouteLocationRaw } from '#vue-router'
 
-import type { DirectusUsers } from 'nuxt/app'
+import type { LoginOptions } from '@directus/sdk'
+import { navigateTo, useNuxtApp, useRouter, useRuntimeConfig } from '#app'
+import { computed, useState } from '#imports'
+import { acceptUserInvite as directusAcceptUserInvite, createUser as directusCreateUser, inviteUser as directusInviteUser, passwordRequest as directusPasswordRequest, passwordReset as directusPasswordReset, readMe as directusReadMe, updateMe as directusUpdateMe } from '@directus/sdk'
 import { useDirectus } from './directus'
 import { useDirectusTokens } from './tokens'
-import type { RouteLocationRaw } from '#vue-router'
-import type { ComputedRef, Ref } from '#imports'
-import { computed, useState } from '#imports'
-import { navigateTo, useNuxtApp, useRouter, useRuntimeConfig } from '#app'
 
 // Auto types don't seem to be generating correctly here, so we need to specify the return type
 export interface DirectusAuth {
   user: Ref<DirectusUsers | null>
   loggedIn: ComputedRef<boolean>
-  readMe(): Promise<DirectusUsers | null>
-  updateMe(data: Partial<DirectusUsers>): Promise<DirectusUsers | null>
-  login(email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }): Promise<{
+  readMe: () => Promise<DirectusUsers | null>
+  updateMe: (data: Partial<DirectusUsers>) => Promise<DirectusUsers | null>
+  login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<{
     user: DirectusUsers | null
     accessToken: string
     refreshToken: string | null
     expires: number | null
     expiresAt: number | null
   }>
-  loginWithProvider(provider: string, redirectOnLogin?: string): Promise<void>
-  logout(): Promise<void>
-  createUser(data: Partial<DirectusUsers>): Promise<DirectusUsers>
-  register(data: Partial<DirectusUsers>): Promise<DirectusUsers>
-  inviteUser(email: string, role: string, inviteUrl?: string | undefined): Promise<void>
-  acceptUserInvite(token: string, password: string): Promise<void>
-  passwordRequest(email: string, resetUrl?: string | null | undefined): Promise<void>
-  passwordReset(token: string, password: string): Promise<void>
+  loginWithProvider: (provider: string, redirectOnLogin?: string) => Promise<void>
+  logout: () => Promise<void>
+  createUser: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
+  register: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
+  inviteUser: (email: string, role: string, inviteUrl?: string | undefined) => Promise<void>
+  acceptUserInvite: (token: string, password: string) => Promise<void>
+  passwordRequest: (email: string, resetUrl?: string | null | undefined) => Promise<void>
+  passwordReset: (token: string, password: string) => Promise<void>
 }
 
 export function useDirectusUser(): Ref<DirectusUsers | null> {

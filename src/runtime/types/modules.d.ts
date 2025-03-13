@@ -1,8 +1,7 @@
 import type { DirectusUsers } from 'nuxt/app'
 
-declare module "#app" {
+declare module '#app' {
   interface RuntimeNuxtHooks {
-    "directus:loggedIn": (user: DirectusUsers | null) => void;
+    'directus:loggedIn': (user: DirectusUsers | null) => void
   }
 }
-

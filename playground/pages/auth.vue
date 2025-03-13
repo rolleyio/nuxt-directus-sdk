@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { readItem, readMe, readUser } from '@directus/sdk'
-import { definePageMeta, useDirectus, useDirectusAuth, useRouter } from '#imports'
 
 definePageMeta({
   middleware: ['auth'],

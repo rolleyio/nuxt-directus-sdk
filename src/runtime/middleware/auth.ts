@@ -5,7 +5,6 @@ import {
   useRuntimeConfig,
 } from '#imports'
 
-// FIXME: this isn't correctly generating the auth middleware type (showing as invalid middleware)
 export default defineNuxtRouteMiddleware((to) => {
   const config = useRuntimeConfig()
   const user = useDirectusUser()

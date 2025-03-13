@@ -1,12 +1,12 @@
 import type {
   Collection as DirectusCollection,
   Relation,
-} from '@directus/shared/types'
-import { useLogger } from '@nuxt/kit'
-import { authentication, createDirectus, readCollections, readFields, readRelations, rest } from '@directus/sdk'
-import { pascalCase } from 'change-case'
-
+} from '@directus/types'
 import type { Collections, Field, GenerateOptions } from './types'
+import { authentication, createDirectus, readCollections, readFields, readRelations, rest } from '@directus/sdk'
+import { useLogger } from '@nuxt/kit'
+
+import { pascalCase } from 'change-case'
 
 function warn(message: string) {
   useLogger('nuxt-directus-sdk').warn(message)

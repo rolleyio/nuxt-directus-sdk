@@ -1,1 +1,1 @@
-export { useDirectusUrl, useDirectus, useAdminDirectus, useDirectusAccessToken } from './directus'
+export { useAdminDirectus, useDirectus, useDirectusAccessToken, useDirectusUrl } from './directus'

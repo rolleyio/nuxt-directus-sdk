@@ -1,10 +1,9 @@
-import type { AuthenticationClient, AuthenticationStorage, DirectusClient, RestClient, WebSocketClient } from '@directus/sdk'
-import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
-import type { DirectusSchema } from 'nuxt/app'
+import type { AuthenticationStorage } from '@directus/sdk'
+import { useRuntimeConfig } from '#app'
 
+import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
 import { useUrl } from '../utils'
 import { useDirectusTokens } from './tokens'
-import { useRuntimeConfig } from '#app'
 
 export function useDirectusUrl(path = ''): string {
   return useUrl(useRuntimeConfig().public.directus.url, path)
@@ -31,8 +30,8 @@ function createDirectusStorage(): AuthenticationStorage {
   } satisfies AuthenticationStorage
 }
 
-export function useDirectus<T extends object = DirectusSchema>(token?: string): DirectusClient<T> & AuthenticationClient<T> & RestClient<T> & WebSocketClient<T> {
-  const directus = createDirectus<T>(useDirectusUrl())
+export function useDirectus(token?: string) {
+  const directus = createDirectus<DirectusSchema>(useDirectusUrl())
     .with(authentication('json', {
       storage: createDirectusStorage(),
       autoRefresh: token !== '',

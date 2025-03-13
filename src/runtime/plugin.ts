@@ -1,7 +1,7 @@
-import auth from './middleware/auth'
-import { useDirectus } from './composables/directus'
-import { useDirectusAuth } from './composables/auth'
 import { addRouteMiddleware, defineNuxtPlugin, refreshNuxtData, useRoute, useRuntimeConfig } from '#app'
+import { useDirectusAuth } from './composables/auth'
+import { useDirectus } from './composables/directus'
+import auth from './middleware/auth'
 
 export default defineNuxtPlugin(async (nuxtApp) => {
   const route = useRoute()
@@ -29,7 +29,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   await fetchUser()
 
   nuxtApp.hook('page:start', async () => {
-    if (process.client)
+    if (import.meta.client)
       await fetchUser()
   })
 
