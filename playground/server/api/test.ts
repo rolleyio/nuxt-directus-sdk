@@ -1,7 +1,7 @@
-export default defineEventHandler(async (req) => {
+export default defineEventHandler(async (_req) => {
   const directus = useAdminDirectus()
 
-  const test = await directus.request(readItems('modules_landing_content', {}))
+  const _test = await directus.request(readItems('modules_landing_content', {}))
 
   return {
     message: 'Hello world',

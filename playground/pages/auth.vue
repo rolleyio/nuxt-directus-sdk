@@ -9,13 +9,13 @@ const { user, logout } = useDirectusAuth()
 const directus = useDirectus()
 
 async function testing() {
-  const test = await directus.request(readItem('os_projects', '', {
+  const _test = await directus.request(readItem('os_projects', '', {
     fields: ['id', { organization: ['*'] }],
   }))
 
   // test.organization?.owner?.auth_data
 
-  const user = await directus.request(readUser('', {
+  const _user = await directus.request(readUser('', {
     fields: ['id', { avatar: ['id'] }, { cards: [''] }],
   }))
 
@@ -24,7 +24,7 @@ async function testing() {
 }
 
 async function testGet() {
-  const test = await directus.request(readMe())
+  const _test = await directus.request(readMe())
   // console.log(test)
 }
 

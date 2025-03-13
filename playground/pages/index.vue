@@ -11,15 +11,15 @@ const form = reactive({
 })
 
 async function loginForm() {
-  const test = await login(form.email, form.password, { redirect: false })
+  const _test = await login(form.email, form.password, { redirect: false })
 
-  console.log(test)
+  // console.log(test)
 }
 
 async function testServer() {
-  const res = await $fetch('/api')
+  const _res = await $fetch('/api')
 
-  console.log(res)
+  // console.log(res)
 }
 </script>
 

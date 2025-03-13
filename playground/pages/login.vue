@@ -9,7 +9,7 @@ const form = reactive({
 })
 
 async function loginForm() {
-  const test = await login(form.email, form.password, { redirect: false })
+  const _test = await login(form.email, form.password, { redirect: false })
 
   // console.log(test)
 }

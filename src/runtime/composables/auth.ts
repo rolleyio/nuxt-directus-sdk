@@ -56,7 +56,7 @@ export function useDirectusAuth(): DirectusAuth {
 
       user.value = await directus.request(directusReadMe({ fields: config.public.directus.fetchUserFields }))
     }
-    catch (e) {
+    catch {
       user.value = null
     }
 

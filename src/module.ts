@@ -1,7 +1,7 @@
 import type { Query } from '@directus/sdk'
 import type { ImportPresetWithDeprecation } from '@nuxt/schema'
 
-import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, hasNuxtModule, installModule, useLogger } from '@nuxt/kit'
+import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, installModule, useLogger } from '@nuxt/kit'
 import { defu } from 'defu'
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'

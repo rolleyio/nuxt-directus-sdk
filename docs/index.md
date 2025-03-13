@@ -34,4 +34,3 @@ features:
     title: Easy to use
     details: Seems obvious, but we need 6 features.
 ---
-
