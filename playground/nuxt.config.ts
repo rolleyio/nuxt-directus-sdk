@@ -3,9 +3,7 @@ export default defineNuxtConfig({
 
   directus: {
     devtools: true,
-    fetchUserParams: {
-      fields: ['first_name', 'last_name'],
-    },
+    fetchUserFields: ['first_name', 'last_name'],
   },
 
   typescript: {

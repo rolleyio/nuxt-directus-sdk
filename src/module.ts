@@ -32,9 +32,9 @@ export interface ModuleOptions {
   /**
    * Directus Auth Options
    * @default {}
-   * @type Query<DirectusSchema, DirectusSchema['directus_users']>
+   * @type Query<DirectusSchema, DirectusSchema['directus_users']>['fields']
    */
-  fetchUserParams?: Query<DirectusSchema, DirectusSchema['directus_users']>
+  fetchUserFields?: Query<DirectusSchema, DirectusSchema['directus_users']>['fields']
 
   /**
    * Add Directus Admin in Nuxt Devtools
@@ -127,7 +127,7 @@ export default defineNuxtModule<ModuleOptions>({
     adminToken: import.meta.env.DIRECTUS_ADMIN_TOKEN ?? '',
     devtools: true,
     fetchUser: true,
-    fetchUserParams: {},
+    fetchUserFields: [],
     cookieNameAccessToken: 'directus_access_token',
     cookieNameRefreshToken: 'directus_refresh_token',
 
@@ -155,8 +155,6 @@ export default defineNuxtModule<ModuleOptions>({
     })
 
     const resolver = createResolver(import.meta.url)
-
-    console.log(hasNuxtModule('@nuxt/image'))
 
     await installModule('@nuxt/image', {
       directus: {

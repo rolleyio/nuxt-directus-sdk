@@ -54,7 +54,7 @@ export function useDirectusAuth(): DirectusAuth {
         await directus.refresh()
       }
 
-      user.value = await directus.request(directusReadMe(config.public.directus.fetchUserParams))
+      user.value = await directus.request(directusReadMe({ fields: config.public.directus.fetchUserFields }))
     }
     catch (e) {
       user.value = null
@@ -71,7 +71,7 @@ export function useDirectusAuth(): DirectusAuth {
     if (!currentUser?.id)
       throw new Error('No user available')
 
-    user.value = await directus.request(directusUpdateMe(data, config.public.directus.fetchUserParams))
+    user.value = await directus.request(directusUpdateMe(data, { fields: config.public.directus.fetchUserFields }))
 
     return user.value
   }
