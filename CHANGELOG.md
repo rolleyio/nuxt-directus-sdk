@@ -1,5 +1,22 @@
 # Changelog
 
+## v2.1.0
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v1.0.0...v2.1.0)
+
+### 🚀 Enhancements
+
+- Added types for nitro and key into getDirectusFileUrl ([849b8ed](https://github.com/rolleyio/nuxt-directus-sdk/commit/849b8ed))
+
+### 🏡 Chore
+
+- **release:** V1.0.1 ([b630156](https://github.com/rolleyio/nuxt-directus-sdk/commit/b630156))
+- Switched to fetchUserFields as fetchUserParams didn't really make sense for readMe/updateMe ([12aaf1d](https://github.com/rolleyio/nuxt-directus-sdk/commit/12aaf1d))
+
+### ❤️ Contributors
+
+- Matthew Rollinson <matt@rolley.io>
+
 ## v1.0.1
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v1.0.0...v1.0.1)
