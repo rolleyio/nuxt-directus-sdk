@@ -32,31 +32,51 @@ export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Q
   return await directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFiles[] | DirectusFiles
 }
 
-export type DirectusThumbnailFormat = 'jpg' | 'png' | 'webp' | 'tiff' | 'avif';
-export type DirectusThumbnailFit = 'cover' | 'contain' | 'inside' | 'outside';
+export type DirectusThumbnailFormat = 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'
+export type DirectusThumbnailFit = 'cover' | 'contain' | 'inside' | 'outside'
 
 export interface DirectusThumbnailOptions {
-  width?: number;
-  height?: number;
-  quality?: number;
-  fit?: DirectusThumbnailFit;
-  format?: DirectusThumbnailFormat;
-  withoutEnlargement?: boolean;
-  key?: string;
-  token?: string | boolean;
+  width?: number
+  height?: number
+  quality?: number
+  fit?: DirectusThumbnailFit
+  format?: DirectusThumbnailFormat
+  withoutEnlargement?: boolean
+  key?: string
+  token?: string | boolean
 }
 
 export function getDirectusFileUrl(file: string | DirectusFiles, options?: DirectusThumbnailOptions): string {
   const fileId = typeof file === 'string' ? file : file.id
   const url = new URL(useDirectusUrl(`assets/${fileId}`))
 
-  if (options?.width) { url.searchParams.append('width', options.width.toFixed(0)) }
-  if (options?.height) { url.searchParams.append('height', options.height.toFixed(0)) }
-  if (options?.quality) { url.searchParams.append('quality', options.quality.toFixed(0)) }
-  if (options?.withoutEnlargement) { url.searchParams.append('withoutEnlargement', 'true') }
-  if (options?.fit) { url.searchParams.append('fit', options.fit) }
-  if (options?.format) { url.searchParams.append('format', options.format) }
-  if (options?.key) { url.searchParams.append('key', options.key) }
+  if (options?.width) {
+    url.searchParams.append('width', options.width.toFixed(0))
+  }
+
+  if (options?.height) {
+    url.searchParams.append('height', options.height.toFixed(0))
+  }
+
+  if (options?.quality) {
+    url.searchParams.append('quality', options.quality.toFixed(0))
+  }
+
+  if (options?.withoutEnlargement) {
+    url.searchParams.append('withoutEnlargement', 'true')
+  }
+
+  if (options?.fit) {
+    url.searchParams.append('fit', options.fit)
+  }
+
+  if (options?.format) {
+    url.searchParams.append('format', options.format)
+  }
+
+  if (options?.key) {
+    url.searchParams.append('key', options.key)
+  }
 
   if (options?.token !== false) {
     const token = typeof options?.token === 'string' ? options.token : useDirectusTokens().accessToken.value
