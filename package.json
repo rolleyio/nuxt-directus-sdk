@@ -1,7 +1,7 @@
 {
   "name": "nuxt-directus-sdk",
   "type": "module",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A nuxt module that uses the directus SDK",
   "author": "Matthew Rollinson <matt@rolley.io>",
   "license": "MIT",
@@ -22,7 +22,7 @@
     "dev": "nuxi dev playground",
     "dev:build": "nuxi build playground",
     "dev:prepare": "nuxt-module-build --stub && nuxi prepare playground",
-    "release": "npm run lint && npm run prepack && changelogen --release && npm publish && git push --follow-tags",
+    "release": "npm run lint && npm run prepack &&  npm publish && git push --follow-tags",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest watch",

@@ -122,7 +122,7 @@ async function getCollections(options: GenerateOptions) {
       .forEach((collection) => {
         collections[collection.collection] = { ...collection, fields: [] } as any
       })
-  
+
     const fields = await directus.request(readFields()) as Field[] | null
     fields?.sort((a, b) => a.field.localeCompare(b.field))
       .forEach((field) => {
@@ -130,35 +130,35 @@ async function getCollections(options: GenerateOptions) {
           warn(`${field.collection} not found`)
           return
         }
-  
+
         collections[field.collection].fields.push(field)
-  
+
         if (collections[field.collection].fields.length === 0)
           delete collections[field.collection]
       })
-  
+
     const relations = await directus.request(readRelations()) as Relation[] | null
     relations?.forEach((relation) => {
       if (!relation.meta) {
         warn(`Not yet implemented: Relation on field '${relation.field}' in collection '${relation.collection}' has no meta. Maybe missing a relation inside directus_relations table.`)
         return
       }
-  
+
       if (!relation.meta.one_collection) {
         warn('Not yet implemented: Missing one collection')
         return
       }
-  
+
       const oneField = collections[relation.meta.one_collection]?.fields.find(field => field.field === relation.meta!.one_field)
       const manyField = collections[relation.meta.many_collection]?.fields.find(field => field.field === relation.meta!.many_field)
-  
+
       if (oneField) {
         oneField.relation = {
           type: 'many',
           collection: relation.meta.many_collection,
         }
       }
-  
+
       if (manyField) {
         manyField.relation = {
           type: 'one',
@@ -166,7 +166,8 @@ async function getCollections(options: GenerateOptions) {
         }
       }
     })
-  } catch (error) {
+  }
+  catch (error) {
     warn(`Failed to fetch collections: ${error}`)
   }
 
