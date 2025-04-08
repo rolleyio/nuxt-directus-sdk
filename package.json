@@ -33,6 +33,7 @@
   "dependencies": {
     "@directus/sdk": "^19.0.1",
     "@directus/types": "^13.0.0",
+    "@directus/visual-editing": "^1.0.1",
     "@nuxt/image": "^1.9.0",
     "@nuxt/kit": "^3.16.0",
     "change-case": "^4.1.2",

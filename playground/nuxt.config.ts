@@ -1,9 +1,12 @@
 export default defineNuxtConfig({
   modules: ['../src/module'],
+  devtools: {
+    enabled: false,
+  },
 
   directus: {
-    devtools: true,
-    fetchUserFields: ['first_name', 'last_name'],
+    devtools: false,
+    fetchUserFields: ['id', 'first_name', 'last_name'],
   },
 
   typescript: {

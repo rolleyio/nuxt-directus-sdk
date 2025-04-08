@@ -3,6 +3,12 @@
 //   middleware: ['auth'],
 // })
 
+const directus = useDirectus()
+
+const { data } = await useAsyncData(async () => {
+  return directus.request(readItem('blogs', 1))
+})
+
 const { user, login, loggedIn } = useDirectusAuth()
 
 const form = reactive({
@@ -25,7 +31,11 @@ async function testServer() {
 
 <template>
   <div>
-    <p>{{ user }}</p>
+    <DirectusVisualEditor v-if="data" collection="blogs" :item="data.id" fields="title" mode="modal">
+      <p>
+        {{ data.title }}
+      </p>
+    </DirectusVisualEditor>
 
     <form
       v-if="!loggedIn"
