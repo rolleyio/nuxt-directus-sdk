@@ -28,9 +28,13 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
   await fetchUser()
 
+  let loadedUser = false
+
   nuxtApp.hook('page:start', async () => {
-    if (import.meta.client)
+    if (import.meta.client && !loadedUser) {
       await fetchUser()
+      loadedUser = true
+    }
   })
 
   addRouteMiddleware('auth', auth)
