@@ -37,6 +37,8 @@ async function testServer() {
       </p>
     </DirectusVisualEditor>
 
+    <p>{{ user }}</p>
+
     <form
       v-if="!loggedIn"
       class="space-y-3 mb-4"

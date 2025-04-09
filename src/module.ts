@@ -255,7 +255,7 @@ export default defineNuxtModule<ModuleOptions>({
       const adminUrl = useUrl(options.url, 'admin')
       logger.info(`Directus Admin URL: ${adminUrl}`)
 
-      nuxtApp.hook('devtools:customTabs', (iframeTabs) => {
+      nuxtApp.hook('devtools:customTabs' as any, (iframeTabs: any) => {
         iframeTabs.push({
           name: 'directus',
           title: 'Directus',
