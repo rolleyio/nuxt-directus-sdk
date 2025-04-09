@@ -24,6 +24,10 @@ export function useDirectus(token?: string) {
   return directus
 }
 
+export function useUserDirectus(event: H3Event) {
+  return useDirectus(useDirectusAccessToken(event))
+}
+
 export function useAdminDirectus() {
   const config = useRuntimeConfig().directus
 

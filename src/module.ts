@@ -243,6 +243,7 @@ export default defineNuxtModule<ModuleOptions>({
         from: resolver.resolve('./runtime/server/services'),
         imports: [
           'useDirectus',
+          'useUserDirectus',
           'useAdminDirectus',
           'useDirectusUrl',
           'useDirectusAccessToken',
