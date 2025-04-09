@@ -2,7 +2,7 @@
 import type { PrimaryKey } from '@directus/types'
 import { setAttr } from '@directus/visual-editing'
 import { isVisualEditorPage } from '../composables/preview'
-import { Slot } from '../utils/slot'
+import { Slot } from '../utils'
 
 type SingleDirectusCollection = DirectusSchema[T][0]
 type FieldKey = keyof SingleDirectusCollection
