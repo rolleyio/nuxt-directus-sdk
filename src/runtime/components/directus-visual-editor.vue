@@ -27,7 +27,7 @@ const directusAttr = computed(() => {
 })
 
 const attributes = computed(() => {
-  if (!isVisualEditorPage()) {
+  if (!isVisualEditorPage(useRoute())) {
     return null
   }
 

@@ -12,8 +12,8 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   // ** Live Preview Bits **
   // Check if we are in preview mode
   const preview = route.query.preview && route.query.preview === 'true'
-  const livePreview = isVisualEditorPage()
   const token = route.query.token as string | undefined
+  const livePreview = isVisualEditorPage(route)
 
   // If we are in preview mode, we need to use the token from the query string
   if (preview && token) {
