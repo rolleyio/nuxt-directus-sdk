@@ -1,19 +1,27 @@
-import { addRouteMiddleware, defineNuxtPlugin, refreshNuxtData, useRoute, useRuntimeConfig } from '#app'
+import { defineNuxtPlugin, refreshNuxtData, useRoute, useRuntimeConfig } from '#app'
 import { apply, remove } from '@directus/visual-editing'
 import { useDirectusAuth } from './composables/auth'
 import { useDirectus } from './composables/directus'
 import { isVisualEditorPage } from './composables/preview'
-import auth from './middleware/auth'
+import { useDirectusTokens } from './composables/tokens'
 
 export default defineNuxtPlugin(async (nuxtApp) => {
   const route = useRoute()
   const config = useRuntimeConfig()
+  const tokens = useDirectusTokens()
+  const directusAuth = useDirectusAuth()
 
   // ** Live Preview Bits **
   // Check if we are in preview mode
   const preview = route.query.preview && route.query.preview === 'true'
   const token = route.query.token as string | undefined
   const livePreview = isVisualEditorPage(route)
+
+  // Setup the API path token
+  if (!tokens.directusUrl.value || tokens.directusUrl.value !== config.public.directus.url) {
+    tokens.directusUrl.value = config.public.directus.url
+    await directusAuth.logout()
+  }
 
   // If we are in preview mode, we need to use the token from the query string
   if (preview && token) {
@@ -40,7 +48,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
   async function fetchUser() {
     if (config.public.directus.fetchUser)
-      await useDirectusAuth().readMe()
+      await directusAuth.readMe()
   }
 
   await fetchUser()
@@ -53,6 +61,4 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       loadedUser = true
     }
   })
-
-  addRouteMiddleware('auth', auth)
 })

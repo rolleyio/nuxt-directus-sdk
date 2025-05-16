@@ -1,7 +1,7 @@
 import type { Query } from '@directus/sdk'
 import type { ImportPresetWithDeprecation } from '@nuxt/schema'
 
-import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addTypeTemplate, createResolver, defineNuxtModule, installModule, useLogger } from '@nuxt/kit'
+import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addTypeTemplate, createResolver, defineNuxtModule, installModule, useLogger } from '@nuxt/kit'
 import { defu } from 'defu'
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
@@ -21,6 +21,13 @@ export interface ModuleOptions {
    * @type string
    */
   adminToken?: string
+
+  /**
+   * Require users to be logged in on all pages
+   *
+   * @default false
+   */
+  enableGlobalAuthMiddleware?: boolean
 
   /**
    * Fetch the user serverside
@@ -126,6 +133,7 @@ export default defineNuxtModule<ModuleOptions>({
     url: import.meta.env.DIRECTUS_URL ?? '',
     adminToken: import.meta.env.DIRECTUS_ADMIN_TOKEN ?? '',
     devtools: true,
+    enableGlobalAuthMiddleware: false,
     fetchUser: true,
     fetchUserFields: [],
     cookieNameAccessToken: 'directus_access_token',
@@ -164,6 +172,13 @@ export default defineNuxtModule<ModuleOptions>({
 
     // Add plugin to load user before bootstrap
     addPlugin(resolver.resolve('./runtime/plugin'))
+
+    // Add route middleware
+    addRouteMiddleware({
+      name: 'auth',
+      path: resolver.resolve('./runtime/middleware/auth'),
+      global: options.enableGlobalAuthMiddleware,
+    })
 
     // Add composables
     addImportsDir(resolver.resolve('./runtime/composables'))
@@ -216,6 +231,7 @@ export default defineNuxtModule<ModuleOptions>({
         'readProviders',
         'readFolder',
         'readFolders',
+        'uploadFiles',
         'updateField',
         'updateFile',
         'updateFiles',

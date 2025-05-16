@@ -9,13 +9,14 @@ function directusCookie<T>(name: string, cookieOptions: CookieOptions): CookieRe
   if (nuxtApp._cookies[name])
     return nuxtApp._cookies[name]
 
-  const cookie = useCookie<T>(name, cookieOptions)
+  const cookie = useCookie<T>(name, cookieOptions as any)
 
   nuxtApp._cookies[name] = cookie
   return cookie
 }
 
 export interface DirectusTokens {
+  directusUrl: CookieRef<string | null>
   accessToken: CookieRef<string | null>
   refreshToken: CookieRef<string | null>
   expires: CookieRef<number | null>
@@ -29,6 +30,13 @@ export function useDirectusTokens(): DirectusTokens {
     sameSite: config.cookieSameSite as any,
     secure: config.cookieSecure,
     domain: config.cookieDomain,
+  }
+
+  function directusUrl(): CookieRef<string | null> {
+    return directusCookie('directus_url', {
+      ...sharedOptions,
+      maxAge: config.cookieMaxAge,
+    })
   }
 
   function accessToken(): CookieRef<string | null> {
@@ -60,6 +68,7 @@ export function useDirectusTokens(): DirectusTokens {
   }
 
   return {
+    directusUrl: directusUrl(),
     accessToken: accessToken(),
     refreshToken: refreshToken(),
     expires: expires(),

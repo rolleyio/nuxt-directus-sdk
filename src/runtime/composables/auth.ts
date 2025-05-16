@@ -47,6 +47,12 @@ export function useDirectusAuth(): DirectusAuth {
 
   async function readMe() {
     try {
+      if (tokens.directusUrl.value !== config.public.directus.url) {
+        tokens.directusUrl.value = config.public.directus.url
+        await logout()
+        throw new Error('Directus URL changed')
+      }
+
       if (!tokens.accessToken.value) {
         if (!tokens.refreshToken.value)
           throw new Error('No refresh token')
