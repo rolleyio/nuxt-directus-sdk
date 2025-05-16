@@ -24,46 +24,46 @@ export interface DirectusTokens {
 }
 
 export function useDirectusTokens(): DirectusTokens {
-  const config = useRuntimeConfig().public.directus
+  const cookies = useRuntimeConfig().public.directus.auth.cookies
 
   const sharedOptions: CookieOptions = {
-    sameSite: config.cookieSameSite as any,
-    secure: config.cookieSecure,
-    domain: config.cookieDomain,
+    sameSite: cookies.sameSite as any,
+    secure: cookies.secure,
+    domain: cookies.domain,
   }
 
   function directusUrl(): CookieRef<string | null> {
     return directusCookie('directus_url', {
       ...sharedOptions,
-      maxAge: config.cookieMaxAge,
+      maxAge: cookies.maxAge,
     })
   }
 
   function accessToken(): CookieRef<string | null> {
-    return directusCookie(config.cookieNameAccessToken, {
+    return directusCookie(cookies.accessToken, {
       ...sharedOptions,
-      maxAge: config.cookieMaxAge,
+      maxAge: cookies.maxAge,
     })
   }
 
   function refreshToken(): CookieRef<string | null> {
-    return directusCookie(config.cookieNameRefreshToken, {
+    return directusCookie(cookies.refreshToken, {
       ...sharedOptions,
-      maxAge: config.cookieMaxAgeRefreshToken,
+      maxAge: cookies.maxAgeRefreshToken,
     })
   }
 
   function expires(): CookieRef<number | null> {
     return directusCookie('directus_access_expires', {
       ...sharedOptions,
-      maxAge: config.cookieMaxAge,
+      maxAge: cookies.maxAge,
     })
   }
 
   function expiresAt(): CookieRef<number | null> {
     return directusCookie('directus_access_expires_at', {
       ...sharedOptions,
-      maxAge: config.cookieMaxAge,
+      maxAge: cookies.maxAge,
     })
   }
 

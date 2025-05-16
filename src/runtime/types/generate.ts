@@ -29,7 +29,7 @@ export async function generateTypes(options: GenerateOptions) {
     const typeName = name.startsWith('directus_') ? pascalCase(name) : pascalCase(`${options.prefix}${name}`)
     const isSingleton = collection.meta?.singleton === true
 
-    types += `export type ${typeName} = {\n`
+    types += `interface ${typeName} {\n`
     collection.fields.forEach((field) => {
       if (field.meta?.interface?.startsWith('presentation-'))
         return
@@ -58,20 +58,8 @@ export async function generateTypes(options: GenerateOptions) {
   }))
 
   return `
-  declare module '#app' {
-    ${types.replaceAll('export type', 'type')}
-
-    interface AllDirectusCollections {
-      ${allTypes}
-    };
-
-    interface DirectusSchema {
-      ${schemaTypes}
-    };
-  }
-  
   declare global {
-    ${types.replaceAll('export type', 'type')}
+    ${types}
 
     interface AllDirectusCollections {
       ${allTypes}
@@ -139,13 +127,13 @@ async function getCollections(options: GenerateOptions) {
 
     const relations = await directus.request(readRelations()) as Relation[] | null
     relations?.forEach((relation) => {
+      // TODO: warn(`Not yet implemented: Relation on field '${relation.field}' in collection '${relation.collection}' has no meta. Maybe missing a relation inside directus_relations table.`)
       if (!relation.meta) {
-        warn(`Not yet implemented: Relation on field '${relation.field}' in collection '${relation.collection}' has no meta. Maybe missing a relation inside directus_relations table.`)
         return
       }
 
+      // TODO: warn('Not yet implemented: Missing one collection')
       if (!relation.meta.one_collection) {
-        warn('Not yet implemented: Missing one collection')
         return
       }
 

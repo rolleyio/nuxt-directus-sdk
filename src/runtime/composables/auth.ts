@@ -60,7 +60,7 @@ export function useDirectusAuth(): DirectusAuth {
         await directus.refresh()
       }
 
-      user.value = await directus.request(directusReadMe({ fields: config.public.directus.fetchUserFields }))
+      user.value = await directus.request(directusReadMe({ fields: config.public.directus.auth?.readMeFields ?? ['*'] }))
     }
     catch {
       user.value = null
@@ -77,13 +77,13 @@ export function useDirectusAuth(): DirectusAuth {
     if (!currentUser?.id)
       throw new Error('No user available')
 
-    user.value = await directus.request(directusUpdateMe(data, { fields: config.public.directus.fetchUserFields }))
+    user.value = await directus.request(directusUpdateMe(data, { fields: config.public.directus.auth?.readMeFields ?? ['*'] }))
 
     return user.value
   }
 
-  async function login(email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) {
-    const response = await directus.login(email, password, options)
+  async function login(email: string, password: string, options?: Omit<LoginOptions, 'mode'> & { redirect?: boolean | RouteLocationRaw }) {
+    const response = await directus.login(email, password, {...options, mode: 'json'})
 
     if (!response.access_token)
       throw new Error('Login failed, please check your credentials.')
@@ -99,6 +99,9 @@ export function useDirectusAuth(): DirectusAuth {
         navigateTo(redirect)
       else if (route?.query?.redirect)
         navigateTo({ path: decodeURIComponent(route.query.redirect as string) })
+      else {
+        navigateTo(config.public.directus.auth?.redirect?.home ?? '/')
+      }
     }
 
     return {
@@ -144,6 +147,7 @@ export function useDirectusAuth(): DirectusAuth {
   async function logout() {
     try {
       await directus.logout()
+      await navigateTo(config.public.directus.auth?.redirect?.logout ?? config.public.directus.auth?.redirect?.home ?? '/')
     }
     finally {
       user.value = null

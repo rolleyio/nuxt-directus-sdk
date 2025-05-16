@@ -34,7 +34,7 @@ export function useDirectus(token?: string) {
   const directus = createDirectus<DirectusSchema>(useDirectusUrl())
     .with(authentication('json', {
       storage: createDirectusStorage(),
-      autoRefresh: token !== '',
+      autoRefresh: token === '',
     }))
     .with(rest())
     .with(realtime())

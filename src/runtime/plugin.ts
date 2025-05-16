@@ -47,7 +47,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   }
 
   async function fetchUser() {
-    if (config.public.directus.fetchUser)
+    if (config.public.directus.auth?.enabled ?? true)
       await directusAuth.readMe()
   }
 

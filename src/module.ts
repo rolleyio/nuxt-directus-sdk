@@ -23,27 +23,6 @@ export interface ModuleOptions {
   adminToken?: string
 
   /**
-   * Require users to be logged in on all pages
-   *
-   * @default false
-   */
-  enableGlobalAuthMiddleware?: boolean
-
-  /**
-   * Fetch the user serverside
-   *
-   * @default true
-   */
-  fetchUser?: boolean
-
-  /**
-   * Directus Auth Options
-   * @default {}
-   * @type Query<DirectusSchema, DirectusSchema['directus_users']>['fields']
-   */
-  fetchUserFields?: Query<DirectusSchema, DirectusSchema['directus_users']>['fields']
-
-  /**
    * Add Directus Admin in Nuxt Devtools
    *
    * @default true
@@ -51,69 +30,110 @@ export interface ModuleOptions {
   devtools?: boolean
 
   /**
-   * Token Cookie Name
-   * @type string
-   * @default 'directus_access_token'
+   * Auth options
    */
-  cookieNameAccessToken?: string
+  auth?: {
+    /**
+     * Enable auth middleware
+     * @default true
+     * @type boolean
+     *
+     */
+    enabled?: boolean
 
-  /**
-   * Refresh Token Cookie Name
-   * @type string
-   * @default 'directus_refresh_token'
-   */
-  cookieNameRefreshToken?: string
+    /**
+     * Enable global auth middleware
+     * @default false
+     * @type boolean
+     */
+    enableGlobalAuthMiddleware?: boolean
 
-  /**
-   * The max age for auth cookies in seconds.
-   * This should match your directus env key AUTH_TOKEN_TTL
-   * @type string
-   * @default 900
-   */
-  cookieMaxAge?: number
+    /**
+     * ReadMe fields to fetch
+     * @default []
+     * @type Query<AllDirectusCollections, AllDirectusCollections['directus_users']>['fields']
+     */
+    readMeFields?: Query<AllDirectusCollections, AllDirectusCollections['directus_users']>['fields']
 
-  /**
-   * The max age for auth cookies in seconds.
-   * This should match your directus env key REFRESH_TOKEN_TTL
-   * @type string
-   * @default 604800
-   */
-  cookieMaxAgeRefreshToken?: number
+    cookies?: {
+      /**
+       * Session token cookie name
+       * @default 'directus_access_token'
+       */
+      accessToken?: string
+      /**
+       * Refresh token cookie name
+       * @default 'directus_refresh_token'
+       */
+      refreshToken?: string
+      /**
+       * Logged in token cookie name
+       * @default 'directus_logged_in'
+       */
+      loggedInToken?: string
+      /**
+       * Session token cookie max age
+       * @default 900
+       */
+      maxAge?: number
+      /**
+       * Refresh token cookie max age
+       * @default 604800
+       */
+      maxAgeRefreshToken?: number
 
-  /**
-   * The SameSite attribute for auth cookies.
-   * @type string
-   * @default 'lax'
-   */
-  cookieSameSite?: 'strict' | 'lax' | 'none' | undefined
+      /**
+       * SameSite cookie attribute
+       * @default 'lax'
+       */
+      sameSite?: 'lax' | 'strict' | 'none'
+      /**
+       * Secure cookie attribute
+       * @default false
+       * @type boolean
+       */
+      secure?: boolean
+      /**
+       * Domain cookie attribute
+       * @default undefined
+       * @type string | undefined
+       */
+      domain?: string | undefined
+    }
 
-  /**
-   * The Secure attribute for auth cookies.
-   * @type boolean
-   * @default false
-   */
-  cookieSecure?: boolean
+    redirect?: {
+      /**
+       * Redirect to home page after login
+       * @default '/home'
+       */
+      home?: string
+      /**
+       * Redirect to login page after logout
+       * @default '/auth/login'
+       */
+      login?: string
+      /**
+       * Redirect to login page after logout
+       * @default '/auth/login'
+       */
+      logout?: string
+    }
+  }
 
-  /**
-   * The Domain attribute for auth cookies.
-   * @type string
-   * @default undefined
-   */
-  cookieDomain?: boolean
-
-  /**
-   * The prefix to your custom types
-   * @type string
-   * @default ''
-   */
-  typePrefix?: string
-
-  /**
-   * A path to redirect a user to when not logged in using auth middleware
-   * @type string
-   * @default '/login'
-   */
-  loginPath?: string
+  types?: {
+    /**
+     * Generate types for your Directus instance
+     * @type boolean
+     * @default true
+     */
+    enabled?: boolean
+    /**
+     * The prefix to your custom types
+     * @type string
+     * @default ''
+     */
+    prefix?: string
+  }
 }
 
 const configKey = 'directus'
@@ -133,20 +153,32 @@ export default defineNuxtModule<ModuleOptions>({
     url: import.meta.env.DIRECTUS_URL ?? '',
     adminToken: import.meta.env.DIRECTUS_ADMIN_TOKEN ?? '',
     devtools: true,
-    enableGlobalAuthMiddleware: false,
-    fetchUser: true,
-    fetchUserFields: [],
-    cookieNameAccessToken: 'directus_access_token',
-    cookieNameRefreshToken: 'directus_refresh_token',
+    types: {
+      enabled: true,
+      prefix: '',
+    },
+    auth: {
+      enabled: true,
+      enableGlobalAuthMiddleware: false,
+      readMeFields: [],
+      cookies: {
+        accessToken: 'directus_access_token',
+        refreshToken: 'directus_refresh_token',
+        loggedInToken: 'directus_logged_in',
 
-    // Nuxt Cookies Docs @ https://nuxt.com/docs/api/composables/use-cookie
-    cookieMaxAge: 900,
-    cookieMaxAgeRefreshToken: 604800,
-    cookieSameSite: 'lax',
-    cookieSecure: false,
-    cookieDomain: undefined,
-    typePrefix: '',
-    loginPath: '/login',
+        maxAge: 900,
+        maxAgeRefreshToken: 604800,
+        // Nuxt Cookies Docs @ https://nuxt.com/docs/api/composables/use-cookie
+        sameSite: 'lax',
+        secure: false,
+        domain: undefined,
+      },
+      redirect: {
+        home: '/',
+        login: '/account/login',
+        logout: '/',
+      },
+    },
   },
   async setup(options, nuxtApp) {
     if (!options.url) {
@@ -154,13 +186,11 @@ export default defineNuxtModule<ModuleOptions>({
       return
     }
 
-    nuxtApp.options.runtimeConfig[configKey] = { adminToken: options.adminToken ?? '' }
+    nuxtApp.options.runtimeConfig[configKey] = options
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
-    nuxtApp.options.runtimeConfig.public[configKey] = defu(nuxtApp.options.runtimeConfig.public[configKey] as any, {
-      ...options,
-      // Don't add the admin token to the public config
-      adminToken: null,
-    })
+    nuxtApp.options.runtimeConfig.public[configKey] = defu(nuxtApp.options.runtimeConfig.public[configKey] as any, options)
+
+    delete nuxtApp.options.runtimeConfig.public[configKey].adminToken
 
     const resolver = createResolver(import.meta.url)
 
@@ -177,7 +207,7 @@ export default defineNuxtModule<ModuleOptions>({
     addRouteMiddleware({
       name: 'auth',
       path: resolver.resolve('./runtime/middleware/auth'),
-      global: options.enableGlobalAuthMiddleware,
+      global: options.auth?.enableGlobalAuthMiddleware,
     })
 
     // Add composables
@@ -287,31 +317,33 @@ export default defineNuxtModule<ModuleOptions>({
       logger.info('Set devtools to true to view the Directus admin panel from inside Nuxt Devtools')
     }
 
-    if (options.adminToken) {
-      logger.info('Generating Directus types')
-
-      try {
-        const typesPath = addTypeTemplate({
-          filename: `types/${configKey}.d.ts`,
-          getContents() {
-            return generateTypes({
-              url: useUrl(options.url),
-              token: options.adminToken!,
-              prefix: options.typePrefix ?? '',
-            })
-          },
-        }, { nitro: true, nuxt: true }).dst
-
-        nuxtApp.hook('prepare:types', (options) => {
-          options.references.push({ path: typesPath })
-        })
+    if (options.types?.enabled) {
+      if (!options.adminToken) {
+        logger.warn('Directus types generation is disabled, set the admin token in the config or .env file as DIRECTUS_ADMIN_TOKEN')
       }
-      catch (error) {
-        logger.error((error as Error).message)
+      else {
+        logger.info('Generating Directus types')
+
+        try {
+          const typesPath = addTypeTemplate({
+            filename: `types/${configKey}.d.ts`,
+            getContents() {
+              return generateTypes({
+                url: useUrl(options.url),
+                token: options.adminToken!,
+                prefix: options.types?.prefix ?? '',
+              })
+            },
+          }, { nitro: true, nuxt: true }).dst
+
+          nuxtApp.hook('prepare:types', (options) => {
+            options.references.push({ path: typesPath })
+          })
+        }
+        catch (error) {
+          logger.error((error as Error).message)
+        }
       }
-    }
-    else {
-      logger.info('Add DIRECTUS_ADMIN_TOKEN to the .env file to generate directus types')
     }
   },
 })
@@ -320,7 +352,7 @@ declare module '@nuxt/schema' {
   interface ConfigSchema {
     directus?: ModuleOptions
     publicRuntimeConfig?: {
-      directus?: ModuleOptions
+      directus?: Omit<ModuleOptions, 'adminToken'>
     }
   }
 }

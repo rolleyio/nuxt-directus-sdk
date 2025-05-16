@@ -23,7 +23,7 @@ async function loginForm() {
 }
 
 async function testServer() {
-  const _res = await $fetch('/api')
+  const _res = await $fetch('/api/test')
 
   // console.log(res)
 }

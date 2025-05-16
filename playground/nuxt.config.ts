@@ -6,7 +6,9 @@ export default defineNuxtConfig({
 
   directus: {
     devtools: false,
-    fetchUserFields: ['id', 'first_name', 'last_name'],
+    auth: {
+      readMeFields: ['id', 'first_name', 'last_name', 'email'],
+    },
   },
 
   typescript: {

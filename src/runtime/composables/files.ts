@@ -29,13 +29,15 @@ export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Q
     formData.set('file', file)
   })
 
-  return await directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFiles[] | DirectusFiles
+  return directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFiles[] | DirectusFiles
 }
 
 export type DirectusThumbnailFormat = 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'
 export type DirectusThumbnailFit = 'cover' | 'contain' | 'inside' | 'outside'
 
-export interface DirectusThumbnailOptions {
+export interface DirectusFileOptions {
+  filename?: string
+  download?: boolean
   width?: number
   height?: number
   quality?: number
@@ -46,10 +48,14 @@ export interface DirectusThumbnailOptions {
   token?: string | boolean
 }
 
-export function getDirectusFileUrl(file: string | DirectusFiles, options?: DirectusThumbnailOptions): string {
+export function getDirectusFileUrl(file: string | DirectusFiles, options?: DirectusFileOptions): string {
   const fileId = typeof file === 'string' ? file : file.id
-  const url = new URL(useDirectusUrl(`assets/${fileId}`))
+  const url = new URL(useDirectusUrl(`assets/${fileId}${options?.filename ? `/${options.filename}` : ''}`))
 
+  if (options?.download) {
+    url.searchParams.append('download', 'true')
+  }
+  
   if (options?.width) {
     url.searchParams.append('width', options.width.toFixed(0))
   }
