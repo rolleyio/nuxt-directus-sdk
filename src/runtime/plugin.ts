@@ -20,7 +20,11 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   // Setup the API path token
   if (!tokens.directusUrl.value || tokens.directusUrl.value !== config.public.directus.url) {
     tokens.directusUrl.value = config.public.directus.url
-    await directusAuth.logout()
+
+    // If the URL changed and previously logged in, then we need to logout
+    if (tokens.accessToken.value || tokens.refreshToken.value) {
+      await directusAuth.logout()
+    }
   }
 
   // If we are in preview mode, we need to use the token from the query string

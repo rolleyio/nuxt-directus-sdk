@@ -31,7 +31,7 @@ async function testServer() {
 
 <template>
   <div>
-    <DirectusVisualEditor v-if="data" collection="blogs" :item="data.id" fields="title" mode="modal">
+    <DirectusVisualEditor v-if="data" collection="blogs" :item="data.id" :fields="['title', 'author']" mode="popover">
       <p>
         {{ data.title }}
       </p>

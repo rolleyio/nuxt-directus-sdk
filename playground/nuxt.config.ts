@@ -15,5 +15,13 @@ export default defineNuxtConfig({
     includeWorkspace: true,
   },
 
+  routeRules: {
+    '/**': {
+      headers: {
+        'x-frame-options': false,
+      },
+    },
+  },
+
   compatibilityDate: '2025-03-13',
 })
