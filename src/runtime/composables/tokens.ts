@@ -24,7 +24,7 @@ export interface DirectusTokens {
 }
 
 export function useDirectusTokens(): DirectusTokens {
-  const cookies = useRuntimeConfig().public.directus.auth.cookies
+  const { cookies } = useRuntimeConfig().public.directus.auth
 
   const sharedOptions: CookieOptions = {
     sameSite: cookies.sameSite as any,
