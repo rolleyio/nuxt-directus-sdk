@@ -186,11 +186,11 @@ export default defineNuxtModule<ModuleOptions>({
       return
     }
 
-    nuxtApp.options.runtimeConfig[configKey] = options
+    nuxtApp.options.runtimeConfig[configKey] = options as any
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
     nuxtApp.options.runtimeConfig.public[configKey] = defu(nuxtApp.options.runtimeConfig.public[configKey] as any, options)
 
-    delete nuxtApp.options.runtimeConfig.public[configKey].adminToken
+    delete (nuxtApp.options.runtimeConfig.public[configKey] as any).adminToken
 
     const resolver = createResolver(import.meta.url)
 
