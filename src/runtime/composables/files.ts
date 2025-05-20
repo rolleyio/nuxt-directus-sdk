@@ -55,7 +55,7 @@ export function getDirectusFileUrl(file: string | DirectusFiles, options?: Direc
   if (options?.download) {
     url.searchParams.append('download', 'true')
   }
-  
+
   if (options?.width) {
     url.searchParams.append('width', options.width.toFixed(0))
   }
