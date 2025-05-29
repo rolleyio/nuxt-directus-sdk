@@ -22,7 +22,7 @@ export interface DirectusAuth {
     expiresAt: number | null
   }>
   loginWithProvider: (provider: string, redirectOnLogin?: string) => Promise<void>
-  logout: () => Promise<void>
+  logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
   createUser: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
   register: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
   inviteUser: (email: string, role: string, inviteUrl?: string | undefined) => Promise<void>
@@ -47,12 +47,6 @@ export function useDirectusAuth(): DirectusAuth {
 
   async function readMe() {
     try {
-      if (tokens.directusUrl.value !== config.public.directus.url) {
-        tokens.directusUrl.value = config.public.directus.url
-        await logout()
-        throw new Error('Directus URL changed')
-      }
-
       if (!tokens.accessToken.value) {
         if (!tokens.refreshToken.value)
           throw new Error('No refresh token')
@@ -146,10 +140,9 @@ export function useDirectusAuth(): DirectusAuth {
     return directus.request(directusPasswordReset(token, password))
   }
 
-  async function logout() {
+  async function logout(redirect: boolean | RouteLocationRaw = true) {
     try {
       await directus.logout()
-      await navigateTo(config.public.directus.auth?.redirect?.logout ?? config.public.directus.auth?.redirect?.home ?? '/')
     }
     finally {
       user.value = null
@@ -157,6 +150,13 @@ export function useDirectusAuth(): DirectusAuth {
       tokens.accessToken.value = null
       tokens.expires.value = null
       tokens.expiresAt.value = null
+    }
+
+    if (redirect) {
+      const defaultRedirect = config.public.directus.auth?.redirect?.logout ?? config.public.directus.auth?.redirect?.home ?? '/'
+      const redirectTo = typeof redirect === 'boolean' ? defaultRedirect : redirect
+
+      await navigateTo(redirectTo)
     }
   }
 
