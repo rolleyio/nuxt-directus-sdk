@@ -37,7 +37,7 @@ export async function generateTypes(options: GenerateOptions) {
       types += '  '
       types += field.field.includes('-') ? `"${field.field}"` : field.field
 
-      if (field.schema?.is_nullable)
+      if (field.schema?.is_nullable && field.meta?.required !== true)
         types += '?'
 
       types += ': '

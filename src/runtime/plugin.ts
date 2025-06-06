@@ -1,8 +1,6 @@
-import { defineNuxtPlugin, refreshNuxtData, useRoute, useRuntimeConfig } from '#app'
-import { apply, remove } from '@directus/visual-editing'
+import { defineNuxtPlugin, refreshNuxtData, useCookie, useRoute, useRuntimeConfig } from '#app'
 import { useDirectusAuth } from './composables/auth'
 import { useDirectus } from './composables/directus'
-import { isVisualEditorPage } from './composables/preview'
 import { useDirectusTokens } from './composables/tokens'
 
 export default defineNuxtPlugin(async (nuxtApp) => {
@@ -15,7 +13,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   // Check if we are in preview mode
   const preview = route.query.preview && route.query.preview === 'true'
   const token = route.query.token as string | undefined
-  const livePreview = isVisualEditorPage(route)
 
   // Setup the API path token
   if (!tokens.directusUrl.value || tokens.directusUrl.value !== config.public.directus.url) {
@@ -36,20 +33,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
     nuxtApp.hook('page:finish', () => {
       refreshNuxtData()
-    })
-  }
-
-  if (livePreview) {
-    nuxtApp.hook('page:start', async () => {
-      if (import.meta.client) {
-        remove()
-      }
-    })
-
-    nuxtApp.hook('page:finish', () => {
-      if (import.meta.client) {
-        apply({ directusUrl: config.public.directus.url })
-      }
     })
   }
 
