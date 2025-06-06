@@ -4,7 +4,7 @@ import { computed, useRoute } from '#imports'
 import { apply, setAttr } from '@directus/visual-editing'
 import { Slot } from '../utils'
 
-type SingleDirectusCollection = DirectusSchema[T][0]
+type SingleDirectusCollection = DirectusSchema[T] extends Array<any> ? DirectusSchema[T][0] : DirectusSchema[T]
 type FieldKey = keyof SingleDirectusCollection
 
 const props = defineProps<{
