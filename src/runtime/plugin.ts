@@ -1,6 +1,7 @@
 import { defineNuxtPlugin, refreshNuxtData, useCookie, useRoute, useRuntimeConfig } from '#app'
+import { apply, remove } from '@directus/visual-editing'
 import { useDirectusAuth } from './composables/auth'
-import { useDirectus } from './composables/directus'
+import { useDirectus, useDirectusPreview } from './composables/directus'
 import { useDirectusTokens } from './composables/tokens'
 
 export default defineNuxtPlugin(async (nuxtApp) => {
@@ -8,11 +9,37 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   const config = useRuntimeConfig()
   const tokens = useDirectusTokens()
   const directusAuth = useDirectusAuth()
+  const directusPreview = useDirectusPreview()
 
-  // ** Live Preview Bits **
-  // Check if we are in preview mode
-  const preview = route.query.preview && route.query.preview === 'true'
-  const token = route.query.token as string | undefined
+  // Live Preview/Visual Editor
+  directusPreview.value = !!(route.query.preview === 'true' || route.query.preview === '1') || !!(route.query['visual-editor'] === 'true' || route.query['visual-editor'] === '1')
+
+  if (directusPreview.value) {
+    if (config.public.directus.visualEditor) {
+      nuxtApp.hook('page:start', async () => {
+        if (import.meta.client) {
+          remove()
+        }
+      })
+
+      nuxtApp.hook('page:finish', () => {
+        if (import.meta.client) {
+          apply({ directusUrl: config.public.directus.url })
+        }
+      })
+    }
+
+    // If we are in preview mode, we need to use the token from the query string
+    const token = route.query.token as string | undefined
+
+    if (token) {
+      useDirectus().setToken(token)
+
+      nuxtApp.hook('page:finish', () => {
+        refreshNuxtData()
+      })
+    }
+  }
 
   // Setup the API path token
   if (!tokens.directusUrl.value || tokens.directusUrl.value !== config.public.directus.url) {
@@ -25,15 +52,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         useCookie(config.public.directus.auth.cookies.refreshToken).value = null
       })
     }
-  }
-
-  // If we are in preview mode, we need to use the token from the query string
-  if (preview && token) {
-    useDirectus().setToken(token)
-
-    nuxtApp.hook('page:finish', () => {
-      refreshNuxtData()
-    })
   }
 
   async function fetchUser() {

@@ -30,6 +30,13 @@ export interface ModuleOptions {
   devtools?: boolean
 
   /**
+   * Add Directus Visual Editor capabilities
+   *
+   * @default true
+   */
+  visualEditor?: boolean
+
+  /**
    * Auth options
    */
   auth?: {
@@ -153,6 +160,7 @@ export default defineNuxtModule<ModuleOptions>({
     url: import.meta.env.DIRECTUS_URL ?? '',
     adminToken: import.meta.env.DIRECTUS_ADMIN_TOKEN ?? '',
     devtools: true,
+    visualEditor: true,
     types: {
       enabled: true,
       prefix: '',

@@ -1,9 +1,14 @@
+import type { Ref } from '#imports'
 import type { AuthenticationStorage } from '@directus/sdk'
 import { useRuntimeConfig } from '#app'
 
 import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
 import { useUrl } from '../utils'
 import { useDirectusTokens } from './tokens'
+
+export function useDirectusPreview(): Ref<boolean> {
+  return useState('directus.preview', () => false)
+}
 
 export function useDirectusUrl(path = ''): string {
   return useUrl(useRuntimeConfig().public.directus.url, path)
