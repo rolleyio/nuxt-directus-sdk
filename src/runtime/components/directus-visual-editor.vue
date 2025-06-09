@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T extends keyof DirectusSchema">
 import type { PrimaryKey } from '@directus/types'
-import { computed, useRoute } from '#imports'
+import { computed, useRoute, useRuntimeConfig } from '#imports'
 import { apply, setAttr } from '@directus/visual-editing'
 import { Slot } from '../utils'
 
