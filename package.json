@@ -1,7 +1,7 @@
 {
   "name": "nuxt-directus-sdk",
   "type": "module",
-  "version": "3.0.9",
+  "version": "3.1.0",
   "description": "A Directus nuxt module that uses the Directus SDK",
   "author": "Matthew Rollinson <matt@rolley.io>",
   "license": "MIT",

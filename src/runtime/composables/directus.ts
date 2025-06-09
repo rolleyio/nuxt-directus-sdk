@@ -1,6 +1,6 @@
 import type { Ref } from '#imports'
 import type { AuthenticationStorage } from '@directus/sdk'
-import { useRuntimeConfig } from '#app'
+import { useRuntimeConfig, useState } from '#imports'
 
 import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
 import { useUrl } from '../utils'

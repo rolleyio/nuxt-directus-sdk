@@ -8,6 +8,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   const route = useRoute()
   const config = useRuntimeConfig()
   const tokens = useDirectusTokens()
+  const directus = useDirectus()
   const directusAuth = useDirectusAuth()
   const directusPreview = useDirectusPreview()
 
@@ -33,7 +34,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     const token = route.query.token as string | undefined
 
     if (token) {
-      useDirectus().setToken(token)
+      directus.setToken(token)
 
       nuxtApp.hook('page:finish', () => {
         refreshNuxtData()
