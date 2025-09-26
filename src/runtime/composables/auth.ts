@@ -77,7 +77,7 @@ export function useDirectusAuth(): DirectusAuth {
   }
 
   async function login(email: string, password: string, options?: Omit<LoginOptions, 'mode'> & { redirect?: boolean | RouteLocationRaw }) {
-    const response = await directus.login(email, password, { ...options, mode: 'json' })
+    const response = await directus.login({ email, password }, { ...options, mode: 'json' })
 
     if (!response.access_token)
       throw new Error('Login failed, please check your credentials.')

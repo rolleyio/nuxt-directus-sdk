@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="T extends keyof DirectusSchema">
 import type { PrimaryKey } from '@directus/types'
-import { computed } from '#imports'
-import { setAttr } from '@directus/visual-editing'
+import { computed, onBeforeUnmount, onMounted, ref, useRuntimeConfig } from '#imports'
+import { apply, setAttr } from '@directus/visual-editing'
 import { useDirectusPreview } from '../composables/directus'
 import { Slot } from '../utils'
 
@@ -15,7 +15,9 @@ const props = defineProps<{
   mode?: 'drawer' | 'modal' | 'popover'
 }>()
 
+const config = useRuntimeConfig()
 const directusPreview = useDirectusPreview()
+const editorElement = ref<HTMLElement | null>(null)
 
 const directusAttr = computed(() => {
   const data: Record<any, any> = {}
@@ -38,10 +40,28 @@ const attributes = computed(() => {
     'data-directus': directusAttr.value,
   }
 })
+
+onMounted(async () => {
+  if (!config.public.directus.visualEditor || !editorElement.value || import.meta.server) {
+    return
+  }
+
+  const applied = await apply({ directusUrl: config.public.directus.url })
+
+  if (!applied) {
+    return
+  }
+
+  applied.enable()
+
+  onBeforeUnmount(() => {
+    applied.remove()
+  })
+})
 </script>
 
 <template>
-  <Slot v-bind="attributes">
+  <Slot ref="editorElement" v-bind="attributes">
     <slot />
   </Slot>
 </template>

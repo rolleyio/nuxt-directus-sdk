@@ -152,8 +152,7 @@ export default defineNuxtModule<ModuleOptions>({
     version,
     configKey,
     compatibility: {
-      nuxt: '^3.0.0',
-      bridge: false,
+      nuxt: '^4.0.0',
     },
   },
   defaults: {
