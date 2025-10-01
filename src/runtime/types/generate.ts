@@ -223,14 +223,8 @@ function parseCollectionsFromOpenAPI(openapiTypes: string, prefix: string): Coll
 }
 
 function buildDirectusInterfaces(collections: CollectionInfo[], openapiTypes: string): string {
-  // Build a map of schema names to type names for transforming relations
-  const schemaToTypeName = new Map<string, string>()
-  collections.forEach(({ openapiTypeName, typeName }) => {
-    schemaToTypeName.set(openapiTypeName, typeName)
-  })
-
   // Transform the OpenAPI types to remove union types from relation fields
-  const transformedTypes = transformRelationFields(openapiTypes, schemaToTypeName)
+  const transformedTypes = transformRelationFields(openapiTypes)
 
   // Build type aliases and collection interfaces
   let typeAliases = '\n'
@@ -281,7 +275,7 @@ export {};
  * Transform relation fields to remove union types
  * Changes `field?: string | components["schemas"]["Users"]` to `field?: components["schemas"]["Users"]`
  */
-function transformRelationFields(openapiTypes: string, _schemaMap: Map<string, string>): string {
+function transformRelationFields(openapiTypes: string): string {
   // Remove union types from relation fields
   // Pattern: (string | number | components["schemas"]["Users"]) -> components["schemas"]["Users"]
   // Pattern: string | components["schemas"]["Users"] -> components["schemas"]["Users"]
