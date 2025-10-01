@@ -86,8 +86,9 @@ export function useDirectusAuth(): DirectusAuth {
   }
 
   async function loginWithProvider(provider: string, redirectOnLogin?: string) {
-    await logout()
+    // Build redirect URL for after SSO authentication
     const redirect = `${window.location.origin}${redirectOnLogin ?? router.currentRoute.value.fullPath}`
+    // Redirect to Directus SSO endpoint - session cookie will be set by Directus
     await navigateTo(useDirectusUrl(`/auth/login/${provider}?redirect=${encodeURIComponent(redirect)}`), { external: true })
   }
 

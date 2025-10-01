@@ -1,6 +1,6 @@
 # Session-Based Authentication Guide
 
-This module uses Directus's **session-based authentication**, which is ideal for cross-domain setups (e.g., `app.qudos.co.uk` ↔ `api.qudos.co.uk`).
+This module uses Directus's **session-based authentication**, which is ideal for cross-domain setups (e.g., `app.example.com` ↔ `api.example.com`).
 
 ## Why Session Authentication?
 
@@ -23,7 +23,7 @@ export default defineNuxtConfig({
   modules: ['nuxt-directus-sdk'],
 
   directus: {
-    url: process.env.DIRECTUS_URL, // e.g., 'https://api.qudos.co.uk'
+    url: process.env.DIRECTUS_URL, // e.g., 'https://api.example.com'
 
     auth: {
       autoRefresh: true, // Default - automatically refreshes tokens
@@ -39,7 +39,7 @@ export default defineNuxtConfig({
 Create a `.env` file:
 
 ```env
-DIRECTUS_URL=https://api.qudos.co.uk
+DIRECTUS_URL=https://api.example.com
 DIRECTUS_ADMIN_TOKEN=your_admin_token_here
 ```
 
@@ -57,13 +57,13 @@ AUTH_PROVIDERS=local
 AUTH_LOCAL_MODE=session
 
 # Session Cookie Configuration for Cross-Domain
-SESSION_COOKIE_DOMAIN=.qudos.co.uk
+SESSION_COOKIE_DOMAIN=.example.com
 SESSION_COOKIE_SECURE=true
 SESSION_COOKIE_SAME_SITE=None
 
 # CORS Configuration
 CORS_ENABLED=true
-CORS_ORIGIN=https://app.qudos.co.uk
+CORS_ORIGIN=https://app.example.com
 CORS_CREDENTIALS=true
 
 # WebSocket/Realtime Configuration (if using realtime features)
@@ -72,7 +72,7 @@ WEBSOCKETS_REST_AUTH=handshake
 WEBSOCKETS_REST_AUTH_TIMEOUT=30000
 
 # Optional: Refresh Token Configuration (if not using session mode exclusively)
-REFRESH_TOKEN_COOKIE_DOMAIN=.qudos.co.uk
+REFRESH_TOKEN_COOKIE_DOMAIN=.example.com
 REFRESH_TOKEN_COOKIE_SECURE=true
 REFRESH_TOKEN_COOKIE_SAME_SITE=None
 ```
@@ -80,7 +80,7 @@ REFRESH_TOKEN_COOKIE_SAME_SITE=None
 ### Configuration Explained
 
 #### Authentication & Cookies
-- **`SESSION_COOKIE_DOMAIN`**: Set to your root domain with a leading dot (e.g., `.qudos.co.uk`) to allow cookies to work across subdomains
+- **`SESSION_COOKIE_DOMAIN`**: Set to your root domain with a leading dot (e.g., `.example.com`) to allow cookies to work across subdomains
 - **`SESSION_COOKIE_SECURE`**: Must be `true` for production (requires HTTPS)
 - **`SESSION_COOKIE_SAME_SITE`**: Set to `None` for cross-domain cookies (requires `SECURE=true`)
 
@@ -102,9 +102,166 @@ REFRESH_TOKEN_COOKIE_SAME_SITE=None
 
 | Frontend | Backend | SESSION_COOKIE_DOMAIN |
 |----------|---------|----------------------|
-| app.qudos.co.uk | api.qudos.co.uk | .qudos.co.uk |
-| example.com | api.example.com | .example.com |
-| app.mysite.io | directus.mysite.io | .mysite.io |
+| app.example.com | api.example.com | .example.com |
+| www.mysite.io | directus.mysite.io | .mysite.io |
+| portal.acme.org | cms.acme.org | .acme.org |
+
+### Multi-Environment Setup (Staging + Production)
+
+#### Scenario 1: Single Directus, Multiple Frontends
+
+If **one Directus instance** serves **multiple frontend domains** (e.g., `api.example.com` powers both `staging.example.com` and `app.example.com`, or even completely different domains like `staging.test-domain.com`), you need to:
+
+**1. Don't set a shared cookie domain** - Each domain gets its own session:
+
+```env
+# Directus .env
+# DO NOT set SESSION_COOKIE_DOMAIN - let it default to the API domain
+# SESSION_COOKIE_DOMAIN=  # Leave unset or comment out
+
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAME_SITE=None
+
+# Allow multiple origins (comma-separated)
+CORS_ORIGIN=https://staging.example.com,https://app.example.com,https://staging.test-domain.com
+CORS_CREDENTIALS=true
+```
+
+**2. How it works:**
+- When `staging.example.com` logs in → gets a session cookie for `api.example.com`
+- When `app.example.com` logs in → gets a separate session cookie for `api.example.com`
+- When `staging.test-domain.com` logs in → gets a separate session cookie for `api.example.com`
+- Sessions are isolated per frontend domain
+- Users must log in separately to each frontend
+
+✅ **Benefits:**
+- One Directus instance serves multiple apps (even across different domains)
+- Sessions isolated per frontend
+- Different users/data per environment
+- Cost-effective (single backend)
+- Perfect for multi-tenant or white-label applications
+
+⚠️ **Important**: Each frontend has its own session. A user logged into staging won't be logged into production automatically.
+
+**Visual Example:**
+```
+                    api.example.com (Single Directus)
+                            |
+                    +-------+-------+-------+
+                    |               |       |
+         staging.example.com  app.example.com  staging.test-domain.com
+         (Staging)            (Production)      (Alt Staging)
+                    |               |               |
+            Session Cookie   Session Cookie   Session Cookie
+            (isolated)       (isolated)       (isolated)
+```
+
+**Key Point:** By NOT setting `SESSION_COOKIE_DOMAIN`, cookies default to the API domain (`api.example.com`) but the browser tracks which frontend domain made the request, effectively isolating sessions. This works even across completely different domains!
+
+#### Scenario 2: Multiple Environments with Shared Parent Domain
+
+If you have multiple environments sharing the same parent domain, you have two options:
+
+##### Option A: Shared Cookie Domain (Simpler, Less Isolated)
+
+Use a shared cookie domain across all environments:
+
+```env
+# Both staging and production Directus
+SESSION_COOKIE_DOMAIN=.example.com
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAME_SITE=None
+```
+
+**Environments:**
+- Staging: `staging.example.com` → `staging-api.example.com`
+- Production: `app.example.com` → `api.example.com`
+
+⚠️ **Important Considerations:**
+- Sessions are **shared across all subdomains** under `.example.com`
+- If a user logs into staging, they'll also be logged into production (and vice versa)
+- This can cause confusion but simplifies testing
+- Best for: Teams that want to test production-like behavior in staging
+
+##### Option B: Isolated Cookie Domains (Recommended, More Secure)
+
+Use separate cookie domains for each environment:
+
+**Staging Directus (.env):**
+```env
+SESSION_COOKIE_DOMAIN=staging-api.example.com
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAME_SITE=None
+CORS_ORIGIN=https://staging.example.com
+```
+
+**Production Directus (.env):**
+```env
+SESSION_COOKIE_DOMAIN=api.example.com
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAME_SITE=None
+CORS_ORIGIN=https://app.example.com
+```
+
+✅ **Benefits:**
+- Staging and production sessions are **completely isolated**
+- Users must log in separately to each environment
+- More secure - production sessions can't leak to staging
+- Best for: Production deployments where isolation is important
+
+##### Option C: Completely Different Domains (Most Isolated)
+
+Use entirely different domains for staging:
+
+**Staging:**
+- Frontend: `staging.example-test.com`
+- Backend: `api.staging.example-test.com`
+- Cookie Domain: `.staging.example-test.com`
+
+**Production:**
+- Frontend: `app.example.com`
+- Backend: `api.example.com`
+- Cookie Domain: `.example.com`
+
+✅ **Maximum Isolation** - No chance of cookie conflicts
+
+### SSO (Single Sign-On) Support
+
+This module fully supports Directus SSO providers (Google, GitHub, Microsoft, etc.). The session-based authentication works seamlessly with OAuth flows:
+
+**Example Usage:**
+
+```typescript
+// Redirect to Directus SSO login
+const { loginWithProvider } = useDirectusAuth()
+
+// User clicks "Login with Google"
+await loginWithProvider('google')
+
+// Flow:
+// 1. Redirects to: https://api.example.com/auth/login/google?redirect=https://app.example.com/current-page
+// 2. User authenticates with Google
+// 3. Directus handles OAuth and creates session
+// 4. Directus sets httpOnly session cookie
+// 5. Redirects back to your app with cookie
+// 6. Plugin auto-fetches user on load
+// ✅ User is logged in!
+```
+
+**Available Providers** (if configured in Directus):
+- Google
+- GitHub
+- Microsoft
+- Facebook
+- Twitter
+- Discord
+- Custom OIDC providers
+
+**Configuration:**
+
+Configure SSO providers in your Directus instance. See [Directus SSO Documentation](https://docs.directus.io/self-hosted/sso.html) for setup instructions.
+
+The SDK automatically handles the OAuth redirect flow and session cookie management - no additional configuration needed!
 
 ## Usage
 
@@ -192,6 +349,148 @@ export default defineEventHandler(async (event) => {
 })
 ```
 
+
+## Local Development
+
+Testing session-based authentication locally requires special configuration:
+
+### Option 1: Use Same Domain (Recommended for Local Dev)
+
+Run both your Nuxt app and Directus on `localhost` with different ports:
+
+**Nuxt:** `http://localhost:3000`
+**Directus:** `http://localhost:8055`
+
+**Directus `.env`:**
+```env
+# Local development - no cookie domain needed
+# SESSION_COOKIE_DOMAIN=  # Leave unset
+
+SESSION_COOKIE_SECURE=false  # Can be false for local HTTP
+SESSION_COOKIE_SAME_SITE=Lax  # Lax works for same domain
+
+# Allow localhost CORS
+CORS_ENABLED=true
+CORS_ORIGIN=http://localhost:3000
+CORS_CREDENTIALS=true
+```
+
+**Nuxt `.env`:**
+```env
+DIRECTUS_URL=http://localhost:8055
+```
+
+✅ **This works because both are on `localhost` - the browser treats them as same-site**
+
+### Option 4: Local Nuxt + Production/Staging Directus (Common Dev Workflow)
+
+Use your live/staging Directus instance with local Nuxt development. This is ideal when your Directus content doesn't change frequently:
+
+**Nuxt `.env` (local):**
+```env
+DIRECTUS_URL=https://api.example.com  # Your live/staging Directus
+```
+
+**Directus `.env` (production/staging):**
+```env
+SESSION_COOKIE_DOMAIN=.example.com
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAME_SITE=None
+
+# IMPORTANT: Add localhost to CORS origins
+CORS_ORIGIN=https://app.example.com,http://localhost:3000
+CORS_CREDENTIALS=true
+```
+
+✅ **Benefits:**
+- Develop against real data
+- No need to run Directus locally
+- Test with actual production content
+- One less service to run locally
+
+⚠️ **Important Considerations:**
+- **Security**: Only add `localhost` to CORS in staging/development Directus instances, NOT production
+- **Data Safety**: Be careful not to modify production data during development
+- **Network**: Requires internet connection to work
+
+**Best Practice for Production:**
+Create a separate staging Directus instance for local development:
+```env
+# Local development against staging
+DIRECTUS_URL=https://staging-api.example.com
+
+# Staging Directus allows localhost
+CORS_ORIGIN=https://staging.example.com,http://localhost:3000
+```
+
+This way you never risk affecting production data!
+
+### Option 2: Use Proxying (Alternative)
+
+Proxy Directus through your Nuxt dev server to avoid CORS:
+
+**`nuxt.config.ts`:**
+```typescript
+export default defineNuxtConfig({
+  devServer: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8055',
+        changeOrigin: true,
+        pathRewrite: { '^/api': '' }
+      }
+    }
+  },
+
+  directus: {
+    url: '/api'  // Use relative URL
+  }
+})
+```
+
+### Option 3: Use ngrok/Tunneling (For Testing Production-like Setup)
+
+Use ngrok to create HTTPS tunnels for local testing:
+
+```bash
+# Terminal 1 - Directus tunnel
+ngrok http 8055
+# Gets: https://abc123.ngrok.io
+
+# Terminal 2 - Nuxt tunnel
+ngrok http 3000
+# Gets: https://def456.ngrok.io
+```
+
+**Directus `.env`:**
+```env
+SESSION_COOKIE_DOMAIN=.ngrok.io
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAME_SITE=None
+CORS_ORIGIN=https://def456.ngrok.io
+CORS_CREDENTIALS=true
+```
+
+**Nuxt `.env`:**
+```env
+DIRECTUS_URL=https://abc123.ngrok.io
+```
+
+### Troubleshooting Local Development
+
+**Cookies not working locally:**
+1. ✅ Use `localhost` for both (not `127.0.0.1`)
+2. ✅ Set `SESSION_COOKIE_SECURE=false` for HTTP
+3. ✅ Set `SESSION_COOKIE_SAME_SITE=Lax` (not `None` for local)
+4. ✅ Don't set `SESSION_COOKIE_DOMAIN` for localhost
+
+**Mixed content errors:**
+- If using HTTPS for one and HTTP for the other, browsers will block it
+- Use tunneling (ngrok) or use HTTP for both
+
+**Port conflicts:**
+- Make sure Directus and Nuxt use different ports
+- Common setup: Nuxt on `:3000`, Directus on `:8055`
 
 ## Troubleshooting
 

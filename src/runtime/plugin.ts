@@ -1,4 +1,4 @@
-import { defineNuxtPlugin, refreshNuxtData, useCookie, useRoute, useRuntimeConfig } from '#app'
+import { defineNuxtPlugin, refreshNuxtData, useRoute, useRuntimeConfig } from '#app'
 import { useDirectusAuth } from './composables/auth'
 import { useDirectus, useDirectusPreview } from './composables/directus'
 
@@ -25,30 +25,14 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     }
   }
 
-  // Setup the API path token
-  await nuxtApp.runWithContext(async () => {
-    const directusUrl = useCookie('directus_url')
-
-    if (!directusUrl.value || directusUrl.value !== config.public.directus.url) {
-      directusUrl.value = config.public.directus.url
-      // If the URL has changed, we need to logout the user
-      await directusAuth.logout()
-    }
-  })
-
+  // Fetch user session once on app initialization
+  // Session is persistent via httpOnly cookie, so we only need to check once
   async function fetchUser() {
-    if (config.public.directus.auth?.enabled ?? true)
+    if (config.public.directus.auth?.enabled ?? true) {
       await directusAuth.readMe()
+    }
   }
 
+  // Fetch user on initial load (SSR or CSR)
   await fetchUser()
-
-  let loadedUser = false
-
-  nuxtApp.hook('page:start', async () => {
-    if (import.meta.client && !loadedUser) {
-      await fetchUser()
-      loadedUser = true
-    }
-  })
 })
