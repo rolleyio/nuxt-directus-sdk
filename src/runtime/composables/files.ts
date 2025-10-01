@@ -2,8 +2,6 @@ import type { Query } from '@directus/sdk'
 import { uploadFiles } from '@directus/sdk'
 import { useDirectus, useDirectusUrl } from './directus'
 
-import { useDirectusTokens } from './tokens'
-
 interface DirectusFileUpload {
   file: File
   data?: Record<keyof DirectusFiles, string>
@@ -45,7 +43,6 @@ export interface DirectusFileOptions {
   format?: DirectusThumbnailFormat
   withoutEnlargement?: boolean
   key?: string
-  token?: string | boolean
 }
 
 export function getDirectusFileUrl(file: string | DirectusFiles, options?: DirectusFileOptions): string {
@@ -84,12 +81,8 @@ export function getDirectusFileUrl(file: string | DirectusFiles, options?: Direc
     url.searchParams.append('key', options.key)
   }
 
-  if (options?.token !== false) {
-    const token = typeof options?.token === 'string' ? options.token : useDirectusTokens().accessToken.value
-
-    if (token)
-      url.searchParams.append('access_token', token)
-  }
+  // Session mode: authentication handled automatically via httpOnly cookies
+  // No need to append access_token to URL
 
   return url.href
 }

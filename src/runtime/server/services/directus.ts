@@ -6,7 +6,8 @@ import { getCookie } from 'h3'
 import { useUrl } from '../../utils'
 
 export function useDirectusAccessToken(event: H3Event): string | undefined {
-  return getCookie(event, useRuntimeConfig().public.directus.auth?.cookies?.accessToken ?? 'directus_access_token')
+  // Session mode: look for the session token cookie set by Directus
+  return getCookie(event, 'directus_session_token')
 }
 
 export function useDirectusUrl(path = ''): string {

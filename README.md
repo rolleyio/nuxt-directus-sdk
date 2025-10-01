@@ -8,10 +8,12 @@
 > A Nuxt 3 Directus module that uses the Directus SDK to enhance your Nuxt application
 
 - [✨ &nbsp;Release Notes](/CHANGELOG.md)
+- [🔒 &nbsp;Session Authentication Guide](/AUTHENTICATION.md)
 - [🔗 &nbsp;Documentation - Coming soon!](http://nuxt-directus-sdk.vercel.app)
 
 ## Features
 
+- 🔒 &nbsp;**Session-based authentication** with cross-domain support
 - ⛰ &nbsp;Authentication out of the box
 - 🚠 &nbsp;Type generation based on Directus collections
 - 🔥 &nbsp;Typesafe Client Websockets enabled
@@ -44,16 +46,29 @@ export default defineNuxtConfig({
     'nuxt-directus-sdk'
   ],
   directus: {
-    url: '',
+    url: process.env.DIRECTUS_URL,
+    // Optional: customize authentication (defaults shown)
+    auth: {
+      autoRefresh: true,
+      credentials: 'include', // Required for cross-domain
+      realtimeAuthMode: 'handshake',
+    }
   }
 })
 ```
 
-3. OPTIONAL: Add an Directus admin token to .env file for additional goodies (Type generation, admin server directus)
+3. Create a `.env` file:
 
-DIRECTUS_ADMIN_TOKEN=""
+```env
+DIRECTUS_URL=https://your-directus-url.com
+DIRECTUS_ADMIN_TOKEN=your_admin_token # Optional: for type generation
+```
+
+4. **Configure your Directus backend** for cross-domain authentication (see [Authentication Guide](/AUTHENTICATION.md))
 
 That's it! You can now use Directus within your Nuxt app ✨
+
+For cross-domain setups (e.g., `app.example.com` ↔ `api.example.com`), see the [Session Authentication Guide](/AUTHENTICATION.md).
 
 ## Development
 

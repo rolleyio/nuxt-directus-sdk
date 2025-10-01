@@ -5,8 +5,7 @@ import type { LoginOptions } from '@directus/sdk'
 import { navigateTo, useNuxtApp, useRouter, useRuntimeConfig } from '#app'
 import { computed, useState } from '#imports'
 import { acceptUserInvite as directusAcceptUserInvite, createUser as directusCreateUser, inviteUser as directusInviteUser, passwordRequest as directusPasswordRequest, passwordReset as directusPasswordReset, readMe as directusReadMe, updateMe as directusUpdateMe } from '@directus/sdk'
-import { useDirectus } from './directus'
-import { useDirectusTokens } from './tokens'
+import { useDirectus, useDirectusUrl } from './directus'
 
 // Auto types don't seem to be generating correctly here, so we need to specify the return type
 export interface DirectusAuth {
@@ -16,7 +15,7 @@ export interface DirectusAuth {
   updateMe: (data: Partial<DirectusUsers>) => Promise<DirectusUsers | null>
   login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<{
     user: DirectusUsers | null
-    accessToken: string
+    accessToken: string | null
     refreshToken: string | null
     expires: number | null
     expiresAt: number | null
@@ -39,7 +38,6 @@ export function useDirectusAuth(): DirectusAuth {
   const config = useRuntimeConfig()
   const router = useRouter()
   const directus = useDirectus()
-  const tokens = useDirectusTokens()
   const user = useDirectusUser()
   const nuxtApp = useNuxtApp()
 
@@ -47,13 +45,6 @@ export function useDirectusAuth(): DirectusAuth {
 
   async function readMe() {
     try {
-      if (!tokens.accessToken.value) {
-        if (!tokens.refreshToken.value)
-          throw new Error('No refresh token')
-
-        await directus.refresh()
-      }
-
       user.value = await directus.request(directusReadMe({ fields: config.public.directus.auth?.readMeFields ?? ['*'] }))
     }
     catch {
@@ -77,10 +68,7 @@ export function useDirectusAuth(): DirectusAuth {
   }
 
   async function login(email: string, password: string, options?: Omit<LoginOptions, 'mode'> & { redirect?: boolean | RouteLocationRaw }) {
-    const response = await directus.login({ email, password }, { ...options, mode: 'json' })
-
-    if (!response.access_token)
-      throw new Error('Login failed, please check your credentials.')
+    await directus.login({ email, password }, { ...options, mode: 'session' })
 
     await readMe()
 
@@ -102,10 +90,10 @@ export function useDirectusAuth(): DirectusAuth {
 
     return {
       user: user.value,
-      accessToken: response.access_token,
-      refreshToken: response.refresh_token,
-      expires: response.expires,
-      expiresAt: response.expires_at,
+      accessToken: null,
+      refreshToken: null,
+      expires: null,
+      expiresAt: null,
     }
   }
 
@@ -146,10 +134,6 @@ export function useDirectusAuth(): DirectusAuth {
     }
     finally {
       user.value = null
-      tokens.refreshToken.value = null
-      tokens.accessToken.value = null
-      tokens.expires.value = null
-      tokens.expiresAt.value = null
     }
 
     if (redirect) {

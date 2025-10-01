@@ -56,57 +56,33 @@ export interface ModuleOptions {
     enableGlobalAuthMiddleware?: boolean
 
     /**
+     * Auto refresh tokens
+     * @default true
+     * @type boolean
+     */
+    autoRefresh?: boolean
+
+    /**
+     * Credentials mode for cross-domain requests
+     * Set to 'include' when your frontend and backend are on different domains
+     * @default 'include'
+     * @type RequestCredentials
+     */
+    credentials?: RequestCredentials
+
+    /**
+     * Realtime/WebSocket authentication mode
+     * @default 'handshake'
+     * @type 'public' | 'handshake' | 'strict'
+     */
+    realtimeAuthMode?: 'public' | 'handshake' | 'strict'
+
+    /**
      * ReadMe fields to fetch
      * @default []
      * @type Query<AllDirectusCollections, AllDirectusCollections['directus_users']>['fields']
      */
     readMeFields?: Query<AllDirectusCollections, AllDirectusCollections['directus_users']>['fields']
-
-    cookies?: {
-      /**
-       * Session token cookie name
-       * @default 'directus_access_token'
-       */
-      accessToken?: string
-      /**
-       * Refresh token cookie name
-       * @default 'directus_refresh_token'
-       */
-      refreshToken?: string
-      /**
-       * Logged in token cookie name
-       * @default 'directus_logged_in'
-       */
-      loggedInToken?: string
-      /**
-       * Session token cookie max age
-       * @default 900
-       */
-      maxAge?: number
-      /**
-       * Refresh token cookie max age
-       * @default 604800
-       */
-      maxAgeRefreshToken?: number
-
-      /**
-       * SameSite cookie attribute
-       * @default 'lax'
-       */
-      sameSite?: 'lax' | 'strict' | 'none'
-      /**
-       * Secure cookie attribute
-       * @default false
-       * @type boolean
-       */
-      secure?: boolean
-      /**
-       * Domain cookie attribute
-       * @default undefined
-       * @type string | undefined
-       */
-      domain?: string | undefined
-    }
 
     redirect?: {
       /**
@@ -167,19 +143,10 @@ export default defineNuxtModule<ModuleOptions>({
     auth: {
       enabled: true,
       enableGlobalAuthMiddleware: false,
+      autoRefresh: true,
+      credentials: 'include',
+      realtimeAuthMode: 'handshake',
       readMeFields: [],
-      cookies: {
-        accessToken: 'directus_access_token',
-        refreshToken: 'directus_refresh_token',
-        loggedInToken: 'directus_logged_in',
-
-        maxAge: 900,
-        maxAgeRefreshToken: 604800,
-        // Nuxt Cookies Docs @ https://nuxt.com/docs/api/composables/use-cookie
-        sameSite: 'lax',
-        secure: false,
-        domain: undefined,
-      },
       redirect: {
         home: '/',
         login: '/account/login',
