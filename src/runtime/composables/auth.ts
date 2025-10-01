@@ -13,13 +13,7 @@ export interface DirectusAuth {
   loggedIn: ComputedRef<boolean>
   readMe: () => Promise<DirectusUsers | null>
   updateMe: (data: Partial<DirectusUsers>) => Promise<DirectusUsers | null>
-  login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<{
-    user: DirectusUsers | null
-    accessToken: string | null
-    refreshToken: string | null
-    expires: number | null
-    expiresAt: number | null
-  }>
+  login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<DirectusUsers | null>
   loginWithProvider: (provider: string, redirectOnLogin?: string) => Promise<void>
   logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
   createUser: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
@@ -88,13 +82,7 @@ export function useDirectusAuth(): DirectusAuth {
       }
     }
 
-    return {
-      user: user.value,
-      accessToken: null,
-      refreshToken: null,
-      expires: null,
-      expiresAt: null,
-    }
+    return user.value
   }
 
   async function loginWithProvider(provider: string, redirectOnLogin?: string) {

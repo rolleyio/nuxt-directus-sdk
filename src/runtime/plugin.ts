@@ -31,15 +31,8 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
     if (!directusUrl.value || directusUrl.value !== config.public.directus.url) {
       directusUrl.value = config.public.directus.url
-
-      const accessToken = useCookie(config.public.directus.auth.cookies.accessToken)
-      const refreshToken = useCookie(config.public.directus.auth.cookies.refreshToken)
-
-      // If the URL changed and previously logged in, then we need to logout
-      if (accessToken.value || refreshToken.value) {
-        accessToken.value = null
-        refreshToken.value = null
-      }
+      // If the URL has changed, we need to logout the user
+      await directusAuth.logout()
     }
   })
 

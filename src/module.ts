@@ -299,14 +299,21 @@ export default defineNuxtModule<ModuleOptions>({
         logger.info('Generating Directus types')
 
         try {
+          // Generate types once and cache the result
+          let cachedTypes: string | null = null
+
           const typesPath = addTypeTemplate({
             filename: `types/${configKey}.d.ts`,
-            getContents() {
-              return generateTypes({
-                url: useUrl(options.url),
-                token: options.adminToken!,
-                prefix: options.types?.prefix ?? '',
-              })
+            async getContents() {
+              if (!cachedTypes) {
+                logger.info('Fetching types from Directus...')
+                cachedTypes = await generateTypes({
+                  url: useUrl(options.url),
+                  token: options.adminToken!,
+                  prefix: options.types?.prefix ?? '',
+                })
+              }
+              return cachedTypes
             },
           }, { nitro: true, nuxt: true }).dst
 
