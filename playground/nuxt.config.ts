@@ -6,6 +6,10 @@ export default defineNuxtConfig({
 
   directus: {
     devtools: false,
+    // devProxy automatically enabled in dev mode
+    // Customize if needed:
+    // devProxy: false, // disable
+    // devProxy: { enabled: true, path: '/api' }, // custom path
     auth: {
       readMeFields: ['id', 'first_name', 'last_name', 'email'],
     },

@@ -16,6 +16,26 @@ export interface ModuleOptions {
   url: string
 
   /**
+   * Development proxy configuration
+   * When enabled, creates a proxy at /directus that forwards to your Directus URL
+   * This solves CORS and cookie issues in development
+   * @default { enabled: true, path: '/directus' } in dev mode
+   * @type boolean | { enabled?: boolean, path?: string }
+   */
+  devProxy?: boolean | {
+    /**
+     * Enable the development proxy
+     * @default true in dev mode, false in production
+     */
+    enabled?: boolean
+    /**
+     * Proxy path (where the proxy will be mounted)
+     * @default '/directus'
+     */
+    path?: string
+  }
+
+  /**
    * Admin Auth Token used for generating types and server functions
    * @default process.env.DIRECTUS_ADMIN_TOKEN
    * @type string
@@ -133,6 +153,7 @@ export default defineNuxtModule<ModuleOptions>({
   },
   defaults: {
     url: import.meta.env.DIRECTUS_URL ?? '',
+    devProxy: undefined, // Will be set based on dev mode in setup
     adminToken: import.meta.env.DIRECTUS_ADMIN_TOKEN ?? '',
     devtools: true,
     visualEditor: true,
@@ -158,6 +179,57 @@ export default defineNuxtModule<ModuleOptions>({
     if (!options.url) {
       logger.error('nuxt-directus-sdk requires a url to your Directus instance, set it in the config options or .env file as DIRECTUS_URL')
       return
+    }
+
+    // Normalize devProxy options
+    const devProxyConfig = typeof options.devProxy === 'boolean'
+      ? { enabled: options.devProxy }
+      : { ...options.devProxy }
+
+    // Default values
+    const devProxyEnabled = devProxyConfig.enabled ?? nuxtApp.options.dev
+    const devProxyPath = devProxyConfig.path ?? '/directus'
+
+    // Store the original URL for type generation and server-side use
+    const originalUrl = options.url
+
+    // Set up development proxy if enabled and in dev mode
+    if (devProxyEnabled && nuxtApp.options.dev) {
+      // Get the dev server configuration from Nuxt
+      const devPort = nuxtApp.options.devServer?.port ?? 3000
+      const devHost = nuxtApp.options.devServer?.host ?? 'localhost'
+      const proxyUrl = `http://${devHost}:${devPort}${devProxyPath}/`
+
+      logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
+      logger.info(`🔄 Directus Development Proxy Enabled`)
+      logger.info(`   Proxy path: ${devProxyPath}`)
+      logger.info(`   Forwarding to: ${originalUrl}`)
+      logger.info(`   Local URL: ${proxyUrl}`)
+      logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
+
+      // Configure Nitro dev proxy with proper cookie handling
+      nuxtApp.options.nitro = nuxtApp.options.nitro || {}
+      nuxtApp.options.nitro.devProxy = nuxtApp.options.nitro.devProxy || {}
+      nuxtApp.options.nitro.devProxy[devProxyPath] = {
+        target: originalUrl,
+        changeOrigin: true,
+        // Rewrite cookie domain to localhost so cookies work
+        cookieDomainRewrite: '',
+        // Forward cookies from the browser to Directus
+        headers: {
+          // This will be set per-request by the proxy
+        },
+        // Preserve headers including cookies
+        preserveHeaderKeyCase: true,
+        // Forward all headers including cookies
+        xfwd: true,
+      }
+
+      // Update the URL to use the proxy for runtime requests
+      options.url = proxyUrl
+    }
+    else if (!nuxtApp.options.dev) {
+      logger.info(`🌐 Production mode: Connecting directly to ${originalUrl}`)
     }
 
     nuxtApp.options.runtimeConfig[configKey] = options as any
@@ -262,11 +334,11 @@ export default defineNuxtModule<ModuleOptions>({
       nitroConfig.imports.presets.push({
         from: resolver.resolve('./runtime/server/services'),
         imports: [
-          'useDirectus',
-          'useUserDirectus',
+          'getDirectusSessionToken',
           'useAdminDirectus',
+          'useServerDirectus',
           'useDirectusUrl',
-          'useDirectusAccessToken',
+          'useTokenDirectus',
         ],
       })
     })
@@ -307,8 +379,9 @@ export default defineNuxtModule<ModuleOptions>({
             async getContents() {
               if (!cachedTypes) {
                 logger.info('Fetching types from Directus...')
+                // Use the original URL for type generation (not the proxy URL)
                 cachedTypes = await generateTypes({
-                  url: useUrl(options.url),
+                  url: useUrl(originalUrl),
                   token: options.adminToken!,
                   prefix: options.types?.prefix ?? '',
                 })

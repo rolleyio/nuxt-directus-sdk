@@ -81,8 +81,12 @@ export function getDirectusFileUrl(file: string | DirectusFiles, options?: Direc
     url.searchParams.append('key', options.key)
   }
 
-  // Session mode: authentication handled automatically via httpOnly cookies
-  // No need to append access_token to URL
+  // Note: In session mode with cookies, assets work if:
+  // 1. Using the dev proxy (same-origin, cookies sent automatically)
+  // 2. Production with same domain (cookies sent automatically)
+  // 3. Cross-origin with proper CORS + credentials setup
+  // If assets fail with 403, ensure your Directus CORS settings allow credentials
+  // or use the dev proxy during development
 
   return url.href
 }

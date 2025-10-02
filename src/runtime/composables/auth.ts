@@ -20,7 +20,7 @@ export interface DirectusAuth {
   register: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
   inviteUser: (email: string, role: string, inviteUrl?: string | undefined) => Promise<void>
   acceptUserInvite: (token: string, password: string) => Promise<void>
-  passwordRequest: (email: string, resetUrl?: string | null | undefined) => Promise<void>
+  passwordRequest: (email: string, resetUrl?: string | undefined) => Promise<void>
   passwordReset: (token: string, password: string) => Promise<void>
 }
 
@@ -39,9 +39,9 @@ export function useDirectusAuth(): DirectusAuth {
 
   async function readMe() {
     try {
-      user.value = await directus.request(directusReadMe({ fields: config.public.directus.auth?.readMeFields ?? ['*'] }))
+      user.value = await directus.request(directusReadMe({ fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
     }
-    catch {
+    catch (error) {
       user.value = null
     }
 
@@ -109,7 +109,7 @@ export function useDirectusAuth(): DirectusAuth {
     return directus.request(directusAcceptUserInvite(token, password))
   }
 
-  async function passwordRequest(email: string, resetUrl?: string | undefined) {
+  async function passwordRequest(email: string, resetUrl?: string) {
     return directus.request(directusPasswordRequest(email, resetUrl))
   }
 
