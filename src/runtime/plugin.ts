@@ -37,10 +37,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       : document.cookie.includes('directus_session_token')
 
     if (hasSessionToken) {
-      // eslint-disable-next-line no-console
-      console.log('[Plugin] Calling readMe()', hasSessionToken)
-      const test = await directusAuth.readMe()
-      console.log('[Plugin] User:', test, directusAuth.user.value)
+      await directusAuth.readMe()
     }
   }
 })

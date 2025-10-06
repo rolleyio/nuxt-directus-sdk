@@ -193,7 +193,7 @@ export default defineNuxtModule<ModuleOptions>({
     const devProxyPath = devProxyConfig.path ?? '/directus'
 
     // Store the original URL for type generation and server-side use
-    const originalUrl = options.url
+    const directusUrl = options.url
 
     // Set up development proxy if enabled and in dev mode
     if (devProxyEnabled && nuxtApp.options.dev) {
@@ -205,7 +205,7 @@ export default defineNuxtModule<ModuleOptions>({
       logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
       logger.info(`🔄 Directus Development Proxy Enabled`)
       logger.info(`   Proxy path: ${devProxyPath}`)
-      logger.info(`   Forwarding to: ${originalUrl}`)
+      logger.info(`   Forwarding to: ${directusUrl}`)
       logger.info(`   Local URL: ${proxyUrl}`)
       logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
 
@@ -220,8 +220,10 @@ export default defineNuxtModule<ModuleOptions>({
       options.url = proxyUrl
     }
     else if (!nuxtApp.options.dev) {
-      logger.info(`🌐 Production mode: Connecting directly to ${originalUrl}`)
+      logger.info(`🌐 Production mode: Connecting directly to ${directusUrl}`)
     }
+
+    (options as any).directusUrl = directusUrl
 
     nuxtApp.options.runtimeConfig[configKey] = options as any
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
@@ -333,7 +335,7 @@ export default defineNuxtModule<ModuleOptions>({
     })
 
     if (options.devtools) {
-      const adminUrl = useUrl(options.url, 'admin')
+      const adminUrl = useUrl(directusUrl, 'admin')
       logger.info(`Directus Admin URL: ${adminUrl}`)
 
       nuxtApp.hook('devtools:customTabs' as any, (iframeTabs: any) => {
@@ -370,7 +372,7 @@ export default defineNuxtModule<ModuleOptions>({
                 logger.info('Fetching types from Directus...')
                 // Use the original URL for type generation (not the proxy URL)
                 cachedTypes = await generateTypes({
-                  url: useUrl(originalUrl),
+                  url: useUrl(directusUrl),
                   token: options.adminToken!,
                   prefix: options.types?.prefix ?? '',
                 })
@@ -393,9 +395,9 @@ export default defineNuxtModule<ModuleOptions>({
 
 declare module '@nuxt/schema' {
   interface ConfigSchema {
-    directus?: ModuleOptions
+    directus?: ModuleOptions & { directusUrl: string }
     publicRuntimeConfig?: {
-      directus?: Omit<ModuleOptions, 'adminToken'>
+      directus?: Omit<ModuleOptions, 'adminToken'> & { directusUrl: string }
     }
   }
 }

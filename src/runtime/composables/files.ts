@@ -7,13 +7,13 @@ interface DirectusFileUpload {
   data?: Record<keyof DirectusFiles, string>
 }
 
-export async function uploadDirectusFile(file: DirectusFileUpload, query?: Query<AllDirectusCollections, AllDirectusCollections['directus_files']>) {
+export async function uploadDirectusFile(file: DirectusFileUpload, query?: Query<DirectusSchema, DirectusSchema['directus_files']>) {
   const result = await uploadDirectusFiles([file], query)
 
   return (Array.isArray(result) ? result[0] : result)
 }
 
-export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Query<AllDirectusCollections, AllDirectusCollections['directus_files']>) {
+export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Query<DirectusSchema, DirectusSchema['directus_files']>) {
   const directus = useDirectus()
   const formData = new FormData()
 

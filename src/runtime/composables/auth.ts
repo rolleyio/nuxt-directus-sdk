@@ -28,21 +28,37 @@ export function useDirectusUser(): Ref<DirectusUsers | null> {
   return useState('directus.user', () => null)
 }
 
+function useDirectusUserLoading(): Ref<boolean> {
+  return useState('directus.user.loading', () => false)
+}
+
 export function useDirectusAuth(): DirectusAuth {
   const config = useRuntimeConfig()
   const router = useRouter()
   const directus = useDirectus()
   const user = useDirectusUser()
+  const loading = useDirectusUserLoading()
   const nuxtApp = useNuxtApp()
 
   const loggedIn = computed(() => user.value !== null)
 
   async function readMe() {
+    // Prevent duplicate concurrent calls
+    if (loading.value) {
+      return user.value
+    }
+
+    loading.value = true
+
     try {
       user.value = await directus.request(directusReadMe({ fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
     }
     catch (error) {
+      console.error('[Auth] Failed to fetch user:', error)
       user.value = null
+    }
+    finally {
+      loading.value = false
     }
 
     await nuxtApp.callHook('directus:loggedIn', user.value)
