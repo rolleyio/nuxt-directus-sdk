@@ -1,7 +1,7 @@
 import type { Query } from '@directus/sdk'
 import type { ImportPresetWithDeprecation } from '@nuxt/schema'
 
-import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addTypeTemplate, createResolver, defineNuxtModule, installModule, useLogger } from '@nuxt/kit'
+import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, installModule, useLogger } from '@nuxt/kit'
 import { defu } from 'defu'
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
@@ -100,9 +100,9 @@ export interface ModuleOptions {
     /**
      * ReadMe fields to fetch
      * @default []
-     * @type Query<AllDirectusCollections, AllDirectusCollections['directus_users']>['fields']
+     * @type Query<DirectusSchema, DirectusSchema['directus_users']>['fields']
      */
-    readMeFields?: Query<AllDirectusCollections, AllDirectusCollections['directus_users']>['fields']
+    readMeFields?: Query<DirectusSchema, DirectusSchema['directus_users']>['fields']
 
     redirect?: {
       /**
@@ -181,6 +181,8 @@ export default defineNuxtModule<ModuleOptions>({
       return
     }
 
+    const resolver = createResolver(import.meta.url)
+
     // Normalize devProxy options
     const devProxyConfig = typeof options.devProxy === 'boolean'
       ? { enabled: options.devProxy }
@@ -207,23 +209,12 @@ export default defineNuxtModule<ModuleOptions>({
       logger.info(`   Local URL: ${proxyUrl}`)
       logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
 
-      // Configure Nitro dev proxy with proper cookie handling
-      nuxtApp.options.nitro = nuxtApp.options.nitro || {}
-      nuxtApp.options.nitro.devProxy = nuxtApp.options.nitro.devProxy || {}
-      nuxtApp.options.nitro.devProxy[devProxyPath] = {
-        target: originalUrl,
-        changeOrigin: true,
-        // Rewrite cookie domain to localhost so cookies work
-        cookieDomainRewrite: '',
-        // Forward cookies from the browser to Directus
-        headers: {
-          // This will be set per-request by the proxy
-        },
-        // Preserve headers including cookies
-        preserveHeaderKeyCase: true,
-        // Forward all headers including cookies
-        xfwd: true,
-      }
+      // Store proxy info to add handler later (after resolver is created)
+
+      addServerHandler({
+        route: `${devProxyPath}/**`,
+        handler: resolver.resolve('./runtime/server/routes/directus'),
+      })
 
       // Update the URL to use the proxy for runtime requests
       options.url = proxyUrl
@@ -237,8 +228,6 @@ export default defineNuxtModule<ModuleOptions>({
     nuxtApp.options.runtimeConfig.public[configKey] = defu(nuxtApp.options.runtimeConfig.public[configKey] as any, options)
 
     delete (nuxtApp.options.runtimeConfig.public[configKey] as any).adminToken
-
-    const resolver = createResolver(import.meta.url)
 
     await installModule('@nuxt/image', {
       directus: {

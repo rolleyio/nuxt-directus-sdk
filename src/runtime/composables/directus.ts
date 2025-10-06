@@ -27,7 +27,6 @@ function createDirectusClient() {
     if (import.meta.server && requestHeaders?.cookie) {
       return globalThis.$fetch(url, {
         ...options,
-        credentials: 'include',
         headers: {
           ...options?.headers,
           cookie: requestHeaders.cookie,
@@ -55,24 +54,22 @@ function createDirectusClient() {
     }))
     .with(realtime({
       authMode: authConfig.realtimeAuthMode || 'handshake',
+      // Use actual Directus URL for WebSockets (Nitro devProxy doesn't support WS upgrades)
+      // The SDK will use handshake mode to authenticate after connection
+      url: config.public.directus.directusUrl
+        ? useUrl(config.public.directus.directusUrl, 'websocket')
+        : undefined,
     }))
 
   return directus
 }
 
-// Client-side singleton (reused across navigations)
-let clientSideDirectus: ReturnType<typeof createDirectusClient> | null = null
+let directus: ReturnType<typeof createDirectusClient> | null = null
 
 export function useDirectus() {
-  // On server: create new instance per request (to capture correct request headers)
-  // On client: reuse singleton (same user across navigations)
-  if (import.meta.server) {
-    return createDirectusClient()
+  if (!directus) {
+    directus = createDirectusClient()
   }
 
-  if (!clientSideDirectus) {
-    clientSideDirectus = createDirectusClient()
-  }
-
-  return clientSideDirectus
+  return directus
 }

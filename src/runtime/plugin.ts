@@ -36,13 +36,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       ? useRequestHeaders(['cookie']).cookie?.includes('directus_session_token')
       : document.cookie.includes('directus_session_token')
 
-    if (import.meta.server) {
-      // eslint-disable-next-line no-console
-      console.log('[Plugin] SSR - Has session token:', hasSessionToken)
-      // eslint-disable-next-line no-console
-      console.log('[Plugin] SSR - Cookie header:', useRequestHeaders(['cookie']).cookie)
-    }
-
     if (hasSessionToken) {
       // eslint-disable-next-line no-console
       console.log('[Plugin] Calling readMe()', hasSessionToken)

@@ -6,14 +6,7 @@ import { useUrl } from '../../utils'
 
 export function getDirectusSessionToken(event: H3Event): string | undefined {
   // Session mode: look for the session token cookie set by Directus
-
-  const cookieHeader = event.headers.get('cookie')
-  const token = getCookie(event, 'directus_session_token')
-
-  // eslint-disable-next-line no-console
-  console.log(`[Server ${event.path}] Token:`, token ? 'FOUND' : 'NOT FOUND', '| Has cookies:', !!cookieHeader)
-
-  return token
+  return getCookie(event, 'directus_session_token')
 }
 
 export function useDirectusUrl(path = ''): string {
