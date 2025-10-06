@@ -21,27 +21,22 @@ function createDirectusClient() {
   // Capture headers during composable setup (in Nuxt context)
   const requestHeaders = import.meta.server ? useRequestHeaders(['cookie']) : null
 
-  // Create custom fetch that forwards cookies during SSR
-  const customFetch: typeof fetch = async (url, options) => {
-    // During SSR, forward cookies from the incoming request
-    if (import.meta.server && requestHeaders?.cookie) {
-      return globalThis.$fetch(url, {
-        ...options,
-        credentials: 'include',
-        headers: {
-          ...options?.headers,
-          cookie: requestHeaders.cookie,
-        },
-      })
-    }
-
-    // On client, use regular fetch with credentials
-    return globalThis.$fetch(url, { ...options, credentials: 'include' })
-  }
-
   const directus = createDirectus<DirectusSchema>(useDirectusUrl(), {
     globals: {
-      fetch: customFetch,
+      fetch: globalThis.$fetch.create({
+        onRequest({ options }) {
+          console.log('[Directus Fetch] ', options)
+        },
+        onResponse({ response, request }) {
+          console.log('[Directus Fetch] ', response, request)
+        },
+        onRequestError({ request, options, error }) {
+          console.error('[Directus Fetch] Request Error', { request, options, error })
+        },
+        onResponseError({ response, request, error }) {
+          console.error('[Directus Fetch] Response Error', { response, request, error })
+        },
+      }),
     },
   })
     .with(authentication('session', {
@@ -55,6 +50,11 @@ function createDirectusClient() {
     }))
     .with(realtime({
       authMode: authConfig.realtimeAuthMode || 'handshake',
+      // Use actual Directus URL for WebSockets (Nitro devProxy doesn't support WS upgrades)
+      // The SDK will use handshake mode to authenticate after connection
+      url: config.public.directus.directusUrl
+        ? useUrl(config.public.directus.directusUrl, 'websocket')
+        : undefined,
     }))
 
   return directus
