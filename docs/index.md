@@ -55,6 +55,33 @@ features:
     link: /api/configuration
 ---
 
+## Installation
+
+```bash
+npm install nuxt-directus-sdk
+```
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['nuxt-directus-sdk'],
+})
+```
+
+```env
+# .env
+DIRECTUS_URL=https://your-directus-instance.com
+DIRECTUS_ADMIN_TOKEN=your_admin_token
+```
+
+That's it! The module handles:
+- ✅ Auto-generated TypeScript types
+- ✅ Auto-imports for all functions
+- ✅ Development proxy (no CORS issues)
+- ✅ WebSocket proxy with authentication
+- ✅ Session-based authentication
+- ✅ Devtools integration
+
 ## Quick Example
 
 Get started in minutes with full type safety and auto-imports:
@@ -97,35 +124,6 @@ const { subscription } = await directus.subscribe('posts')
   </div>
 </template>
 ```
-
-## Installation
-
-```bash
-npm install nuxt-directus-sdk
-```
-
-```typescript
-// nuxt.config.ts
-export default defineNuxtConfig({
-  modules: ['nuxt-directus-sdk'],
-  directus: {
-  },
-})
-```
-
-```env
-# .env
-DIRECTUS_URL=https://your-directus-instance.com
-DIRECTUS_ADMIN_TOKEN=your_admin_token
-```
-
-That's it! The module handles:
-- ✅ Auto-generated TypeScript types
-- ✅ Auto-imports for all functions
-- ✅ Development proxy (no CORS issues)
-- ✅ WebSocket proxy with authentication
-- ✅ Session-based authentication
-- ✅ Devtools integration
 
 ## Why Choose This Module?
 
