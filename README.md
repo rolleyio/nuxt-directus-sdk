@@ -62,11 +62,11 @@ DIRECTUS_URL=https://your-directus-url.com
 DIRECTUS_ADMIN_TOKEN=your_admin_token # Optional: for type generation
 ```
 
-4. **Configure your Directus backend** for cross-domain authentication (see [Authentication Guide](https://nuxt-directus-sdk.rolley.io/guide/authentication))
+4. **Configure your Directus backend** for cross-domain authentication (see [Authentication Guide](https://nuxt-directus-sdk.rolley.io/guide/authentication.html))
 
 That's it! You can now use Directus within your Nuxt app ✨
 
-For cross-domain setups (e.g., `app.example.com` ↔ `api.example.com`), see the [Authentication Guide](https://nuxt-directus-sdk.rolley.io/guide/authentication).
+For cross-domain setups (e.g., `app.example.com` ↔ `api.example.com`), see the [Authentication Guide](https://nuxt-directus-sdk.rolley.io/guide/authentication.html).
 
 ## Development
 
