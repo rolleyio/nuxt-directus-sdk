@@ -46,7 +46,7 @@ This module solves all of these problems and more, providing a **production-read
 - Multiple edit modes (drawer, modal, popover)
 - Works with Directus Visual Editing SDK
 
-### 🔒 Production Ready
+### 🔒 SSR Ready
 - Full SSR support
 - HttpOnly cookies for security
 - CORS credential handling

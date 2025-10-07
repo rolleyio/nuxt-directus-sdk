@@ -140,7 +140,7 @@ Authenticates during the initial WebSocket handshake:
 export default defineNuxtConfig({
   directus: {
     auth: {
-      realtimeAuthMode: 'handshake',
+      realtimeAuthMode: 'public',  // Default - recommended
     },
   },
 })

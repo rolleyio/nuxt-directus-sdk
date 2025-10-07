@@ -323,6 +323,11 @@ export default defineNuxtModule<ModuleOptions>({
       global: options.auth?.enableGlobalAuthMiddleware,
     })
 
+    addRouteMiddleware({
+      name: 'guest',
+      path: resolver.resolve('./runtime/middleware/guest'),
+    })
+
     // Add composables
     addImportsDir(resolver.resolve('./runtime/composables'))
     addComponentsDir({

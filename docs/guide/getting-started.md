@@ -33,7 +33,6 @@ export default defineNuxtConfig({
   modules: ['nuxt-directus-sdk'],
 
   directus: {
-    url: process.env.DIRECTUS_URL,
   },
 })
 ```
@@ -137,7 +136,6 @@ You can configure the proxy:
 ```typescript
 export default defineNuxtConfig({
   directus: {
-    url: process.env.DIRECTUS_URL,
 
     // Proxy configuration (optional)
     devProxy: {
@@ -157,7 +155,6 @@ To disable type generation:
 ```typescript
 export default defineNuxtConfig({
   directus: {
-    url: process.env.DIRECTUS_URL,
 
     types: {
       enabled: false,

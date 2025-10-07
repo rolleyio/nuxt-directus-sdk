@@ -40,7 +40,7 @@ features:
     link: /guide/visual-editor
 
   - icon: 🔒
-    title: Production Ready
+    title: SSR Ready
     details: Full SSR support, secure cookies, CORS handling, route protection, type-safe server utilities, and security best practices
     link: /guide/server-side
 
@@ -70,8 +70,7 @@ const { data: posts } = await useAsyncData('posts', () =>
   directus.request(readItems('posts', {
     fields: ['*'],
     limit: 10
-  }))
-)
+  })))
 
 // Subscribe to realtime updates
 await directus.connect()
@@ -83,7 +82,9 @@ const { subscription } = await directus.subscribe('posts')
     <!-- Authentication state -->
     <div v-if="loggedIn">
       <p>Welcome, {{ user.email }}</p>
-      <button @click="logout()">Logout</button>
+      <button @click="logout()">
+        Logout
+      </button>
     </div>
 
     <!-- Visual editing in preview mode -->
@@ -108,7 +109,6 @@ npm install nuxt-directus-sdk
 export default defineNuxtConfig({
   modules: ['nuxt-directus-sdk'],
   directus: {
-    url: process.env.DIRECTUS_URL,
   },
 })
 ```
@@ -128,12 +128,6 @@ That's it! The module handles:
 - ✅ Devtools integration
 
 ## Why Choose This Module?
-
-### vs. Manual Integration
-- **101+ features** vs. hours of custom code
-- **Zero configuration** vs. complex setup
-- **Production ready** vs. experimental
-- **Fully tested** vs. untested edge cases
 
 ### Key Advantages
 - **Session-based auth** (more secure) - httpOnly cookies vs. exposed tokens

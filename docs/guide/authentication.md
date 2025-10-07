@@ -50,6 +50,23 @@ The flow:
 4. Redirects back to your app
 5. User is automatically logged in
 
+::: warning Directus Configuration Required
+For SSO to work with external redirects, you must add your frontend URL to the Directus redirect allow list:
+
+```env
+# Directus .env
+AUTH_<PROVIDER>_REDIRECT_ALLOW_LIST=https://yourapp.com,http://localhost:3000
+```
+
+For example:
+```env
+AUTH_GOOGLE_REDIRECT_ALLOW_LIST=https://yourapp.com,http://localhost:3000
+AUTH_GITHUB_REDIRECT_ALLOW_LIST=https://yourapp.com,http://localhost:3000
+```
+
+This is a security setting in Directus to prevent open redirect vulnerabilities.
+:::
+
 ## User Management
 
 ### Get Current User
@@ -112,6 +129,17 @@ await inviteUser('newuser@example.com', 'role-id', 'https://yourapp.com/accept-i
 await acceptUserInvite('invite-token', 'password')
 ```
 
+::: warning Directus Configuration Required
+For invite URLs to work with external domains, you must add them to the Directus redirect allow list:
+
+```env
+# Directus .env
+USER_INVITE_URL_ALLOW_LIST=https://yourapp.com/accept-invite,http://localhost:3000/accept-invite
+```
+
+This is a security setting in Directus to prevent open redirect vulnerabilities when users accept invitations.
+:::
+
 ## Protected Routes
 
 ### Page-Level Protection
@@ -147,14 +175,20 @@ export default defineNuxtConfig({
 })
 ```
 
-Then allow public pages:
+Then allow public pages using the `guest` middleware:
 
 ```vue
 <script setup>
 definePageMeta({
-  middleware: [] // Override global middleware
+  middleware: 'guest'
 })
 </script>
+
+<template>
+  <div>
+    <p>This page is public</p>
+  </div>
+</template>
 ```
 
 ### Custom Redirects
@@ -213,7 +247,6 @@ export default defineEventHandler(async () => {
 // nuxt.config.ts
 export default defineNuxtConfig({
   directus: {
-    url: process.env.DIRECTUS_URL,
 
     auth: {
       enabled: true,                    // default

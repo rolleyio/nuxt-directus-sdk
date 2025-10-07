@@ -53,7 +53,6 @@ Admin token for privileged operations and type generation.
 ```typescript
 export default defineNuxtConfig({
   directus: {
-    adminToken: 'your-admin-token',
   },
 })
 ```
@@ -369,7 +368,6 @@ export default defineNuxtConfig({
 
   directus: {
     // Core configuration
-    url: process.env.DIRECTUS_URL,
     adminToken: process.env.DIRECTUS_ADMIN_TOKEN,
 
     // Development
@@ -527,38 +525,6 @@ SESSION_COOKIE_DOMAIN=.example.com  # Shared parent domain
 SESSION_COOKIE_SECURE=true
 SESSION_COOKIE_SAME_SITE=None  # Required for cross-domain
 CORS_ORIGIN=https://app.example.com
-```
-
-## Migration Guide
-
-### From v1 to v2
-
-```typescript
-// v1
-export default defineNuxtConfig({
-  directus: {
-    url: process.env.DIRECTUS_URL,
-    token: process.env.DIRECTUS_TOKEN, // ❌ Removed
-  },
-})
-
-// v2
-export default defineNuxtConfig({
-  directus: {
-    url: process.env.DIRECTUS_URL,
-    adminToken: process.env.DIRECTUS_ADMIN_TOKEN, // ✅ New name
-  },
-})
-```
-
-### Environment Variable Changes
-
-```env
-# v1
-DIRECTUS_TOKEN=xxx  # ❌ Deprecated
-
-# v2
-DIRECTUS_ADMIN_TOKEN=xxx  # ✅ New name
 ```
 
 ## See Also
