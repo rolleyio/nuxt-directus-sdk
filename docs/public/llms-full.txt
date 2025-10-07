@@ -1,0 +1,4925 @@
+# nuxt-directus-sdk - Complete Documentation
+
+> Comprehensive Nuxt module for Directus CMS integration with authentication, realtime, files, visual editing, and more.
+
+Repository: https://github.com/directus-community/nuxt-directus-sdk
+Version: 4.0.0
+License: MIT
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. Introduction & Overview
+2. Installation & Setup
+3. Authentication & Session Management
+4. Realtime & WebSockets
+5. File Management
+6. Visual Editor
+7. Server-Side Utilities
+8. API Reference - Configuration
+9. API Reference - Composables
+10. API Reference - Components
+11. Complete Feature List (101+ features)
+12. Architecture & Implementation Details
+13. Troubleshooting & Best Practices
+
+
+================================================================================
+FILE: introduction.md
+================================================================================
+
+# Introduction
+
+**nuxt-directus-sdk** is a comprehensive Nuxt module that provides seamless integration with Directus CMS. It handles everything from authentication to realtime updates, making it the easiest way to build Nuxt applications with Directus.
+
+## Why nuxt-directus-sdk?
+
+Integrating Directus with Nuxt manually involves solving many complex problems:
+- **Authentication**: Managing sessions, tokens, cookies across SSR/client
+- **CORS**: Dealing with cross-origin requests in development
+- **TypeScript**: Keeping types in sync with your Directus schema
+- **WebSockets**: Setting up realtime connections with proper authentication
+- **File handling**: Managing uploads and asset transformations
+
+This module solves all of these problems and more, providing a **production-ready**, **type-safe**, and **developer-friendly** experience.
+
+## Key Features
+
+### 🔐 Complete Authentication System
+- Session-based auth with httpOnly cookies (more secure than tokens)
+- Auto-login on page load
+- SSO/OAuth support (Google, GitHub, Microsoft, etc.)
+- Full auth flow (login, logout, register, password reset, user invites)
+- Works seamlessly across domains
+
+### ⚡ Realtime & WebSocket Support
+- Full WebSocket integration with automatic authentication
+- Dev proxy that handles WebSocket connections
+- Multiple auth modes (handshake, public, strict)
+- Live subscriptions to collection changes
+
+### 🛠️ Zero-Config Development
+- Auto-imports for all Directus SDK functions
+- Auto-generated TypeScript types from your schema
+- Dev proxy eliminates CORS issues
+- Directus admin panel in Nuxt DevTools
+
+### 📁 File & Asset Management
+- Single and batch file uploads
+- Image transformations (resize, format conversion, quality control)
+- Smart URL generation with parameters
+- Support for signed URLs
+
+### 🎨 Visual Editor
+- Live preview mode with inline editing
+- `<DirectusVisualEditor>` component
+- Multiple edit modes (drawer, modal, popover)
+- Works with Directus Visual Editing SDK
+
+### 🔒 Production Ready
+- Full SSR support
+- HttpOnly cookies for security
+- CORS credential handling
+- Route protection middleware
+- Type-safe server utilities
+
+## Quick Example
+
+```vue
+<script setup>
+// Auto-imported, fully typed!
+const { user, login, logout } = useDirectusAuth()
+const directus = useDirectus()
+
+// Fetch data with type safety
+const { data: posts } = await useAsyncData('posts', () =>
+  directus.request(readItems('posts', {
+    fields: ['*'],
+    limit: 10
+  }))
+)
+
+// Subscribe to realtime updates
+await directus.connect()
+const { subscription } = await directus.subscribe('posts')
+</script>
+
+<template>
+  <div>
+    <div v-if="loggedIn">
+      <p>Welcome, {{ user.email }}</p>
+      <button @click="logout()">Logout</button>
+    </div>
+
+    <div v-for="post in posts" :key="post.id">
+      <DirectusVisualEditor collection="posts" :item="post.id">
+        <h2>{{ post.title }}</h2>
+        <p>{{ post.content }}</p>
+      </DirectusVisualEditor>
+    </div>
+  </div>
+</template>
+```
+
+## What's Next?
+
+- [Installation](/guide/getting-started) - Get started in minutes
+- [Authentication](/guide/authentication) - Learn about session-based auth
+- [Realtime](/guide/realtime) - Set up WebSocket connections
+- [API Reference](/api/configuration) - Full configuration options
+
+================================================================================
+FILE: getting-started.md
+================================================================================
+
+# Getting Started
+
+Get up and running with nuxt-directus-sdk in minutes.
+
+## Installation
+
+Install the module using your package manager:
+
+::: code-group
+```bash [npm]
+npm install nuxt-directus-sdk
+```
+
+```bash [yarn]
+yarn add nuxt-directus-sdk
+```
+
+```bash [pnpm]
+pnpm add nuxt-directus-sdk
+```
+
+```bash [bun]
+bun add nuxt-directus-sdk
+```
+:::
+
+## Configuration
+
+Add the module to your `nuxt.config.ts`:
+
+```typescript
+export default defineNuxtConfig({
+  modules: ['nuxt-directus-sdk'],
+
+  directus: {
+    url: process.env.DIRECTUS_URL,
+  },
+})
+```
+
+## Environment Variables
+
+Create a `.env` file in your project root:
+
+```env
+DIRECTUS_URL=https://your-directus-instance.com
+DIRECTUS_ADMIN_TOKEN=your_admin_token_here
+```
+
+### Environment Variables Explained
+
+- **`DIRECTUS_URL`** (required): Your Directus instance URL
+- **`DIRECTUS_ADMIN_TOKEN`** (optional): Admin token for type generation and admin operations
+
+## Directus Configuration
+
+For the module to work properly, you need to configure your Directus instance:
+
+### Basic Setup (Same Domain)
+
+If your Nuxt app and Directus are on the same domain (e.g., `localhost` in development):
+
+```env
+# Directus .env
+AUTH_LOCAL_MODE=session
+SESSION_COOKIE_SECURE=false  # true in production
+SESSION_COOKIE_SAME_SITE=Lax
+
+CORS_ENABLED=true
+CORS_ORIGIN=http://localhost:3000
+CORS_CREDENTIALS=true
+
+# For realtime features
+WEBSOCKETS_ENABLED=true
+WEBSOCKETS_REST_AUTH=strict
+```
+
+### Cross-Domain Setup
+
+If your frontend and backend are on different domains:
+
+```env
+# Directus .env
+AUTH_LOCAL_MODE=session
+SESSION_COOKIE_DOMAIN=.yourdomain.com  # Shared parent domain
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAME_SITE=None
+
+CORS_ENABLED=true
+CORS_ORIGIN=https://app.yourdomain.com
+CORS_CREDENTIALS=true
+
+# For realtime features
+WEBSOCKETS_ENABLED=true
+WEBSOCKETS_REST_AUTH=strict
+```
+
+## Verify Installation
+
+Create a simple page to test the integration:
+
+```vue
+<script setup>
+const { user, loggedIn } = useDirectusAuth()
+const directus = useDirectus()
+
+const { data: items } = await useAsyncData('items', () =>
+  directus.request(readItems('your_collection'))
+)
+</script>
+
+<template>
+  <div>
+    <h1>nuxt-directus-sdk Test</h1>
+
+    <div v-if="loggedIn">
+      <p>Logged in as: {{ user.email }}</p>
+    </div>
+    <div v-else>
+      <p>Not logged in</p>
+    </div>
+
+    <div v-if="items">
+      <p>Successfully connected to Directus!</p>
+      <p>Item count: {{ items.length }}</p>
+    </div>
+  </div>
+</template>
+```
+
+## Development Proxy
+
+In development mode, the module automatically creates a proxy at `/directus` that forwards requests to your Directus instance. This eliminates CORS issues.
+
+You can configure the proxy:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    url: process.env.DIRECTUS_URL,
+
+    // Proxy configuration (optional)
+    devProxy: {
+      enabled: true,  // default: true in dev mode
+      path: '/directus',  // default: '/directus'
+    },
+  },
+})
+```
+
+## Type Generation
+
+The module automatically generates TypeScript types from your Directus schema. Make sure you have `DIRECTUS_ADMIN_TOKEN` set in your `.env` file.
+
+To disable type generation:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    url: process.env.DIRECTUS_URL,
+
+    types: {
+      enabled: false,
+    },
+  },
+})
+```
+
+## Next Steps
+
+Now that you're set up, explore the features:
+
+- [Authentication](/guide/authentication) - Session-based auth, SSO, user management
+- [Realtime](/guide/realtime) - WebSocket connections and live updates
+- [File Management](/guide/files) - Upload and transform files
+- [Visual Editor](/guide/visual-editor) - Live preview and inline editing
+- [Server-Side Utils](/guide/server-side) - Server routes and utilities
+- [Configuration Reference](/api/configuration) - All configuration options
+
+================================================================================
+FILE: authentication.md
+================================================================================
+
+# Authentication
+
+nuxt-directus-sdk uses Directus's **session-based authentication**, which is ideal for Nuxt applications. Session mode provides better security (httpOnly cookies) and works seamlessly across domains with proper configuration.
+
+## Quick Start
+
+### Basic Login
+
+```typescript
+const { login, logout, user, loggedIn } = useDirectusAuth()
+
+// Login with email/password
+await login('user@example.com', 'password')
+
+// Check if logged in
+if (loggedIn.value) {
+  console.log('User:', user.value)
+}
+
+// Logout
+await logout()
+```
+
+The module automatically:
+- Sets the session cookie
+- Fetches the user data
+- Redirects after login/logout
+- Handles token refresh
+
+## SSO / OAuth Login
+
+One-line integration with SSO providers:
+
+```typescript
+const { loginWithProvider } = useDirectusAuth()
+
+// Redirect to Google OAuth
+await loginWithProvider('google')
+
+// Other providers
+await loginWithProvider('github')
+await loginWithProvider('microsoft')
+await loginWithProvider('facebook')
+```
+
+The flow:
+1. Redirects to Directus SSO endpoint
+2. User authenticates with provider
+3. Directus sets session cookie
+4. Redirects back to your app
+5. User is automatically logged in
+
+## User Management
+
+### Get Current User
+
+```typescript
+const { user, readMe } = useDirectusAuth()
+
+// User is auto-fetched on app load
+console.log(user.value)
+
+// Manually refresh user data
+await readMe()
+```
+
+### Update Current User
+
+```typescript
+const { updateMe } = useDirectusAuth()
+
+await updateMe({
+  first_name: 'John',
+  last_name: 'Doe',
+})
+```
+
+### User Registration
+
+```typescript
+const { register } = useDirectusAuth()
+
+const newUser = await register({
+  email: 'newuser@example.com',
+  password: 'secure-password',
+  first_name: 'John',
+  last_name: 'Doe',
+})
+```
+
+### Password Reset
+
+```typescript
+const { passwordRequest, passwordReset } = useDirectusAuth()
+
+// Request password reset
+await passwordRequest('user@example.com', 'https://yourapp.com/reset-password')
+
+// Reset password with token
+await passwordReset('reset-token', 'new-password')
+```
+
+### User Invites
+
+```typescript
+const { inviteUser, acceptUserInvite } = useDirectusAuth()
+
+// Invite a user
+await inviteUser('newuser@example.com', 'role-id', 'https://yourapp.com/accept-invite')
+
+// Accept invite
+await acceptUserInvite('invite-token', 'password')
+```
+
+## Protected Routes
+
+### Page-Level Protection
+
+Protect individual pages with the `auth` middleware:
+
+```vue
+<script setup>
+definePageMeta({
+  middleware: 'auth'
+})
+</script>
+
+<template>
+  <div>
+    <p>This page requires authentication</p>
+  </div>
+</template>
+```
+
+### Global Protection
+
+Protect all routes by default:
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      enableGlobalAuthMiddleware: true,
+    },
+  },
+})
+```
+
+Then allow public pages:
+
+```vue
+<script setup>
+definePageMeta({
+  middleware: [] // Override global middleware
+})
+</script>
+```
+
+### Custom Redirects
+
+Configure where users are redirected:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      redirect: {
+        login: '/account/login',    // Where to go when not logged in
+        home: '/dashboard',          // Where to go after login
+        logout: '/',                 // Where to go after logout
+      },
+    },
+  },
+})
+```
+
+## Server-Side Authentication
+
+### In Server Routes
+
+```typescript
+// server/api/profile.ts
+export default defineEventHandler(async (event) => {
+  const directus = useServerDirectus(event)
+
+  // This request is automatically authenticated with the user's session
+  const user = await directus.request(readMe())
+
+  return { user }
+})
+```
+
+### Admin Operations
+
+```typescript
+// server/api/admin/users.ts
+export default defineEventHandler(async () => {
+  const directus = useAdminDirectus()
+
+  // Uses admin token for privileged operations
+  const users = await directus.request(readUsers())
+
+  return { users }
+})
+```
+
+## Configuration
+
+### Frontend Configuration
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  directus: {
+    url: process.env.DIRECTUS_URL,
+
+    auth: {
+      enabled: true,                    // default
+      autoRefresh: true,                // auto-refresh tokens
+      credentials: 'include',           // required for cross-domain
+      realtimeAuthMode: 'public',      // 'public', 'handshake', or 'strict'
+      enableGlobalAuthMiddleware: false, // protect all routes
+      readMeFields: ['*'],              // fields to fetch for current user
+      redirect: {
+        home: '/',
+        login: '/account/login',
+        logout: '/',
+      },
+    },
+  },
+})
+```
+
+### Backend Configuration
+
+#### Same Domain Setup
+
+If your Nuxt app and Directus are on the same domain (e.g., localhost in dev):
+
+```env
+# Directus .env
+AUTH_LOCAL_MODE=session
+SESSION_COOKIE_SECURE=false  # true in production
+SESSION_COOKIE_SAME_SITE=Lax
+
+CORS_ENABLED=true
+CORS_ORIGIN=http://localhost:3000
+CORS_CREDENTIALS=true
+```
+
+#### Cross-Domain Setup
+
+For production with separate domains (e.g., `app.example.com` and `api.example.com`):
+
+```env
+# Directus .env
+AUTH_LOCAL_MODE=session
+SESSION_COOKIE_DOMAIN=.example.com    # Shared parent domain
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAME_SITE=None
+
+CORS_ENABLED=true
+CORS_ORIGIN=https://app.example.com
+CORS_CREDENTIALS=true
+```
+
+## Composable API Reference
+
+### `useDirectusAuth()`
+
+Returns an object with auth methods and state:
+
+```typescript
+const {
+  user,                  // Ref<DirectusUser | null>
+  loggedIn,             // ComputedRef<boolean>
+  readMe,               // () => Promise<DirectusUser>
+  updateMe,             // (data) => Promise<DirectusUser>
+  login,                // (email, password, options?) => Promise<DirectusUser>
+  loginWithProvider,    // (provider, redirect?) => Promise<void>
+  logout,               // (redirect?) => Promise<void>
+  register,             // (data) => Promise<DirectusUser>
+  createUser,           // (data) => Promise<DirectusUser>
+  inviteUser,           // (email, role, inviteUrl?) => Promise<void>
+  acceptUserInvite,     // (token, password) => Promise<void>
+  passwordRequest,      // (email, resetUrl?) => Promise<void>
+  passwordReset,        // (token, password) => Promise<void>
+} = useDirectusAuth()
+```
+
+### `useDirectusUser()`
+
+Direct access to the user state:
+
+```typescript
+const user = useDirectusUser()
+// Ref<DirectusUser | null>
+```
+
+## Advanced Topics
+
+### Custom Login Logic
+
+```typescript
+const { login } = useDirectusAuth()
+
+// Login without redirect
+await login('user@example.com', 'password', {
+  redirect: false
+})
+
+// Login with custom redirect
+await login('user@example.com', 'password', {
+  redirect: '/custom-page'
+})
+
+// Login and handle manually
+const user = await login('user@example.com', 'password', {
+  redirect: false
+})
+
+if (user.role === 'admin') {
+  await navigateTo('/admin')
+} else {
+  await navigateTo('/dashboard')
+}
+```
+
+### Listen to Login Events
+
+```typescript
+// plugins/auth-listener.ts
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.hook('directus:loggedIn', (user) => {
+    console.log('User logged in:', user)
+    // Track login event, update analytics, etc.
+  })
+})
+```
+
+### Configurable User Fields
+
+Control which fields are fetched for the current user:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      readMeFields: ['id', 'email', 'first_name', 'last_name', 'avatar'],
+    },
+  },
+})
+```
+
+## Troubleshooting
+
+### Cookies Not Being Set
+
+1. ✅ Check `CORS_CREDENTIALS=true` in Directus
+2. ✅ Verify `SESSION_COOKIE_DOMAIN` is set correctly
+3. ✅ Ensure both sites use HTTPS in production (required for `SameSite=None`)
+4. ✅ Check `credentials: 'include'` is set in module config
+
+### Session Not Persisting
+
+1. ✅ Make sure cookies aren't being blocked by browser
+2. ✅ Check browser dev tools → Application → Cookies
+3. ✅ Verify `directus_session_token` cookie exists
+4. ✅ Ensure cookie domain matches your setup
+
+### SSR Issues
+
+1. ✅ Use `useServerDirectus(event)` in server routes (not `useDirectus()`)
+2. ✅ Check cookies are being forwarded on SSR (automatic with this module)
+3. ✅ Verify server-side requests include session cookie
+
+## See Also
+
+- [Directus Authentication Docs](https://docs.directus.io/reference/authentication.html)
+- [Server-Side Utils](/guide/server-side)
+- [Configuration Reference](/api/configuration)
+
+================================================================================
+FILE: realtime.md
+================================================================================
+
+# Realtime & WebSockets
+
+nuxt-directus-sdk provides full WebSocket support for realtime updates from your Directus collections. The module handles WebSocket authentication automatically using your session cookies.
+
+## Quick Start
+
+### Basic Subscription
+
+```typescript
+const directus = useDirectus()
+
+// Connect to WebSocket
+await directus.connect()
+
+// Subscribe to a collection
+const { subscription } = await directus.subscribe('posts', {
+  query: {
+    fields: ['*'],
+    filter: {
+      status: { _eq: 'published' }
+    }
+  }
+})
+
+// Listen for updates
+for await (const message of subscription) {
+  if (message.event === 'create') {
+    console.log('New post created:', message.data)
+  }
+  if (message.event === 'update') {
+    console.log('Post updated:', message.data)
+  }
+  if (message.event === 'delete') {
+    console.log('Post deleted:', message.data)
+  }
+}
+
+// Unsubscribe when done
+subscription.unsubscribe()
+```
+
+### Reactive Example
+
+```vue
+<script setup>
+const directus = useDirectus()
+const posts = ref([])
+
+onMounted(async () => {
+  // Load initial data
+  posts.value = await directus.request(readItems('posts'))
+
+  // Connect and subscribe
+  await directus.connect()
+  const { subscription } = await directus.subscribe('posts')
+
+  // Update reactively
+  for await (const message of subscription) {
+    if (message.event === 'create') {
+      posts.value.push(message.data[0])
+    }
+    if (message.event === 'update') {
+      const index = posts.value.findIndex(p => p.id === message.data[0].id)
+      if (index !== -1) {
+        posts.value[index] = message.data[0]
+      }
+    }
+    if (message.event === 'delete') {
+      posts.value = posts.value.filter(p => !message.data.includes(p.id))
+    }
+  }
+})
+
+onBeforeUnmount(() => {
+  subscription.unsubscribe()
+})
+</script>
+
+<template>
+  <div v-for="post in posts" :key="post.id">
+    {{ post.title }}
+  </div>
+</template>
+```
+
+## Configuration
+
+### Directus Configuration
+
+Enable WebSockets in your Directus instance:
+
+```env
+# Directus .env
+WEBSOCKETS_ENABLED=true
+
+# Authentication mode
+WEBSOCKETS_REST_AUTH=strict  # or 'public' or 'handshake'
+WEBSOCKETS_REST_AUTH_TIMEOUT=30000
+```
+
+### Nuxt Configuration
+
+Configure realtime auth mode in your Nuxt app:
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      realtimeAuthMode: 'public',  // 'public', 'handshake', or 'strict'
+    },
+  },
+})
+```
+
+## Authentication Modes
+
+### Public Mode (Recommended)
+
+With session-based authentication and `WEBSOCKETS_REST_AUTH=strict` in Directus:
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      realtimeAuthMode: 'public',  // Default
+    },
+  },
+})
+```
+
+The WebSocket authentication is handled by the session cookie automatically forwarded through the WebSocket proxy.
+
+### Handshake Mode
+
+Authenticates during the initial WebSocket handshake:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      realtimeAuthMode: 'handshake',
+    },
+  },
+})
+```
+
+Requires `WEBSOCKETS_REST_AUTH=handshake` in Directus.
+
+### Strict Mode
+
+Per-message authentication (more overhead):
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      realtimeAuthMode: 'strict',
+    },
+  },
+})
+```
+
+## Development Proxy
+
+In development mode, WebSocket connections use a special proxy route (`/directus-ws`) that:
+- Forwards WebSocket connections to Directus
+- Includes session cookies for authentication
+- Handles secure WebSocket upgrades
+
+This is automatic - no configuration needed!
+
+## Subscription API
+
+### Subscribe to Collection
+
+```typescript
+const { subscription } = await directus.subscribe('collection_name', {
+  query: {
+    fields: ['*'],
+    filter: { /* filter options */ },
+    limit: 100,
+  },
+  uid: 'optional-uid'  // Unique identifier for this subscription
+})
+```
+
+### Event Types
+
+```typescript
+for await (const message of subscription) {
+  switch (message.event) {
+    case 'init':
+      // Initial connection
+      console.log('Subscription active')
+      break
+    case 'create':
+      // New item created
+      console.log('Created:', message.data)
+      break
+    case 'update':
+      // Item updated
+      console.log('Updated:', message.data)
+      break
+    case 'delete':
+      // Item deleted
+      console.log('Deleted:', message.data)  // Array of IDs
+      break
+  }
+}
+```
+
+### Unsubscribe
+
+```typescript
+// Unsubscribe from specific subscription
+subscription.unsubscribe()
+
+// Disconnect entirely
+await directus.disconnect()
+```
+
+## Advanced Usage
+
+### Multiple Subscriptions
+
+```typescript
+const directus = useDirectus()
+await directus.connect()
+
+// Subscribe to multiple collections
+const posts = await directus.subscribe('posts')
+const comments = await directus.subscribe('comments')
+const users = await directus.subscribe('directus_users')
+
+// Handle each subscription
+Promise.all([
+  (async () => {
+    for await (const msg of posts.subscription) {
+      console.log('Post event:', msg)
+    }
+  })(),
+  (async () => {
+    for await (const msg of comments.subscription) {
+      console.log('Comment event:', msg)
+    }
+  })(),
+])
+```
+
+### Filtered Subscriptions
+
+```typescript
+// Only subscribe to published posts
+const { subscription } = await directus.subscribe('posts', {
+  query: {
+    filter: {
+      status: { _eq: 'published' },
+      author: { _eq: '$CURRENT_USER' }
+    }
+  }
+})
+```
+
+### Composable Pattern
+
+Create a reusable composable:
+
+```typescript
+// composables/useRealtimePosts.ts
+export function useRealtimePosts() {
+  const directus = useDirectus()
+  const posts = ref([])
+  const connected = ref(false)
+  let subscription: any = null
+
+  async function connect() {
+    // Load initial data
+    posts.value = await directus.request(readItems('posts'))
+
+    // Connect WebSocket
+    await directus.connect()
+    connected.value = true
+
+    // Subscribe
+    const result = await directus.subscribe('posts')
+    subscription = result.subscription
+
+    // Handle updates
+    for await (const message of subscription) {
+      if (message.event === 'create') {
+        posts.value.push(...message.data)
+      }
+      if (message.event === 'update') {
+        message.data.forEach(updated => {
+          const index = posts.value.findIndex(p => p.id === updated.id)
+          if (index !== -1) {
+            posts.value[index] = updated
+          }
+        })
+      }
+      if (message.event === 'delete') {
+        posts.value = posts.value.filter(p => !message.data.includes(p.id))
+      }
+    }
+  }
+
+  function disconnect() {
+    if (subscription) {
+      subscription.unsubscribe()
+    }
+    connected.value = false
+  }
+
+  return {
+    posts,
+    connected,
+    connect,
+    disconnect,
+  }
+}
+```
+
+Usage:
+
+```vue
+<script setup>
+const { posts, connected, connect, disconnect } = useRealtimePosts()
+
+onMounted(() => connect())
+onBeforeUnmount(() => disconnect())
+</script>
+
+<template>
+  <div>
+    <p v-if="connected">🟢 Live</p>
+    <div v-for="post in posts" :key="post.id">
+      {{ post.title }}
+    </div>
+  </div>
+</template>
+```
+
+## Troubleshooting
+
+### WebSocket Connection Failed
+
+1. ✅ Check `WEBSOCKETS_ENABLED=true` in Directus
+2. ✅ Verify `WEBSOCKETS_REST_AUTH` matches your `realtimeAuthMode`
+3. ✅ Ensure you're authenticated before connecting
+4. ✅ Check browser console for WebSocket errors
+
+### Authentication Errors
+
+1. ✅ Verify session cookie exists (`directus_session_token`)
+2. ✅ Check `WEBSOCKETS_REST_AUTH=strict` in Directus
+3. ✅ Use `realtimeAuthMode: 'public'` in Nuxt config
+4. ✅ Make sure you're logged in before connecting
+
+### Connection Stuck on "Pending"
+
+1. ✅ Check Directus logs for WebSocket errors
+2. ✅ Verify WebSocket URL is correct (check browser dev tools → Network → WS)
+3. ✅ Ensure development proxy is running
+4. ✅ Check for CORS issues in Directus
+
+### Updates Not Received
+
+1. ✅ Verify subscription is active: `subscription.unsubscribe` exists
+2. ✅ Check Directus permissions allow read access
+3. ✅ Ensure filter query matches the data you're changing
+4. ✅ Test with a simple subscription (no filters)
+
+## See Also
+
+- [Directus Realtime Docs](https://docs.directus.io/guides/real-time/)
+- [Authentication](/guide/authentication)
+- [Configuration Reference](/api/configuration)
+
+================================================================================
+FILE: files.md
+================================================================================
+
+# File Management
+
+nuxt-directus-sdk provides utilities for uploading files to Directus and generating optimized image URLs with transformation options.
+
+## File Uploads
+
+### Upload Single File
+
+```typescript
+import { uploadDirectusFile } from '#imports'
+
+const file = event.target.files[0]
+
+const uploadedFile = await uploadDirectusFile({
+  file,
+  data: {
+    title: 'My Image',
+    folder: 'folder-id',
+  }
+})
+
+console.log('File uploaded:', uploadedFile.id)
+```
+
+### Upload Multiple Files
+
+```typescript
+import { uploadDirectusFiles } from '#imports'
+
+const files = Array.from(event.target.files).map(file => ({
+  file,
+  data: {
+    folder: 'folder-id',
+  }
+}))
+
+const uploadedFiles = await uploadDirectusFiles(files)
+
+console.log('Uploaded files:', uploadedFiles)
+```
+
+### Complete Upload Example
+
+```vue
+<script setup>
+import { ref } from 'vue'
+import { uploadDirectusFile } from '#imports'
+
+const uploading = ref(false)
+const uploadedFile = ref(null)
+
+async function handleFileUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  uploading.value = true
+
+  try {
+    uploadedFile.value = await uploadDirectusFile({
+      file,
+      data: {
+        title: file.name,
+        description: 'Uploaded from Nuxt app',
+      }
+    })
+
+    console.log('Upload successful:', uploadedFile.value)
+  } catch (error) {
+    console.error('Upload failed:', error)
+  } finally {
+    uploading.value = false
+  }
+}
+</script>
+
+<template>
+  <div>
+    <input type="file" @change="handleFileUpload" :disabled="uploading" />
+
+    <div v-if="uploading">
+      Uploading...
+    </div>
+
+    <div v-if="uploadedFile">
+      <p>File uploaded successfully!</p>
+      <img :src="getDirectusFileUrl(uploadedFile.id, { width: 300 })" />
+    </div>
+  </div>
+</template>
+```
+
+## File URLs
+
+### Basic File URL
+
+```typescript
+import { getDirectusFileUrl } from '#imports'
+
+// From file ID
+const url = getDirectusFileUrl('file-uuid')
+
+// From file object
+const file = await directus.request(readFile('file-uuid'))
+const url = getDirectusFileUrl(file)
+```
+
+### Image Transformations
+
+The `getDirectusFileUrl()` function supports all Directus asset transformation parameters:
+
+```typescript
+const url = getDirectusFileUrl('file-uuid', {
+  width: 800,
+  height: 600,
+  quality: 80,
+  fit: 'cover',
+  format: 'webp',
+})
+```
+
+## Transformation Options
+
+### Width & Height
+
+Resize images to specific dimensions:
+
+```typescript
+// Fixed width, auto height
+getDirectusFileUrl(file, { width: 800 })
+
+// Fixed height, auto width
+getDirectusFileUrl(file, { height: 600 })
+
+// Fixed width and height
+getDirectusFileUrl(file, { width: 800, height: 600 })
+```
+
+### Fit Modes
+
+Control how images are resized:
+
+```typescript
+// Cover - crop to fill dimensions (default)
+getDirectusFileUrl(file, { width: 800, height: 600, fit: 'cover' })
+
+// Contain - resize to fit within dimensions
+getDirectusFileUrl(file, { width: 800, height: 600, fit: 'contain' })
+
+// Inside - resize only if larger
+getDirectusFileUrl(file, { width: 800, height: 600, fit: 'inside' })
+
+// Outside - resize to cover dimensions
+getDirectusFileUrl(file, { width: 800, height: 600, fit: 'outside' })
+```
+
+### Format Conversion
+
+Convert images to different formats:
+
+```typescript
+// Convert to WebP
+getDirectusFileUrl(file, { format: 'webp' })
+
+// Convert to AVIF (modern format, better compression)
+getDirectusFileUrl(file, { format: 'avif' })
+
+// Other formats: jpg, png, tiff
+getDirectusFileUrl(file, { format: 'jpg' })
+```
+
+### Quality
+
+Control image compression (1-100):
+
+```typescript
+// Low quality, smaller file
+getDirectusFileUrl(file, { quality: 60 })
+
+// High quality
+getDirectusFileUrl(file, { quality: 90 })
+
+// Combined with format
+getDirectusFileUrl(file, { format: 'webp', quality: 80 })
+```
+
+### Prevent Enlargement
+
+Prevent upscaling of small images:
+
+```typescript
+getDirectusFileUrl(file, {
+  width: 1920,
+  withoutEnlargement: true, // Won't upscale if original is smaller
+})
+```
+
+### Download Files
+
+Generate download links:
+
+```typescript
+// Force download
+getDirectusFileUrl(file, { download: true })
+
+// Download with custom filename
+getDirectusFileUrl(file, {
+  download: true,
+  filename: 'my-custom-filename.jpg'
+})
+```
+
+## Responsive Images
+
+Create responsive images with multiple sizes:
+
+```vue
+<script setup>
+import { getDirectusFileUrl } from '#imports'
+
+const props = defineProps({
+  image: Object,
+  alt: String,
+})
+
+const sizes = {
+  small: getDirectusFileUrl(props.image, { width: 400, format: 'webp' }),
+  medium: getDirectusFileUrl(props.image, { width: 800, format: 'webp' }),
+  large: getDirectusFileUrl(props.image, { width: 1200, format: 'webp' }),
+}
+</script>
+
+<template>
+  <img
+    :src="sizes.medium"
+    :srcset="`
+      ${sizes.small} 400w,
+      ${sizes.medium} 800w,
+      ${sizes.large} 1200w
+    `"
+    sizes="(max-width: 640px) 400px, (max-width: 1024px) 800px, 1200px"
+    :alt="alt"
+  />
+</template>
+```
+
+## Using with Nuxt Image
+
+The module integrates with `@nuxt/image` for advanced image optimization:
+
+```vue
+<script setup>
+const props = defineProps({
+  fileId: String,
+})
+</script>
+
+<template>
+  <NuxtImg
+    provider="directus"
+    :src="fileId"
+    width="800"
+    height="600"
+    format="webp"
+    quality="80"
+    fit="cover"
+  />
+</template>
+```
+
+## File Management
+
+### Reading Files
+
+```typescript
+const directus = useDirectus()
+
+// Get single file
+const file = await directus.request(readFile('file-uuid'))
+
+// Get all files
+const files = await directus.request(readFiles())
+
+// Get files with query
+const images = await directus.request(readFiles({
+  filter: {
+    type: { _starts_with: 'image/' }
+  },
+  limit: 10,
+}))
+```
+
+### Updating Files
+
+```typescript
+// Update file metadata
+await directus.request(updateFile('file-uuid', {
+  title: 'Updated Title',
+  description: 'New description',
+}))
+```
+
+### Deleting Files
+
+```typescript
+// Delete single file
+await directus.request(deleteFile('file-uuid'))
+
+// Delete multiple files
+await directus.request(deleteFiles(['uuid1', 'uuid2']))
+```
+
+## Advanced Examples
+
+### Image Gallery
+
+```vue
+<script setup>
+import { ref } from 'vue'
+import { uploadDirectusFiles, getDirectusFileUrl } from '#imports'
+
+const directus = useDirectus()
+const images = ref([])
+const uploading = ref(false)
+
+// Load existing images
+const { data } = await useAsyncData('gallery', () =>
+  directus.request(readFiles({
+    filter: { type: { _starts_with: 'image/' } },
+    sort: ['-uploaded_on'],
+  }))
+)
+images.value = data.value || []
+
+async function handleUpload(event) {
+  const files = Array.from(event.target.files).map(file => ({ file }))
+
+  uploading.value = true
+
+  try {
+    const uploaded = await uploadDirectusFiles(files)
+    images.value.unshift(...(Array.isArray(uploaded) ? uploaded : [uploaded]))
+  } finally {
+    uploading.value = false
+  }
+}
+</script>
+
+<template>
+  <div>
+    <input
+      type="file"
+      multiple
+      accept="image/*"
+      @change="handleUpload"
+      :disabled="uploading"
+    />
+
+    <div class="gallery">
+      <div v-for="image in images" :key="image.id" class="gallery-item">
+        <img
+          :src="getDirectusFileUrl(image, {
+            width: 300,
+            height: 300,
+            fit: 'cover',
+            format: 'webp',
+            quality: 80
+          })"
+          :alt="image.title"
+        />
+        <p>{{ image.title }}</p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+</style>
+```
+
+### Optimized Hero Image
+
+```vue
+<script setup>
+const props = defineProps({
+  image: Object,
+})
+
+// Generate optimized URLs for different formats and sizes
+const sources = {
+  avif: {
+    desktop: getDirectusFileUrl(props.image, {
+      width: 1920,
+      format: 'avif',
+      quality: 75
+    }),
+    mobile: getDirectusFileUrl(props.image, {
+      width: 768,
+      format: 'avif',
+      quality: 75
+    }),
+  },
+  webp: {
+    desktop: getDirectusFileUrl(props.image, {
+      width: 1920,
+      format: 'webp',
+      quality: 80
+    }),
+    mobile: getDirectusFileUrl(props.image, {
+      width: 768,
+      format: 'webp',
+      quality: 80
+    }),
+  },
+  jpg: {
+    desktop: getDirectusFileUrl(props.image, {
+      width: 1920,
+      format: 'jpg',
+      quality: 85
+    }),
+    mobile: getDirectusFileUrl(props.image, {
+      width: 768,
+      format: 'jpg',
+      quality: 85
+    }),
+  },
+}
+</script>
+
+<template>
+  <picture>
+    <!-- AVIF format (best compression) -->
+    <source
+      :srcset="`${sources.avif.mobile} 768w, ${sources.avif.desktop} 1920w`"
+      type="image/avif"
+      sizes="100vw"
+    />
+
+    <!-- WebP format (good compression) -->
+    <source
+      :srcset="`${sources.webp.mobile} 768w, ${sources.webp.desktop} 1920w`"
+      type="image/webp"
+      sizes="100vw"
+    />
+
+    <!-- JPG fallback -->
+    <img
+      :src="sources.jpg.desktop"
+      :srcset="`${sources.jpg.mobile} 768w, ${sources.jpg.desktop} 1920w`"
+      sizes="100vw"
+      :alt="image.title"
+      loading="lazy"
+    />
+  </picture>
+</template>
+```
+
+## API Reference
+
+### `uploadDirectusFile(file, query?)`
+
+Upload a single file to Directus.
+
+**Parameters:**
+- `file: { file: File, data?: Partial<DirectusFiles> }` - File and metadata
+- `query?: Query` - Directus query options
+
+**Returns:** `Promise<DirectusFiles>`
+
+### `uploadDirectusFiles(files, query?)`
+
+Upload multiple files to Directus.
+
+**Parameters:**
+- `files: Array<{ file: File, data?: Partial<DirectusFiles> }>` - Files and metadata
+- `query?: Query` - Directus query options
+
+**Returns:** `Promise<DirectusFiles[]>`
+
+### `getDirectusFileUrl(file, options?)`
+
+Generate a URL for a Directus file with optional transformations.
+
+**Parameters:**
+- `file: string | DirectusFiles` - File ID or file object
+- `options?: DirectusFileOptions` - Transformation options
+
+**Options:**
+```typescript
+interface DirectusFileOptions {
+  filename?: string              // Custom filename for downloads
+  download?: boolean             // Force download
+  width?: number                 // Resize width
+  height?: number                // Resize height
+  quality?: number               // Image quality (1-100)
+  fit?: 'cover' | 'contain' | 'inside' | 'outside'
+  format?: 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'
+  withoutEnlargement?: boolean   // Prevent upscaling
+  key?: string                   // Access key for private files
+}
+```
+
+**Returns:** `string` - Full URL to the file
+
+## See Also
+
+- [Directus Files Documentation](https://docs.directus.io/reference/files.html)
+- [Getting Started](/guide/getting-started)
+- [Configuration Reference](/api/configuration)
+
+================================================================================
+FILE: visual-editor.md
+================================================================================
+
+# Visual Editor
+
+The Visual Editor allows content editors to preview and edit content directly from your Nuxt frontend without needing to navigate to the Directus admin panel. This creates a seamless editing experience.
+
+## Features
+
+- Live preview mode with `?preview=true`
+- Inline editing of content
+- Edit modes: drawer, modal, or popover
+- Automatic detection of editable fields
+- Seamless integration with Directus collections
+
+## Quick Start
+
+### Enable Preview Mode
+
+Add the preview query parameter to any page:
+
+```
+https://yourapp.com/blog/my-post?preview=true
+```
+
+This activates the visual editor for that page.
+
+### Basic Usage
+
+Wrap content you want to make editable with the `DirectusVisualEditor` component:
+
+```vue
+<script setup>
+const directus = useDirectus()
+
+const { data: article } = await useAsyncData('article', () =>
+  directus.request(readItem('articles', route.params.id))
+)
+</script>
+
+<template>
+  <article>
+    <DirectusVisualEditor
+      collection="articles"
+      :item="article.id"
+      fields="title"
+    >
+      <h1>{{ article.title }}</h1>
+    </DirectusVisualEditor>
+
+    <DirectusVisualEditor
+      collection="articles"
+      :item="article.id"
+      fields="content"
+    >
+      <div v-html="article.content" />
+    </DirectusVisualEditor>
+  </article>
+</template>
+```
+
+When visiting the page with `?preview=true`, content editors can click on the wrapped elements to edit them directly.
+
+## Component Props
+
+### `collection` (required)
+
+The Directus collection name:
+
+```vue
+<DirectusVisualEditor collection="articles" :item="article.id">
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+```
+
+### `item` (required)
+
+The item ID (primary key):
+
+```vue
+<DirectusVisualEditor collection="articles" :item="article.id">
+  <!-- content -->
+</DirectusVisualEditor>
+```
+
+### `fields` (optional)
+
+Specify which field(s) to edit. Can be a string or array:
+
+```vue
+<!-- Single field -->
+<DirectusVisualEditor
+  collection="articles"
+  :item="article.id"
+  fields="title"
+>
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+
+<!-- Multiple fields -->
+<DirectusVisualEditor
+  collection="articles"
+  :item="article.id"
+  :fields="['title', 'subtitle']"
+>
+  <h1>{{ article.title }}</h1>
+  <h2>{{ article.subtitle }}</h2>
+</DirectusVisualEditor>
+```
+
+If omitted, all fields in the wrapped content can be edited.
+
+### `mode` (optional)
+
+Control how the editor opens:
+
+```vue
+<!-- Drawer mode (default) - slides in from the side -->
+<DirectusVisualEditor mode="drawer" collection="articles" :item="id">
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+
+<!-- Modal mode - opens in a centered modal -->
+<DirectusVisualEditor mode="modal" collection="articles" :item="id">
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+
+<!-- Popover mode - opens near the clicked element -->
+<DirectusVisualEditor mode="popover" collection="articles" :item="id">
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+```
+
+## Preview Mode Detection
+
+Check if preview mode is active:
+
+```vue
+<script setup>
+const directusPreview = useDirectusPreview()
+</script>
+
+<template>
+  <div>
+    <div v-if="directusPreview" class="preview-banner">
+      Preview Mode Active
+    </div>
+
+    <DirectusVisualEditor
+      v-if="directusPreview"
+      collection="articles"
+      :item="article.id"
+    >
+      <h1>{{ article.title }}</h1>
+    </DirectusVisualEditor>
+
+    <h1 v-else>{{ article.title }}</h1>
+  </div>
+</template>
+```
+
+## Complete Example
+
+### Blog Post Page
+
+```vue
+<script setup>
+const route = useRoute()
+const directus = useDirectus()
+const directusPreview = useDirectusPreview()
+
+// Load article
+const { data: article } = await useAsyncData('article', () =>
+  directus.request(readItem('articles', route.params.id, {
+    fields: ['*', { author: ['*'] }]
+  }))
+)
+
+// Enable preview mode with ?preview=true
+if (route.query.preview === 'true') {
+  directusPreview.value = true
+}
+</script>
+
+<template>
+  <article>
+    <!-- Preview mode indicator -->
+    <div v-if="directusPreview" class="preview-banner">
+      <p>Preview Mode - Click any content to edit</p>
+    </div>
+
+    <!-- Featured image -->
+    <DirectusVisualEditor
+      collection="articles"
+      :item="article.id"
+      fields="featured_image"
+      mode="drawer"
+    >
+      <img
+        v-if="article.featured_image"
+        :src="getDirectusFileUrl(article.featured_image, { width: 1200 })"
+        :alt="article.title"
+      />
+    </DirectusVisualEditor>
+
+    <!-- Title -->
+    <DirectusVisualEditor
+      collection="articles"
+      :item="article.id"
+      fields="title"
+    >
+      <h1>{{ article.title }}</h1>
+    </DirectusVisualEditor>
+
+    <!-- Excerpt -->
+    <DirectusVisualEditor
+      collection="articles"
+      :item="article.id"
+      fields="excerpt"
+    >
+      <p class="excerpt">{{ article.excerpt }}</p>
+    </DirectusVisualEditor>
+
+    <!-- Author (related collection) -->
+    <DirectusVisualEditor
+      collection="directus_users"
+      :item="article.author.id"
+      :fields="['first_name', 'last_name']"
+    >
+      <p class="author">
+        By {{ article.author.first_name }} {{ article.author.last_name }}
+      </p>
+    </DirectusVisualEditor>
+
+    <!-- Content -->
+    <DirectusVisualEditor
+      collection="articles"
+      :item="article.id"
+      fields="content"
+    >
+      <div class="content" v-html="article.content" />
+    </DirectusVisualEditor>
+  </article>
+</template>
+
+<style scoped>
+.preview-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #6644ff;
+  color: white;
+  padding: 0.5rem;
+  text-align: center;
+  z-index: 1000;
+}
+
+.excerpt {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.author {
+  color: #999;
+  font-style: italic;
+}
+
+.content {
+  line-height: 1.6;
+}
+</style>
+```
+
+### Product Page
+
+```vue
+<script setup>
+const route = useRoute()
+const directus = useDirectus()
+const directusPreview = useDirectusPreview()
+
+const { data: product } = await useAsyncData('product', () =>
+  directus.request(readItem('products', route.params.id, {
+    fields: ['*', { images: ['*'] }]
+  }))
+)
+
+if (route.query.preview === 'true') {
+  directusPreview.value = true
+}
+</script>
+
+<template>
+  <div class="product">
+    <!-- Product images -->
+    <DirectusVisualEditor
+      collection="products"
+      :item="product.id"
+      fields="images"
+      mode="modal"
+    >
+      <div class="images">
+        <img
+          v-for="image in product.images"
+          :key="image.id"
+          :src="getDirectusFileUrl(image.directus_files_id, { width: 600 })"
+          :alt="product.name"
+        />
+      </div>
+    </DirectusVisualEditor>
+
+    <div class="details">
+      <!-- Product name -->
+      <DirectusVisualEditor
+        collection="products"
+        :item="product.id"
+        fields="name"
+      >
+        <h1>{{ product.name }}</h1>
+      </DirectusVisualEditor>
+
+      <!-- Price -->
+      <DirectusVisualEditor
+        collection="products"
+        :item="product.id"
+        fields="price"
+      >
+        <p class="price">${{ product.price }}</p>
+      </DirectusVisualEditor>
+
+      <!-- Description -->
+      <DirectusVisualEditor
+        collection="products"
+        :item="product.id"
+        fields="description"
+      >
+        <div class="description" v-html="product.description" />
+      </DirectusVisualEditor>
+
+      <!-- Features -->
+      <DirectusVisualEditor
+        collection="products"
+        :item="product.id"
+        fields="features"
+      >
+        <ul class="features">
+          <li v-for="feature in product.features" :key="feature">
+            {{ feature }}
+          </li>
+        </ul>
+      </DirectusVisualEditor>
+    </div>
+  </div>
+</template>
+```
+
+## Preview Links
+
+Create preview links for editors:
+
+```vue
+<script setup>
+const props = defineProps({
+  article: Object,
+})
+
+const previewUrl = computed(() => {
+  const url = new URL(window.location.origin)
+  url.pathname = `/blog/${props.article.slug}`
+  url.searchParams.set('preview', 'true')
+  return url.href
+})
+
+function copyPreviewLink() {
+  navigator.clipboard.writeText(previewUrl.value)
+  // Show success message
+}
+</script>
+
+<template>
+  <div>
+    <button @click="copyPreviewLink">
+      Copy Preview Link
+    </button>
+
+    <a :href="previewUrl" target="_blank">
+      Open Preview
+    </a>
+  </div>
+</template>
+```
+
+## Configuration
+
+### Disable Visual Editor
+
+If you want to disable the visual editor globally:
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  directus: {
+    visualEditor: false,
+  },
+})
+```
+
+### Custom Preview Parameter
+
+You can use a different query parameter:
+
+```vue
+<script setup>
+const route = useRoute()
+const directusPreview = useDirectusPreview()
+
+// Use ?edit=1 instead of ?preview=true
+if (route.query.edit === '1') {
+  directusPreview.value = true
+}
+</script>
+```
+
+## Advanced Usage
+
+### Conditional Editing
+
+Only enable editing for specific users:
+
+```vue
+<script setup>
+const { user, loggedIn } = useDirectusAuth()
+const directusPreview = useDirectusPreview()
+const route = useRoute()
+
+// Only enable preview for admins
+if (route.query.preview === 'true' && loggedIn.value && user.value.role?.name === 'Admin') {
+  directusPreview.value = true
+}
+</script>
+```
+
+### Nested Collections
+
+Edit related items:
+
+```vue
+<template>
+  <article>
+    <!-- Edit the article -->
+    <DirectusVisualEditor
+      collection="articles"
+      :item="article.id"
+      fields="title"
+    >
+      <h1>{{ article.title }}</h1>
+    </DirectusVisualEditor>
+
+    <!-- Edit the related category -->
+    <DirectusVisualEditor
+      collection="categories"
+      :item="article.category.id"
+      fields="name"
+    >
+      <span class="category">{{ article.category.name }}</span>
+    </DirectusVisualEditor>
+
+    <!-- Edit multiple related tags -->
+    <div class="tags">
+      <DirectusVisualEditor
+        v-for="tag in article.tags"
+        :key="tag.id"
+        collection="tags"
+        :item="tag.tags_id.id"
+        fields="name"
+      >
+        <span class="tag">{{ tag.tags_id.name }}</span>
+      </DirectusVisualEditor>
+    </div>
+  </article>
+</template>
+```
+
+### Layout Builder
+
+Create editable page layouts:
+
+```vue
+<script setup>
+const directus = useDirectus()
+const route = useRoute()
+
+const { data: page } = await useAsyncData('page', () =>
+  directus.request(readItem('pages', route.params.id, {
+    fields: ['*', { blocks: ['*'] }]
+  }))
+)
+</script>
+
+<template>
+  <div class="page">
+    <!-- Edit page title -->
+    <DirectusVisualEditor
+      collection="pages"
+      :item="page.id"
+      fields="title"
+    >
+      <h1>{{ page.title }}</h1>
+    </DirectusVisualEditor>
+
+    <!-- Edit each block -->
+    <div
+      v-for="block in page.blocks"
+      :key="block.id"
+      class="block"
+    >
+      <DirectusVisualEditor
+        collection="blocks"
+        :item="block.id"
+        mode="drawer"
+      >
+        <component :is="getBlockComponent(block.type)" :data="block" />
+      </DirectusVisualEditor>
+    </div>
+  </div>
+</template>
+```
+
+## Troubleshooting
+
+### Editor Not Appearing
+
+1. Make sure `?preview=true` is in the URL
+2. Check that `directusPreview.value = true` is set
+3. Verify `visualEditor: true` in module config (default)
+4. Ensure you're logged into Directus in the same browser
+
+### Changes Not Saving
+
+1. Check that you have edit permissions for the collection
+2. Verify the `item` ID is correct
+3. Make sure field names match your Directus schema
+4. Check browser console for errors
+
+### CORS Issues
+
+The visual editor connects to your Directus instance. Ensure CORS is configured:
+
+```env
+# Directus .env
+CORS_ENABLED=true
+CORS_ORIGIN=http://localhost:3000
+CORS_CREDENTIALS=true
+```
+
+## API Reference
+
+### `DirectusVisualEditor`
+
+A component that wraps editable content.
+
+**Props:**
+```typescript
+interface DirectusVisualEditorProps {
+  collection: string                    // Directus collection name
+  item: string | number                 // Item ID (primary key)
+  fields?: string | string[]            // Field(s) to edit
+  mode?: 'drawer' | 'modal' | 'popover' // Editor display mode
+}
+```
+
+### `useDirectusPreview()`
+
+Returns a ref for controlling preview mode.
+
+**Returns:** `Ref<boolean>`
+
+**Example:**
+```typescript
+const directusPreview = useDirectusPreview()
+
+// Enable preview mode
+directusPreview.value = true
+
+// Disable preview mode
+directusPreview.value = false
+
+// Check if preview mode is active
+if (directusPreview.value) {
+  console.log('Preview mode is active')
+}
+```
+
+## See Also
+
+- [Directus Visual Editing Documentation](https://docs.directus.io/guides/headless-cms/live-preview-nuxt.html)
+- [Getting Started](/guide/getting-started)
+- [Configuration Reference](/api/configuration)
+
+================================================================================
+FILE: server-side.md
+================================================================================
+
+# Server-Side Utilities
+
+nuxt-directus-sdk provides server-side utilities for authenticating Directus requests in Nuxt server routes. These utilities automatically handle session tokens and admin authentication.
+
+## Overview
+
+The module provides several server utilities:
+
+- **`useServerDirectus(event)`** - Authenticated requests using user session
+- **`useAdminDirectus()`** - Admin requests using admin token
+- **`useTokenDirectus(token)`** - Custom token authentication
+- **`getDirectusSessionToken(event)`** - Manual token extraction
+
+## User Authentication
+
+### `useServerDirectus(event)`
+
+Use the current user's session token for authenticated requests:
+
+```typescript
+// server/api/profile.ts
+export default defineEventHandler(async (event) => {
+  const directus = useServerDirectus(event)
+
+  // This request uses the user's session token
+  const user = await directus.request(readMe())
+
+  return { user }
+})
+```
+
+This automatically:
+1. Extracts the session token from cookies
+2. Attaches it to Directus requests
+3. Maintains the user's authentication context
+
+### Complete Example
+
+```typescript
+// server/api/my-articles.ts
+import { readItems } from '@directus/sdk'
+
+export default defineEventHandler(async (event) => {
+  const directus = useServerDirectus(event)
+
+  try {
+    // Get current user
+    const user = await directus.request(readMe())
+
+    // Fetch user's articles
+    const articles = await directus.request(readItems('articles', {
+      filter: {
+        author: { _eq: user.id }
+      },
+      sort: ['-date_created'],
+      limit: 10,
+    }))
+
+    return {
+      user,
+      articles,
+    }
+  } catch (error) {
+    throw createError({
+      statusCode: 401,
+      message: 'Unauthorized - Please log in',
+    })
+  }
+})
+```
+
+## Admin Authentication
+
+### `useAdminDirectus()`
+
+Use the admin token for privileged operations:
+
+```typescript
+// server/api/admin/users.ts
+import { readUsers } from '@directus/sdk'
+
+export default defineEventHandler(async () => {
+  const directus = useAdminDirectus()
+
+  // Admin-level access to all users
+  const users = await directus.request(readUsers({
+    fields: ['id', 'email', 'first_name', 'last_name', 'role'],
+  }))
+
+  return { users }
+})
+```
+
+Requirements:
+- `DIRECTUS_ADMIN_TOKEN` must be set in `.env`
+- Should only be used for server-side operations
+- Never expose admin token to client
+
+### Admin Operations
+
+```typescript
+// server/api/admin/create-user.ts
+import { createUser } from '@directus/sdk'
+
+export default defineEventHandler(async (event) => {
+  const directus = useAdminDirectus()
+  const body = await readBody(event)
+
+  // Create user with admin privileges
+  const user = await directus.request(createUser({
+    email: body.email,
+    password: body.password,
+    role: body.role,
+  }))
+
+  return { user }
+})
+```
+
+## Custom Token Authentication
+
+### `useTokenDirectus(token?)`
+
+Use a custom token for authentication:
+
+```typescript
+// server/api/custom-auth.ts
+export default defineEventHandler(async (event) => {
+  // Get token from header
+  const token = getHeader(event, 'Authorization')?.replace('Bearer ', '')
+
+  if (!token) {
+    throw createError({
+      statusCode: 401,
+      message: 'No token provided',
+    })
+  }
+
+  const directus = useTokenDirectus(token)
+
+  const user = await directus.request(readMe())
+
+  return { user }
+})
+```
+
+### API Key Authentication
+
+```typescript
+// server/api/webhook.ts
+export default defineEventHandler(async (event) => {
+  const apiKey = getHeader(event, 'X-API-Key')
+
+  // Validate API key and get associated token
+  const token = await validateApiKey(apiKey)
+
+  const directus = useTokenDirectus(token)
+
+  // Make authenticated request
+  const items = await directus.request(readItems('webhooks'))
+
+  return { items }
+})
+```
+
+## Manual Token Extraction
+
+### `getDirectusSessionToken(event)`
+
+Extract the session token manually:
+
+```typescript
+// server/api/check-auth.ts
+export default defineEventHandler((event) => {
+  const token = getDirectusSessionToken(event)
+
+  return {
+    authenticated: !!token,
+    token: token ? '***' : null, // Don't expose actual token
+  }
+})
+```
+
+Use case: Custom authentication logic
+
+```typescript
+// server/middleware/auth.ts
+export default defineEventHandler((event) => {
+  const publicPaths = ['/api/public']
+
+  if (publicPaths.some(path => event.path.startsWith(path))) {
+    return
+  }
+
+  const token = getDirectusSessionToken(event)
+
+  if (!token) {
+    throw createError({
+      statusCode: 401,
+      message: 'Authentication required',
+    })
+  }
+})
+```
+
+## Advanced Examples
+
+### Protected API Route
+
+```typescript
+// server/api/protected/data.ts
+import { readItems } from '@directus/sdk'
+
+export default defineEventHandler(async (event) => {
+  // Verify user is authenticated
+  const token = getDirectusSessionToken(event)
+  if (!token) {
+    throw createError({
+      statusCode: 401,
+      message: 'Unauthorized',
+    })
+  }
+
+  const directus = useServerDirectus(event)
+
+  // Get user data
+  const user = await directus.request(readMe())
+
+  // Check user role
+  if (user.role.name !== 'Admin') {
+    throw createError({
+      statusCode: 403,
+      message: 'Forbidden - Admin access required',
+    })
+  }
+
+  // Fetch sensitive data
+  const data = await directus.request(readItems('sensitive_data'))
+
+  return { data }
+})
+```
+
+### Hybrid Authentication
+
+Combine user and admin authentication:
+
+```typescript
+// server/api/analytics.ts
+import { readItems } from '@directus/sdk'
+
+export default defineEventHandler(async (event) => {
+  // Try user authentication first
+  const userToken = getDirectusSessionToken(event)
+
+  let directus
+  let scope = 'public'
+
+  if (userToken) {
+    directus = useServerDirectus(event)
+    const user = await directus.request(readMe())
+
+    // Admins get full data
+    if (user.role.name === 'Admin') {
+      directus = useAdminDirectus()
+      scope = 'admin'
+    } else {
+      scope = 'user'
+    }
+  } else {
+    // Public users get limited data
+    directus = useAdminDirectus() // Still need read access
+    scope = 'public'
+  }
+
+  // Fetch data based on scope
+  const filter = scope === 'public'
+    ? { status: { _eq: 'published' } }
+    : {}
+
+  const analytics = await directus.request(readItems('analytics', {
+    filter,
+    limit: scope === 'admin' ? -1 : 10,
+  }))
+
+  return { scope, analytics }
+})
+```
+
+### Batch Operations
+
+```typescript
+// server/api/batch/import.ts
+import { createItems } from '@directus/sdk'
+
+export default defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const directus = useAdminDirectus()
+
+  // Batch create items
+  const results = await directus.request(createItems('items', body.items))
+
+  return {
+    success: true,
+    count: results.length,
+    items: results,
+  }
+})
+```
+
+### File Upload Handler
+
+```typescript
+// server/api/upload.ts
+import { uploadFiles } from '@directus/sdk'
+import { readFiles } from 'h3'
+
+export default defineEventHandler(async (event) => {
+  const directus = useServerDirectus(event)
+
+  // Read multipart form data
+  const files = await readFiles(event)
+
+  if (!files || files.length === 0) {
+    throw createError({
+      statusCode: 400,
+      message: 'No files provided',
+    })
+  }
+
+  const formData = new FormData()
+
+  files.forEach(file => {
+    formData.append('file', file)
+  })
+
+  // Upload to Directus
+  const uploaded = await directus.request(uploadFiles(formData))
+
+  return { uploaded }
+})
+```
+
+### Scheduled Task
+
+```typescript
+// server/tasks/sync.ts
+import { readItems, updateItem } from '@directus/sdk'
+
+export default defineTask({
+  meta: {
+    name: 'sync:data',
+    description: 'Sync data with external API',
+  },
+  async run() {
+    const directus = useAdminDirectus()
+
+    // Fetch items to sync
+    const items = await directus.request(readItems('sync_queue', {
+      filter: { status: { _eq: 'pending' } },
+      limit: 100,
+    }))
+
+    for (const item of items) {
+      try {
+        // Sync with external API
+        await syncToExternalAPI(item)
+
+        // Update status
+        await directus.request(updateItem('sync_queue', item.id, {
+          status: 'completed',
+          synced_at: new Date(),
+        }))
+      } catch (error) {
+        console.error(`Failed to sync item ${item.id}:`, error)
+      }
+    }
+
+    return { synced: items.length }
+  },
+})
+```
+
+### Database Query Helper
+
+```typescript
+// server/utils/db.ts
+import type { Query } from '@directus/sdk'
+
+export async function fetchWithAuth<T>(
+  event: H3Event,
+  collection: string,
+  query?: Query<DirectusSchema, any>
+) {
+  const directus = useServerDirectus(event)
+  return directus.request(readItems(collection, query))
+}
+
+// Usage in route
+// server/api/posts.ts
+export default defineEventHandler(async (event) => {
+  const posts = await fetchWithAuth(event, 'posts', {
+    sort: ['-date_created'],
+    limit: 20,
+  })
+
+  return { posts }
+})
+```
+
+### Role-Based Access Control
+
+```typescript
+// server/utils/auth.ts
+export async function requireRole(event: H3Event, requiredRole: string) {
+  const directus = useServerDirectus(event)
+
+  const user = await directus.request(readMe({
+    fields: ['id', 'email', 'role.*'],
+  }))
+
+  if (user.role.name !== requiredRole) {
+    throw createError({
+      statusCode: 403,
+      message: `Access denied - ${requiredRole} role required`,
+    })
+  }
+
+  return user
+}
+
+// Usage
+// server/api/admin/settings.ts
+export default defineEventHandler(async (event) => {
+  await requireRole(event, 'Admin')
+
+  const directus = useAdminDirectus()
+  const settings = await directus.request(readSingleton('settings'))
+
+  return { settings }
+})
+```
+
+## Configuration
+
+### Admin Token Setup
+
+Set your admin token in `.env`:
+
+```env
+DIRECTUS_ADMIN_TOKEN=your_admin_token_here
+```
+
+Get your admin token from Directus:
+1. Go to Directus Admin → User Menu → Account
+2. Copy your token under "Admin Access Token"
+
+### Security Best Practices
+
+1. **Never expose admin token to client**
+   ```typescript
+   // ❌ DON'T
+   export default defineEventHandler(() => {
+     return { adminToken: process.env.DIRECTUS_ADMIN_TOKEN }
+   })
+
+   // ✅ DO
+   export default defineEventHandler(() => {
+     const directus = useAdminDirectus()
+     // Use admin token internally only
+   })
+   ```
+
+2. **Always validate user input**
+   ```typescript
+   export default defineEventHandler(async (event) => {
+     const body = await readBody(event)
+
+     // Validate input
+     if (!body.email || !isValidEmail(body.email)) {
+       throw createError({ statusCode: 400, message: 'Invalid email' })
+     }
+
+     const directus = useServerDirectus(event)
+     // Proceed with validated data
+   })
+   ```
+
+3. **Use appropriate authentication level**
+   ```typescript
+   // User operations - use user session
+   const directus = useServerDirectus(event)
+
+   // Admin operations - use admin token
+   const directus = useAdminDirectus()
+   ```
+
+## API Reference
+
+### `useServerDirectus(event)`
+
+Create a Directus client authenticated with the user's session token.
+
+**Parameters:**
+- `event: H3Event` - The Nuxt server event
+
+**Returns:** `DirectusClient` - Authenticated Directus client
+
+**Example:**
+```typescript
+const directus = useServerDirectus(event)
+const user = await directus.request(readMe())
+```
+
+### `useAdminDirectus()`
+
+Create a Directus client authenticated with the admin token.
+
+**Returns:** `DirectusClient` - Admin-authenticated Directus client
+
+**Throws:** Error if `DIRECTUS_ADMIN_TOKEN` is not set
+
+**Example:**
+```typescript
+const directus = useAdminDirectus()
+const users = await directus.request(readUsers())
+```
+
+### `useTokenDirectus(token?)`
+
+Create a Directus client with a custom token.
+
+**Parameters:**
+- `token?: string` - Optional authentication token
+
+**Returns:** `DirectusClient` - Token-authenticated Directus client
+
+**Example:**
+```typescript
+const directus = useTokenDirectus('custom-token')
+const items = await directus.request(readItems('items'))
+```
+
+### `getDirectusSessionToken(event)`
+
+Extract the session token from cookies.
+
+**Parameters:**
+- `event: H3Event` - The Nuxt server event
+
+**Returns:** `string | undefined` - The session token if present
+
+**Example:**
+```typescript
+const token = getDirectusSessionToken(event)
+if (token) {
+  console.log('User is authenticated')
+}
+```
+
+### `useDirectusUrl(path?)`
+
+Get the full Directus URL for a given path.
+
+**Parameters:**
+- `path?: string` - Optional path to append
+
+**Returns:** `string` - Full Directus URL
+
+**Example:**
+```typescript
+const assetsUrl = useDirectusUrl('assets')
+// Returns: https://your-directus.com/assets
+```
+
+## Troubleshooting
+
+### Token Not Found
+
+If `getDirectusSessionToken()` returns `undefined`:
+
+1. Check that user is logged in on the frontend
+2. Verify cookies are being sent with requests
+3. Check cookie name is `directus_session_token`
+4. Ensure `credentials: 'include'` is set in module config
+
+### Admin Token Errors
+
+If you get "DIRECTUS_ADMIN_TOKEN is not set":
+
+1. Add `DIRECTUS_ADMIN_TOKEN` to your `.env` file
+2. Restart your development server
+3. Verify the token is valid in Directus
+
+### Permission Errors
+
+If you get permission errors:
+
+1. Verify the user/token has appropriate permissions in Directus
+2. Check collection access settings in Directus
+3. Use `useAdminDirectus()` for privileged operations
+
+## See Also
+
+- [Authentication Guide](/guide/authentication)
+- [Getting Started](/guide/getting-started)
+- [Configuration Reference](/api/configuration)
+- [Directus Server-Side Documentation](https://docs.directus.io/)
+
+================================================================================
+FILE: configuration.md
+================================================================================
+
+# Configuration Reference
+
+Complete reference for all nuxt-directus-sdk configuration options.
+
+## Module Options
+
+Configure the module in your `nuxt.config.ts`:
+
+```typescript
+export default defineNuxtConfig({
+  modules: ['nuxt-directus-sdk'],
+
+  directus: {
+    // Configuration options here
+  },
+})
+```
+
+## Core Options
+
+### `url`
+
+- **Type:** `string`
+- **Required:** Yes
+- **Default:** `process.env.DIRECTUS_URL`
+- **Environment Variable:** `DIRECTUS_URL`
+
+Your Directus instance URL.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    url: 'https://your-directus-instance.com',
+  },
+})
+```
+
+Or use environment variable:
+
+```env
+DIRECTUS_URL=https://your-directus-instance.com
+```
+
+### `adminToken`
+
+- **Type:** `string`
+- **Required:** No (required for type generation and admin operations)
+- **Default:** `process.env.DIRECTUS_ADMIN_TOKEN`
+- **Environment Variable:** `DIRECTUS_ADMIN_TOKEN`
+
+Admin token for privileged operations and type generation.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    adminToken: 'your-admin-token',
+  },
+})
+```
+
+Or use environment variable:
+
+```env
+DIRECTUS_ADMIN_TOKEN=your-admin-token-here
+```
+
+**Security Note:** Never commit admin tokens to version control. Always use environment variables.
+
+## Development Options
+
+### `devProxy`
+
+- **Type:** `boolean | { enabled?: boolean, path?: string }`
+- **Default:** `{ enabled: true, path: '/directus' }` in dev mode
+- **Default:** `false` in production
+
+Development proxy configuration. When enabled, creates a proxy that forwards requests to your Directus instance, eliminating CORS issues.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    // Simple boolean
+    devProxy: true,
+
+    // Or detailed configuration
+    devProxy: {
+      enabled: true,
+      path: '/directus', // Proxy mount path
+    },
+  },
+})
+```
+
+**How it works:**
+- In development: Requests to `http://localhost:3000/directus` forward to your Directus URL
+- In production: Direct connection to Directus URL
+- WebSocket proxy available at `${path}-ws` for realtime features
+
+**Disable proxy:**
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    devProxy: false, // Use direct connection in dev
+  },
+})
+```
+
+### `devtools`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Add Directus admin panel to Nuxt Devtools.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    devtools: true, // Enable Directus tab in devtools
+  },
+})
+```
+
+When enabled, you can access the Directus admin panel directly from Nuxt Devtools.
+
+### `visualEditor`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Enable visual editor capabilities for live preview and inline editing.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    visualEditor: true, // Enable DirectusVisualEditor component
+  },
+})
+```
+
+When disabled, the `DirectusVisualEditor` component will be a no-op.
+
+## Type Generation
+
+### `types`
+
+Configure TypeScript type generation from your Directus schema.
+
+#### `types.enabled`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Enable/disable automatic type generation.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    types: {
+      enabled: true, // Generate types from Directus schema
+    },
+  },
+})
+```
+
+Requires `adminToken` to be set.
+
+#### `types.prefix`
+
+- **Type:** `string`
+- **Default:** `''`
+
+Add a prefix to your custom collection types.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    types: {
+      prefix: 'App', // Types become: AppArticles, AppProducts, etc.
+    },
+  },
+})
+```
+
+## Authentication Options
+
+### `auth`
+
+Authentication configuration.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      // Auth options here
+    },
+  },
+})
+```
+
+#### `auth.enabled`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Enable/disable authentication features.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      enabled: true,
+    },
+  },
+})
+```
+
+#### `auth.enableGlobalAuthMiddleware`
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+Enable global authentication middleware on all routes.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      enableGlobalAuthMiddleware: true, // All routes require auth by default
+    },
+  },
+})
+```
+
+When enabled, all routes are protected. Allow public routes with:
+
+```vue
+<script setup>
+definePageMeta({
+  middleware: [] // Override global middleware
+})
+</script>
+```
+
+#### `auth.autoRefresh`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Automatically refresh authentication tokens before expiry.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      autoRefresh: true, // Auto-refresh session tokens
+    },
+  },
+})
+```
+
+#### `auth.credentials`
+
+- **Type:** `'include' | 'omit' | 'same-origin'`
+- **Default:** `'include'`
+
+Credentials mode for cross-domain requests.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      credentials: 'include', // Required for cross-domain cookies
+    },
+  },
+})
+```
+
+**Options:**
+- `'include'` - Always send cookies (required for cross-domain)
+- `'same-origin'` - Only send cookies for same-origin requests
+- `'omit'` - Never send cookies
+
+#### `auth.realtimeAuthMode`
+
+- **Type:** `'public' | 'handshake' | 'strict'`
+- **Default:** `'public'`
+
+WebSocket authentication mode for realtime features.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      realtimeAuthMode: 'handshake',
+    },
+  },
+})
+```
+
+**Modes:**
+- `'public'` - No authentication required
+- `'handshake'` - Authenticate during connection
+- `'strict'` - Full authentication required
+
+#### `auth.readMeFields`
+
+- **Type:** `Array<string>`
+- **Default:** `[]` (fetches all fields)
+
+Fields to fetch for the current user.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      readMeFields: ['id', 'email', 'first_name', 'last_name', 'avatar'],
+    },
+  },
+})
+```
+
+Reduces payload size by only fetching needed fields.
+
+#### `auth.redirect`
+
+Redirect configuration for authentication.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    auth: {
+      redirect: {
+        home: '/',                  // After login
+        login: '/account/login',    // When not authenticated
+        logout: '/',                // After logout
+      },
+    },
+  },
+})
+```
+
+##### `auth.redirect.home`
+
+- **Type:** `string`
+- **Default:** `'/'`
+
+Where to redirect after successful login.
+
+##### `auth.redirect.login`
+
+- **Type:** `string`
+- **Default:** `'/account/login'`
+
+Where to redirect when authentication is required.
+
+##### `auth.redirect.logout`
+
+- **Type:** `string`
+- **Default:** `'/'`
+
+Where to redirect after logout.
+
+## Complete Configuration Example
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['nuxt-directus-sdk'],
+
+  directus: {
+    // Core configuration
+    url: process.env.DIRECTUS_URL,
+    adminToken: process.env.DIRECTUS_ADMIN_TOKEN,
+
+    // Development
+    devProxy: {
+      enabled: true,
+      path: '/directus',
+    },
+    devtools: true,
+    visualEditor: true,
+
+    // Type generation
+    types: {
+      enabled: true,
+      prefix: 'App',
+    },
+
+    // Authentication
+    auth: {
+      enabled: true,
+      enableGlobalAuthMiddleware: false,
+      autoRefresh: true,
+      credentials: 'include',
+      realtimeAuthMode: 'handshake',
+      readMeFields: ['id', 'email', 'first_name', 'last_name', 'avatar', 'role'],
+      redirect: {
+        home: '/dashboard',
+        login: '/auth/login',
+        logout: '/auth/login',
+      },
+    },
+  },
+})
+```
+
+## Environment Variables
+
+### Development (.env)
+
+```env
+# Required
+DIRECTUS_URL=http://localhost:8055
+
+# Optional (for type generation and admin operations)
+DIRECTUS_ADMIN_TOKEN=your-admin-token-here
+```
+
+### Production
+
+For production, set environment variables in your hosting platform:
+
+**Vercel:**
+```bash
+vercel env add DIRECTUS_URL production
+vercel env add DIRECTUS_ADMIN_TOKEN production
+```
+
+**Netlify:**
+```bash
+# In Netlify UI: Site settings → Environment variables
+DIRECTUS_URL=https://your-directus.com
+DIRECTUS_ADMIN_TOKEN=your-token
+```
+
+**Docker:**
+```dockerfile
+ENV DIRECTUS_URL=https://your-directus.com
+ENV DIRECTUS_ADMIN_TOKEN=your-token
+```
+
+## Runtime Config Access
+
+Access configuration at runtime:
+
+```typescript
+// Client-side and server-side
+const config = useRuntimeConfig()
+console.log(config.public.directus.url)
+
+// Server-side only (includes adminToken)
+const config = useRuntimeConfig()
+console.log(config.directus.adminToken)
+```
+
+**Note:** `adminToken` is automatically excluded from public runtime config for security.
+
+## TypeScript Configuration
+
+The module automatically adds type declarations. Ensure your `tsconfig.json` extends Nuxt's config:
+
+```json
+{
+  "extends": "./.nuxt/tsconfig.json"
+}
+```
+
+Generated types are available globally:
+
+```typescript
+// Access generated types
+type Article = DirectusSchema['articles']
+type User = DirectusUsers
+type File = DirectusFiles
+
+// Use with Directus SDK
+const directus = useDirectus()
+const articles = await directus.request(readItems('articles'))
+// articles is typed as Article[]
+```
+
+## Directus Server Configuration
+
+### Required Directus Settings
+
+For the module to work correctly, configure your Directus instance:
+
+```env
+# Directus .env
+
+# Authentication
+AUTH_LOCAL_MODE=session
+
+# Session cookies
+SESSION_COOKIE_SECURE=true  # false in development
+SESSION_COOKIE_SAME_SITE=Lax  # None for cross-domain
+SESSION_COOKIE_DOMAIN=.yourdomain.com  # For cross-domain
+
+# CORS (required)
+CORS_ENABLED=true
+CORS_ORIGIN=https://your-nuxt-app.com
+CORS_CREDENTIALS=true
+
+# Realtime/WebSocket (optional)
+WEBSOCKETS_ENABLED=true
+WEBSOCKETS_REST_AUTH=strict
+```
+
+### Same Domain Setup
+
+If Nuxt and Directus are on the same domain:
+
+```env
+# Directus .env
+SESSION_COOKIE_SECURE=false  # true in production
+SESSION_COOKIE_SAME_SITE=Lax
+CORS_ORIGIN=http://localhost:3000
+```
+
+### Cross-Domain Setup
+
+If on different domains (e.g., app.example.com and api.example.com):
+
+```env
+# Directus .env
+SESSION_COOKIE_DOMAIN=.example.com  # Shared parent domain
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAME_SITE=None  # Required for cross-domain
+CORS_ORIGIN=https://app.example.com
+```
+
+## Migration Guide
+
+### From v1 to v2
+
+```typescript
+// v1
+export default defineNuxtConfig({
+  directus: {
+    url: process.env.DIRECTUS_URL,
+    token: process.env.DIRECTUS_TOKEN, // ❌ Removed
+  },
+})
+
+// v2
+export default defineNuxtConfig({
+  directus: {
+    url: process.env.DIRECTUS_URL,
+    adminToken: process.env.DIRECTUS_ADMIN_TOKEN, // ✅ New name
+  },
+})
+```
+
+### Environment Variable Changes
+
+```env
+# v1
+DIRECTUS_TOKEN=xxx  # ❌ Deprecated
+
+# v2
+DIRECTUS_ADMIN_TOKEN=xxx  # ✅ New name
+```
+
+## See Also
+
+- [Getting Started](/guide/getting-started)
+- [Authentication Guide](/guide/authentication)
+- [Server-Side Utils](/guide/server-side)
+- [Composables Reference](/api/composables)
+
+================================================================================
+FILE: composables.md
+================================================================================
+
+# Composables Reference
+
+Complete API reference for all composables provided by nuxt-directus-sdk.
+
+## Authentication Composables
+
+### `useDirectusAuth()`
+
+Main authentication composable with methods and state for user authentication.
+
+**Returns:** `DirectusAuth`
+
+```typescript
+interface DirectusAuth {
+  user: Ref<DirectusUsers | null>
+  loggedIn: ComputedRef<boolean>
+  readMe: () => Promise<DirectusUsers | null>
+  updateMe: (data: Partial<DirectusUsers>) => Promise<DirectusUsers | null>
+  login: (email: string, password: string, options?) => Promise<DirectusUsers | null>
+  loginWithProvider: (provider: string, redirectOnLogin?: string) => Promise<void>
+  logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
+  createUser: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
+  register: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
+  inviteUser: (email: string, role: string, inviteUrl?: string) => Promise<void>
+  acceptUserInvite: (token: string, password: string) => Promise<void>
+  passwordRequest: (email: string, resetUrl?: string) => Promise<void>
+  passwordReset: (token: string, password: string) => Promise<void>
+}
+```
+
+**Example:**
+
+```typescript
+const {
+  user,
+  loggedIn,
+  login,
+  logout,
+  readMe,
+  updateMe,
+} = useDirectusAuth()
+
+// Login
+await login('user@example.com', 'password')
+
+// Check if logged in
+if (loggedIn.value) {
+  console.log('Logged in as:', user.value.email)
+}
+
+// Update user
+await updateMe({ first_name: 'John' })
+
+// Logout
+await logout()
+```
+
+#### Properties
+
+##### `user`
+
+- **Type:** `Ref<DirectusUsers | null>`
+- **Description:** Current authenticated user
+
+```typescript
+const { user } = useDirectusAuth()
+
+console.log(user.value?.email)
+console.log(user.value?.first_name)
+console.log(user.value?.role)
+```
+
+##### `loggedIn`
+
+- **Type:** `ComputedRef<boolean>`
+- **Description:** Whether a user is currently logged in
+
+```typescript
+const { loggedIn } = useDirectusAuth()
+
+if (loggedIn.value) {
+  console.log('User is authenticated')
+}
+```
+
+#### Methods
+
+##### `readMe()`
+
+Fetch the current user's data.
+
+**Returns:** `Promise<DirectusUsers | null>`
+
+```typescript
+const { readMe } = useDirectusAuth()
+
+const user = await readMe()
+```
+
+##### `updateMe(data)`
+
+Update the current user's profile.
+
+**Parameters:**
+- `data: Partial<DirectusUsers>` - Fields to update
+
+**Returns:** `Promise<DirectusUsers | null>`
+
+```typescript
+const { updateMe } = useDirectusAuth()
+
+await updateMe({
+  first_name: 'John',
+  last_name: 'Doe',
+  avatar: 'file-uuid',
+})
+```
+
+##### `login(email, password, options?)`
+
+Login with email and password.
+
+**Parameters:**
+- `email: string` - User email
+- `password: string` - User password
+- `options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }` - Login options
+
+**Returns:** `Promise<DirectusUsers | null>`
+
+```typescript
+const { login } = useDirectusAuth()
+
+// Login with redirect (default)
+await login('user@example.com', 'password')
+
+// Login without redirect
+await login('user@example.com', 'password', { redirect: false })
+
+// Login with custom redirect
+await login('user@example.com', 'password', { redirect: '/dashboard' })
+
+// Login with OTP
+await login('user@example.com', 'password', { otp: '123456' })
+```
+
+##### `loginWithProvider(provider, redirectOnLogin?)`
+
+Login with SSO/OAuth provider.
+
+**Parameters:**
+- `provider: string` - Provider name (google, github, microsoft, etc.)
+- `redirectOnLogin?: string` - URL to redirect to after login
+
+**Returns:** `Promise<void>`
+
+```typescript
+const { loginWithProvider } = useDirectusAuth()
+
+// Login with Google
+await loginWithProvider('google')
+
+// Login with custom redirect
+await loginWithProvider('google', '/dashboard')
+```
+
+##### `logout(redirect?)`
+
+Logout the current user.
+
+**Parameters:**
+- `redirect?: boolean | RouteLocationRaw` - Where to redirect after logout
+
+**Returns:** `Promise<void>`
+
+```typescript
+const { logout } = useDirectusAuth()
+
+// Logout with default redirect
+await logout()
+
+// Logout without redirect
+await logout(false)
+
+// Logout with custom redirect
+await logout('/login')
+```
+
+##### `createUser(data)` / `register(data)`
+
+Create a new user account. `register()` is an alias for `createUser()`.
+
+**Parameters:**
+- `data: Partial<DirectusUsers>` - User data
+
+**Returns:** `Promise<DirectusUsers>`
+
+```typescript
+const { register } = useDirectusAuth()
+
+const newUser = await register({
+  email: 'new@example.com',
+  password: 'secure-password',
+  first_name: 'John',
+  last_name: 'Doe',
+})
+```
+
+##### `inviteUser(email, role, inviteUrl?)`
+
+Invite a new user.
+
+**Parameters:**
+- `email: string` - User email
+- `role: string` - Role ID or UUID
+- `inviteUrl?: string` - Custom invite URL
+
+**Returns:** `Promise<void>`
+
+```typescript
+const { inviteUser } = useDirectusAuth()
+
+await inviteUser(
+  'newuser@example.com',
+  'role-uuid',
+  'https://yourapp.com/accept-invite'
+)
+```
+
+##### `acceptUserInvite(token, password)`
+
+Accept a user invitation.
+
+**Parameters:**
+- `token: string` - Invite token
+- `password: string` - New password
+
+**Returns:** `Promise<void>`
+
+```typescript
+const { acceptUserInvite } = useDirectusAuth()
+
+await acceptUserInvite('invite-token', 'new-password')
+```
+
+##### `passwordRequest(email, resetUrl?)`
+
+Request a password reset.
+
+**Parameters:**
+- `email: string` - User email
+- `resetUrl?: string` - Custom reset URL
+
+**Returns:** `Promise<void>`
+
+```typescript
+const { passwordRequest } = useDirectusAuth()
+
+await passwordRequest(
+  'user@example.com',
+  'https://yourapp.com/reset-password'
+)
+```
+
+##### `passwordReset(token, password)`
+
+Reset password with token.
+
+**Parameters:**
+- `token: string` - Reset token
+- `password: string` - New password
+
+**Returns:** `Promise<void>`
+
+```typescript
+const { passwordReset } = useDirectusAuth()
+
+await passwordReset('reset-token', 'new-password')
+```
+
+---
+
+### `useDirectusUser()`
+
+Direct access to the current user state.
+
+**Returns:** `Ref<DirectusUsers | null>`
+
+```typescript
+const user = useDirectusUser()
+
+console.log(user.value?.email)
+console.log(user.value?.first_name)
+
+// Watch for changes
+watch(user, (newUser) => {
+  if (newUser) {
+    console.log('User logged in:', newUser.email)
+  } else {
+    console.log('User logged out')
+  }
+})
+```
+
+## Directus Client Composables
+
+### `useDirectus()`
+
+Get the Directus client instance for making API requests.
+
+**Returns:** `DirectusClient<DirectusSchema>`
+
+```typescript
+const directus = useDirectus()
+
+// Read items
+const articles = await directus.request(readItems('articles'))
+
+// Create item
+const newArticle = await directus.request(createItem('articles', {
+  title: 'New Article',
+  content: 'Article content...',
+}))
+
+// Update item
+await directus.request(updateItem('articles', 'item-id', {
+  title: 'Updated Title',
+}))
+
+// Delete item
+await directus.request(deleteItem('articles', 'item-id'))
+
+// Read singleton
+const settings = await directus.request(readSingleton('settings'))
+
+// Custom queries
+const { data } = await useAsyncData('articles', () =>
+  directus.request(readItems('articles', {
+    filter: { status: { _eq: 'published' } },
+    sort: ['-date_created'],
+    limit: 10,
+  }))
+)
+```
+
+**Common Operations:**
+
+```typescript
+import {
+  readItems,
+  readItem,
+  createItem,
+  createItems,
+  updateItem,
+  updateItems,
+  deleteItem,
+  deleteItems,
+  readSingleton,
+  updateSingleton,
+} from '@directus/sdk'
+
+const directus = useDirectus()
+
+// Collections
+const items = await directus.request(readItems('collection'))
+const item = await directus.request(readItem('collection', 'id'))
+const created = await directus.request(createItem('collection', data))
+const updated = await directus.request(updateItem('collection', 'id', data))
+await directus.request(deleteItem('collection', 'id'))
+
+// Singletons
+const singleton = await directus.request(readSingleton('settings'))
+await directus.request(updateSingleton('settings', data))
+```
+
+---
+
+### `useDirectusUrl(path?)`
+
+Generate full URLs to your Directus instance.
+
+**Parameters:**
+- `path?: string` - Optional path to append
+
+**Returns:** `string`
+
+```typescript
+const directusUrl = useDirectusUrl()
+// Returns: https://your-directus.com
+
+const apiUrl = useDirectusUrl('items/articles')
+// Returns: https://your-directus.com/items/articles
+
+const assetsUrl = useDirectusUrl('assets')
+// Returns: https://your-directus.com/assets
+
+const adminUrl = useDirectusUrl('admin')
+// Returns: https://your-directus.com/admin
+```
+
+---
+
+### `useDirectusPreview()`
+
+Control and check visual editor preview mode.
+
+**Returns:** `Ref<boolean>`
+
+```typescript
+const directusPreview = useDirectusPreview()
+
+// Enable preview mode
+directusPreview.value = true
+
+// Disable preview mode
+directusPreview.value = false
+
+// Check if preview mode is active
+if (directusPreview.value) {
+  console.log('Preview mode is enabled')
+}
+
+// Use in templates
+<template>
+  <div v-if="directusPreview">
+    Preview Mode Active
+  </div>
+</template>
+```
+
+**Common Usage:**
+
+```vue
+<script setup>
+const route = useRoute()
+const directusPreview = useDirectusPreview()
+
+// Enable preview mode with ?preview=true
+if (route.query.preview === 'true') {
+  directusPreview.value = true
+}
+</script>
+
+<template>
+  <DirectusVisualEditor
+    v-if="directusPreview"
+    collection="articles"
+    :item="article.id"
+  >
+    <h1>{{ article.title }}</h1>
+  </DirectusVisualEditor>
+
+  <h1 v-else>{{ article.title }}</h1>
+</template>
+```
+
+## File Composables
+
+### `uploadDirectusFile(file, query?)`
+
+Upload a single file to Directus.
+
+**Parameters:**
+- `file: { file: File, data?: Partial<DirectusFiles> }` - File and metadata
+- `query?: Query` - Directus query options
+
+**Returns:** `Promise<DirectusFiles>`
+
+```typescript
+import { uploadDirectusFile } from '#imports'
+
+const file = event.target.files[0]
+
+const uploaded = await uploadDirectusFile({
+  file,
+  data: {
+    title: 'My Image',
+    description: 'Image description',
+    folder: 'folder-uuid',
+  }
+}, {
+  fields: ['*'],
+})
+
+console.log('Uploaded:', uploaded.id)
+```
+
+---
+
+### `uploadDirectusFiles(files, query?)`
+
+Upload multiple files to Directus.
+
+**Parameters:**
+- `files: Array<{ file: File, data?: Partial<DirectusFiles> }>` - Files and metadata
+- `query?: Query` - Directus query options
+
+**Returns:** `Promise<DirectusFiles[]>`
+
+```typescript
+import { uploadDirectusFiles } from '#imports'
+
+const files = Array.from(event.target.files).map(file => ({
+  file,
+  data: {
+    folder: 'folder-uuid',
+  }
+}))
+
+const uploaded = await uploadDirectusFiles(files)
+
+console.log('Uploaded files:', uploaded.length)
+```
+
+---
+
+### `getDirectusFileUrl(file, options?)`
+
+Generate a URL for a Directus file with optional transformations.
+
+**Parameters:**
+- `file: string | DirectusFiles` - File ID or file object
+- `options?: DirectusFileOptions` - Transformation options
+
+**Returns:** `string`
+
+```typescript
+import { getDirectusFileUrl } from '#imports'
+
+// Basic URL
+const url = getDirectusFileUrl('file-uuid')
+
+// With transformations
+const url = getDirectusFileUrl('file-uuid', {
+  width: 800,
+  height: 600,
+  quality: 80,
+  fit: 'cover',
+  format: 'webp',
+})
+
+// From file object
+const file = await directus.request(readFile('file-uuid'))
+const url = getDirectusFileUrl(file, { width: 400 })
+
+// Download link
+const downloadUrl = getDirectusFileUrl(file, {
+  download: true,
+  filename: 'custom-name.jpg',
+})
+```
+
+**Options:**
+
+```typescript
+interface DirectusFileOptions {
+  filename?: string              // Custom filename for downloads
+  download?: boolean             // Force download
+  width?: number                 // Resize width
+  height?: number                // Resize height
+  quality?: number               // Image quality (1-100)
+  fit?: 'cover' | 'contain' | 'inside' | 'outside'
+  format?: 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'
+  withoutEnlargement?: boolean   // Prevent upscaling
+  key?: string                   // Access key for private files
+}
+```
+
+**Examples:**
+
+```typescript
+// Responsive image sizes
+const thumbnail = getDirectusFileUrl(file, { width: 200, format: 'webp' })
+const medium = getDirectusFileUrl(file, { width: 800, format: 'webp' })
+const large = getDirectusFileUrl(file, { width: 1600, format: 'webp' })
+
+// High-quality cover image
+const cover = getDirectusFileUrl(file, {
+  width: 1920,
+  height: 1080,
+  fit: 'cover',
+  quality: 90,
+  format: 'webp',
+})
+
+// Optimized thumbnail
+const thumb = getDirectusFileUrl(file, {
+  width: 300,
+  height: 300,
+  fit: 'cover',
+  quality: 70,
+  format: 'webp',
+  withoutEnlargement: true,
+})
+```
+
+## Storage Composables
+
+### `useDirectusStorage()`
+
+Get the Directus client storage instance (primarily for internal use).
+
+**Returns:** `DirectusStorage`
+
+```typescript
+const storage = useDirectusStorage()
+
+// Get item
+const token = await storage.get('directus_session_token')
+
+// Set item
+await storage.set('directus_session_token', 'token-value')
+
+// Delete item
+await storage.delete('directus_session_token')
+```
+
+**Note:** This composable is mainly used internally for session management. You typically won't need to use it directly.
+
+## Auto-Imported Directus SDK Functions
+
+The module auto-imports commonly used Directus SDK functions:
+
+```typescript
+// Items
+readItems, readItem, createItem, createItems,
+updateItem, updateItems, deleteItem, deleteItems
+
+// Singletons
+readSingleton, updateSingleton
+
+// Files
+readFile, readFiles, updateFile, updateFiles,
+deleteFile, deleteFiles, uploadFiles
+
+// Users
+readUser, readUsers, createUser, createUsers,
+updateUser, updateUsers, deleteUser, deleteUsers,
+readMe, updateMe
+
+// Collections
+readCollection, readCollections, createCollection,
+updateCollection, deleteCollection
+
+// Fields
+readField, readFields, readFieldsByCollection,
+createField, updateField, deleteField
+
+// Folders
+readFolder, readFolders, updateFolder, updateFolders
+
+// Comments
+createComment, updateComment, deleteComment
+
+// Activities
+readActivity, readActivities
+
+// Auth
+readProviders
+
+// Utilities
+aggregate, generateUid, withToken, importFile
+```
+
+**Usage:**
+
+```typescript
+// No import needed - auto-imported
+const directus = useDirectus()
+
+const articles = await directus.request(readItems('articles', {
+  filter: { status: { _eq: 'published' } },
+  fields: ['*', { author: ['*'] }],
+  sort: ['-date_created'],
+  limit: 10,
+}))
+
+const article = await directus.request(readItem('articles', 'id', {
+  fields: ['*', { author: ['first_name', 'last_name'] }],
+}))
+
+const created = await directus.request(createItem('articles', {
+  title: 'New Article',
+  status: 'draft',
+}))
+```
+
+## TypeScript Support
+
+All composables are fully typed with TypeScript:
+
+```typescript
+// User is typed as DirectusUsers
+const { user } = useDirectusAuth()
+user.value?.email // string | undefined
+user.value?.first_name // string | undefined
+
+// Directus client is typed with your schema
+const directus = useDirectus()
+const articles = await directus.request(readItems('articles'))
+// articles is typed based on your Directus schema
+
+// File options are typed
+const url = getDirectusFileUrl(file, {
+  fit: 'cover', // Only allows: 'cover' | 'contain' | 'inside' | 'outside'
+  format: 'webp', // Only allows: 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'
+})
+```
+
+## See Also
+
+- [Server-Side Utilities](/guide/server-side)
+- [Configuration Reference](/api/configuration)
+- [Components Reference](/api/components)
+- [Directus SDK Documentation](https://docs.directus.io/reference/sdk.html)
+
+================================================================================
+FILE: components.md
+================================================================================
+
+# Components Reference
+
+API reference for all components provided by nuxt-directus-sdk.
+
+## DirectusVisualEditor
+
+A wrapper component that enables live preview and inline editing of Directus content directly from your Nuxt frontend.
+
+### Usage
+
+```vue
+<script setup>
+const directus = useDirectus()
+
+const { data: article } = await useAsyncData('article', () =>
+  directus.request(readItem('articles', route.params.id))
+)
+</script>
+
+<template>
+  <DirectusVisualEditor
+    collection="articles"
+    :item="article.id"
+    fields="title"
+    mode="drawer"
+  >
+    <h1>{{ article.title }}</h1>
+  </DirectusVisualEditor>
+</template>
+```
+
+### Props
+
+#### `collection` (required)
+
+- **Type:** `string`
+- **Required:** Yes
+
+The name of the Directus collection containing the item to edit.
+
+```vue
+<DirectusVisualEditor collection="articles" :item="id">
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+```
+
+**Examples:**
+```vue
+<!-- System collections -->
+<DirectusVisualEditor collection="directus_users" :item="user.id">
+  <p>{{ user.first_name }}</p>
+</DirectusVisualEditor>
+
+<!-- Custom collections -->
+<DirectusVisualEditor collection="products" :item="product.id">
+  <h2>{{ product.name }}</h2>
+</DirectusVisualEditor>
+
+<DirectusVisualEditor collection="blog_posts" :item="post.id">
+  <article v-html="post.content" />
+</DirectusVisualEditor>
+```
+
+#### `item` (required)
+
+- **Type:** `string | number`
+- **Required:** Yes
+
+The primary key (ID) of the item to edit.
+
+```vue
+<DirectusVisualEditor
+  collection="articles"
+  :item="article.id"
+>
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+```
+
+**Examples:**
+```vue
+<!-- String UUID -->
+<DirectusVisualEditor
+  collection="articles"
+  :item="'f8b5c4d7-8e2a-4f9b-9c1d-3e4f5a6b7c8d'"
+>
+  <h1>Title</h1>
+</DirectusVisualEditor>
+
+<!-- Numeric ID -->
+<DirectusVisualEditor
+  collection="categories"
+  :item="42"
+>
+  <span>{{ category.name }}</span>
+</DirectusVisualEditor>
+
+<!-- From object -->
+<DirectusVisualEditor
+  collection="products"
+  :item="product.id"
+>
+  <div>{{ product.name }}</div>
+</DirectusVisualEditor>
+```
+
+#### `fields` (optional)
+
+- **Type:** `string | string[]`
+- **Required:** No
+- **Default:** All fields in the wrapped content
+
+Specify which field(s) should be editable. Can be a single field name or an array of field names.
+
+**Single field:**
+```vue
+<DirectusVisualEditor
+  collection="articles"
+  :item="article.id"
+  fields="title"
+>
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+```
+
+**Multiple fields:**
+```vue
+<DirectusVisualEditor
+  collection="articles"
+  :item="article.id"
+  :fields="['title', 'subtitle', 'excerpt']"
+>
+  <h1>{{ article.title }}</h1>
+  <h2>{{ article.subtitle }}</h2>
+  <p>{{ article.excerpt }}</p>
+</DirectusVisualEditor>
+```
+
+**All fields (default):**
+```vue
+<DirectusVisualEditor
+  collection="articles"
+  :item="article.id"
+>
+  <!-- All fields in this content are editable -->
+  <h1>{{ article.title }}</h1>
+  <p>{{ article.content }}</p>
+  <span>{{ article.author }}</span>
+</DirectusVisualEditor>
+```
+
+#### `mode` (optional)
+
+- **Type:** `'drawer' | 'modal' | 'popover'`
+- **Required:** No
+- **Default:** `'drawer'`
+
+Controls how the editor interface is displayed when content is clicked.
+
+**Drawer mode (default):**
+```vue
+<DirectusVisualEditor
+  collection="articles"
+  :item="article.id"
+  mode="drawer"
+>
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+```
+
+Slides in from the side of the screen. Best for most use cases.
+
+**Modal mode:**
+```vue
+<DirectusVisualEditor
+  collection="articles"
+  :item="article.id"
+  mode="modal"
+>
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+```
+
+Opens in a centered modal dialog. Good for focused editing.
+
+**Popover mode:**
+```vue
+<DirectusVisualEditor
+  collection="articles"
+  :item="article.id"
+  mode="popover"
+>
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+```
+
+Opens near the clicked element. Best for inline quick edits.
+
+### Slots
+
+#### Default Slot
+
+The default slot contains the content that will be wrapped and made editable.
+
+```vue
+<DirectusVisualEditor collection="articles" :item="article.id">
+  <!-- Content in the default slot becomes editable -->
+  <article>
+    <h1>{{ article.title }}</h1>
+    <div v-html="article.content" />
+  </article>
+</DirectusVisualEditor>
+```
+
+**Requirements:**
+- Must contain at least one element
+- The slot content should display the data you want to edit
+- Content should be reactive to data changes
+
+### Complete Examples
+
+#### Basic Article Editing
+
+```vue
+<script setup>
+const route = useRoute()
+const directus = useDirectus()
+const directusPreview = useDirectusPreview()
+
+const { data: article } = await useAsyncData('article', () =>
+  directus.request(readItem('articles', route.params.id))
+)
+
+// Enable preview mode with ?preview=true
+if (route.query.preview === 'true') {
+  directusPreview.value = true
+}
+</script>
+
+<template>
+  <article>
+    <!-- Title editing -->
+    <DirectusVisualEditor
+      collection="articles"
+      :item="article.id"
+      fields="title"
+    >
+      <h1>{{ article.title }}</h1>
+    </DirectusVisualEditor>
+
+    <!-- Featured image editing -->
+    <DirectusVisualEditor
+      collection="articles"
+      :item="article.id"
+      fields="featured_image"
+      mode="modal"
+    >
+      <img
+        v-if="article.featured_image"
+        :src="getDirectusFileUrl(article.featured_image, { width: 1200 })"
+      />
+    </DirectusVisualEditor>
+
+    <!-- Content editing -->
+    <DirectusVisualEditor
+      collection="articles"
+      :item="article.id"
+      fields="content"
+    >
+      <div class="content" v-html="article.content" />
+    </DirectusVisualEditor>
+  </article>
+</template>
+```
+
+#### Product Page
+
+```vue
+<script setup>
+const { data: product } = await useAsyncData('product', () =>
+  directus.request(readItem('products', route.params.id, {
+    fields: ['*', { images: ['*'], category: ['*'] }]
+  }))
+)
+</script>
+
+<template>
+  <div class="product">
+    <!-- Product images -->
+    <DirectusVisualEditor
+      collection="products"
+      :item="product.id"
+      fields="images"
+      mode="modal"
+    >
+      <div class="gallery">
+        <img
+          v-for="image in product.images"
+          :key="image.id"
+          :src="getDirectusFileUrl(image.directus_files_id, { width: 600 })"
+        />
+      </div>
+    </DirectusVisualEditor>
+
+    <div class="details">
+      <!-- Product name and price -->
+      <DirectusVisualEditor
+        collection="products"
+        :item="product.id"
+        :fields="['name', 'price']"
+      >
+        <h1>{{ product.name }}</h1>
+        <p class="price">${{ product.price }}</p>
+      </DirectusVisualEditor>
+
+      <!-- Category (related collection) -->
+      <DirectusVisualEditor
+        collection="categories"
+        :item="product.category.id"
+        fields="name"
+      >
+        <span class="category">{{ product.category.name }}</span>
+      </DirectusVisualEditor>
+
+      <!-- Description -->
+      <DirectusVisualEditor
+        collection="products"
+        :item="product.id"
+        fields="description"
+      >
+        <div v-html="product.description" />
+      </DirectusVisualEditor>
+    </div>
+  </div>
+</template>
+```
+
+#### Nested Collections
+
+```vue
+<template>
+  <article>
+    <!-- Edit the article -->
+    <DirectusVisualEditor
+      collection="articles"
+      :item="article.id"
+      fields="title"
+    >
+      <h1>{{ article.title }}</h1>
+    </DirectusVisualEditor>
+
+    <!-- Edit the related author -->
+    <DirectusVisualEditor
+      collection="directus_users"
+      :item="article.author.id"
+      :fields="['first_name', 'last_name']"
+    >
+      <p class="author">
+        By {{ article.author.first_name }} {{ article.author.last_name }}
+      </p>
+    </DirectusVisualEditor>
+
+    <!-- Edit multiple related tags -->
+    <div class="tags">
+      <DirectusVisualEditor
+        v-for="tag in article.tags"
+        :key="tag.id"
+        collection="tags"
+        :item="tag.tags_id.id"
+        fields="name"
+        mode="popover"
+      >
+        <span class="tag">{{ tag.tags_id.name }}</span>
+      </DirectusVisualEditor>
+    </div>
+  </article>
+</template>
+```
+
+#### Conditional Rendering
+
+```vue
+<script setup>
+const directusPreview = useDirectusPreview()
+</script>
+
+<template>
+  <div>
+    <!-- Only show visual editor in preview mode -->
+    <DirectusVisualEditor
+      v-if="directusPreview"
+      collection="articles"
+      :item="article.id"
+      fields="title"
+    >
+      <h1>{{ article.title }}</h1>
+    </DirectusVisualEditor>
+
+    <!-- Regular rendering when not in preview mode -->
+    <h1 v-else>{{ article.title }}</h1>
+  </div>
+</template>
+```
+
+#### Layout Builder
+
+```vue
+<script setup>
+const { data: page } = await useAsyncData('page', () =>
+  directus.request(readItem('pages', route.params.id, {
+    fields: ['*', { blocks: ['*'] }]
+  }))
+)
+</script>
+
+<template>
+  <div class="page">
+    <!-- Page title -->
+    <DirectusVisualEditor
+      collection="pages"
+      :item="page.id"
+      fields="title"
+    >
+      <h1>{{ page.title }}</h1>
+    </DirectusVisualEditor>
+
+    <!-- Dynamic blocks -->
+    <DirectusVisualEditor
+      v-for="block in page.blocks"
+      :key="block.id"
+      collection="blocks"
+      :item="block.id"
+      mode="drawer"
+    >
+      <component :is="getBlockComponent(block.type)" :data="block" />
+    </DirectusVisualEditor>
+  </div>
+</template>
+```
+
+### Behavior
+
+#### Preview Mode Activation
+
+The component only becomes interactive when preview mode is enabled:
+
+```vue
+<script setup>
+const route = useRoute()
+const directusPreview = useDirectusPreview()
+
+// Enable preview mode
+if (route.query.preview === 'true') {
+  directusPreview.value = true
+}
+</script>
+```
+
+**Preview mode can be enabled by:**
+1. Adding `?preview=true` to the URL
+2. Setting `directusPreview.value = true` programmatically
+
+**When preview mode is disabled:**
+- The component renders as a simple wrapper
+- No editing interface is shown
+- No extra attributes are added to the DOM
+
+**When preview mode is enabled:**
+- Content becomes clickable
+- Clicking opens the Directus editor
+- Changes are saved in real-time
+- Visual indicators show editable areas (on hover)
+
+#### Editor Connection
+
+The component connects to your Directus instance when mounted:
+
+1. Loads the Directus Visual Editing SDK
+2. Establishes connection to Directus
+3. Enables editing on wrapped elements
+4. Cleans up on unmount
+
+**Requirements:**
+- User must be logged into Directus in the same browser
+- Directus URL must be accessible
+- CORS must be configured correctly
+
+#### Data Synchronization
+
+Changes made in the editor are:
+1. Saved immediately to Directus
+2. Reflected in the preview (if using reactive data)
+3. Visible to content editors in real-time
+
+**Best practice:** Use reactive data sources (refs, computed) for content that may be edited:
+
+```vue
+<script setup>
+// ✅ Good - reactive data
+const { data: article } = await useAsyncData('article', () =>
+  directus.request(readItem('articles', id))
+)
+
+// ❌ Avoid - static data won't update after edits
+const article = await directus.request(readItem('articles', id))
+</script>
+```
+
+### TypeScript Support
+
+The component is fully typed with generics:
+
+```vue
+<script setup lang="ts">
+// Type-safe collection and item
+const article = ref<DirectusSchema['articles']>()
+
+// TypeScript will enforce correct collection names
+<DirectusVisualEditor
+  collection="articles"  // ✅ Valid collection
+  :item="article.id"
+>
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+
+<DirectusVisualEditor
+  collection="invalid"  // ❌ TypeScript error if collection doesn't exist
+  :item="article.id"
+>
+  <h1>{{ article.title }}</h1>
+</DirectusVisualEditor>
+</script>
+```
+
+**Props type definition:**
+
+```typescript
+interface DirectusVisualEditorProps<T extends keyof DirectusSchema> {
+  collection: T
+  item: string | number
+  fields?: keyof DirectusSchema[T] | Array<keyof DirectusSchema[T]>
+  mode?: 'drawer' | 'modal' | 'popover'
+}
+```
+
+### Configuration
+
+#### Global Configuration
+
+Control visual editor globally in `nuxt.config.ts`:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    visualEditor: true, // Enable/disable visual editor
+  },
+})
+```
+
+When disabled, the component becomes a simple pass-through wrapper with no functionality.
+
+#### Per-Component Configuration
+
+Control behavior per component using props:
+
+```vue
+<!-- Use drawer for large content -->
+<DirectusVisualEditor mode="drawer" collection="articles" :item="id">
+  <article v-html="article.content" />
+</DirectusVisualEditor>
+
+<!-- Use popover for quick edits -->
+<DirectusVisualEditor mode="popover" collection="tags" :item="tag.id">
+  <span class="tag">{{ tag.name }}</span>
+</DirectusVisualEditor>
+
+<!-- Use modal for focused editing -->
+<DirectusVisualEditor mode="modal" collection="products" :item="id">
+  <div class="product-form">...</div>
+</DirectusVisualEditor>
+```
+
+### Troubleshooting
+
+#### Editor Not Appearing
+
+**Possible causes:**
+1. Preview mode not enabled
+2. Visual editor disabled in config
+3. Not logged into Directus
+4. CORS issues
+
+**Solutions:**
+```vue
+<!-- 1. Ensure preview mode is enabled -->
+<script setup>
+const directusPreview = useDirectusPreview()
+if (route.query.preview === 'true') {
+  directusPreview.value = true
+}
+</script>
+
+<!-- 2. Check config -->
+// nuxt.config.ts
+export default defineNuxtConfig({
+  directus: {
+    visualEditor: true, // Must be true
+  },
+})
+
+<!-- 3. Log into Directus in same browser -->
+
+<!-- 4. Check CORS in Directus .env -->
+CORS_ENABLED=true
+CORS_ORIGIN=http://localhost:3000
+CORS_CREDENTIALS=true
+```
+
+#### Changes Not Saving
+
+**Possible causes:**
+1. Incorrect item ID
+2. Missing edit permissions
+3. Invalid field names
+
+**Solutions:**
+```vue
+<!-- 1. Verify item ID is correct -->
+<DirectusVisualEditor
+  collection="articles"
+  :item="article.id"  <!-- Check this matches database -->
+>
+
+<!-- 2. Check Directus permissions for your user role -->
+
+<!-- 3. Ensure field names match your schema exactly -->
+<DirectusVisualEditor
+  fields="title"  <!-- Must match exact field name in Directus -->
+>
+```
+
+#### TypeScript Errors
+
+**Issue:** Collection or field names showing errors
+
+**Solution:** Regenerate types:
+```bash
+# Delete .nuxt directory
+rm -rf .nuxt
+
+# Restart dev server
+npm run dev
+```
+
+Ensure `DIRECTUS_ADMIN_TOKEN` is set for type generation.
+
+## See Also
+
+- [Visual Editor Guide](/guide/visual-editor)
+- [Composables Reference](/api/composables)
+- [Configuration Reference](/api/configuration)
+- [Directus Visual Editing Documentation](https://docs.directus.io/guides/headless-cms/live-preview-nuxt.html)
+
+================================================================================
+MODULE ARCHITECTURE & SOURCE CODE REFERENCE
+================================================================================
+
+## File Structure
+
+```
+src/
+├── module.ts                    # Main Nuxt module setup
+├── runtime/
+│   ├── plugin.ts               # Bootstrap plugin
+│   ├── composables/
+│   │   ├── auth.ts             # useDirectusAuth()
+│   │   ├── directus.ts         # useDirectus()
+│   │   ├── files.ts            # File upload/URL helpers
+│   │   └── storage.ts          # SSR storage adapter
+│   ├── components/
+│   │   └── directus-visual-editor.vue  # Visual editor component
+│   ├── middleware/
+│   │   └── auth.ts             # Route protection
+│   ├── server/
+│   │   ├── routes/
+│   │   │   └── directus.ts     # HTTP proxy handler
+│   │   └── services/
+│   │       └── directus.ts     # Server utilities
+│   ├── types/
+│   │   ├── generate.ts         # Type generation
+│   │   └── index.ts            # Type exports
+│   └── utils/
+│       └── index.ts            # Utility functions
+```
+
+## Key Components
+
+### Module Setup (src/module.ts)
+- Configures Nuxt module options
+- Sets up development proxy (HTTP + WebSocket)
+- Generates TypeScript types from Directus schema
+- Registers composables, components, middleware
+- Integrates with Nuxt DevTools
+- Handles WebSocket proxy using http-proxy library
+
+### Plugin (src/runtime/plugin.ts)
+- Runs before app bootstrap
+- Checks for preview mode (?preview=true)
+- Auto-fetches user if session cookie exists
+- Sets up refresh token handling
+
+### Authentication (src/runtime/composables/auth.ts)
+- Session-based authentication
+- Login/logout/register functions
+- SSO provider support
+- Password reset flow
+- User management (invite, update)
+- Reactive user state
+
+### Directus Client (src/runtime/composables/directus.ts)
+- Creates Directus SDK client instance
+- Configures session authentication
+- Sets up REST and Realtime composers
+- Custom fetch with cookie forwarding
+- WebSocket URL configuration for dev proxy
+
+### File Management (src/runtime/composables/files.ts)
+- Upload functions (single/batch)
+- URL generation with transformations
+- Image optimization parameters
+
+### Server Utilities (src/runtime/server/services/directus.ts)
+- useServerDirectus(event) - User session
+- useAdminDirectus() - Admin token
+- useTokenDirectus(token) - Custom token
+- getDirectusSessionToken(event) - Extract token
+
+### HTTP Proxy (src/runtime/server/routes/directus.ts)
+- Proxies /directus/** to Directus instance
+- Forwards cookies for authentication
+- Path rewriting
+
+### WebSocket Proxy (src/module.ts)
+- Uses http-proxy library for WebSocket support
+- Proxies /directus-ws to Directus /websocket
+- Forwards session cookies for authentication
+- Path rewriting from /_directus-ws to /websocket
+
+## Auto-Imports
+
+The module auto-imports:
+1. All composables (useDirectusAuth, useDirectus, etc.)
+2. 80+ Directus SDK functions (readItems, createItem, etc.)
+3. TypeScript types (DirectusUsers, DirectusFiles, etc.)
+
+## Type Generation
+
+Uses openapi-typescript to generate types from Directus schema:
+1. Fetches Directus OpenAPI spec using admin token
+2. Generates TypeScript interfaces
+3. Caches types during development
+4. Exports as DirectusSchema, DirectusUsers, DirectusFiles, etc.
+
+## Development Proxy
+
+### HTTP Proxy
+- Route: /directus/**
+- Forwards to Directus URL
+- Includes cookies automatically
+- Eliminates CORS issues
+
+### WebSocket Proxy
+- Route: /directus-ws
+- Proxies WebSocket connections
+- Forwards session cookies
+- Required because HTTP handler intercepts /directus/**
+
+## Session Authentication Flow
+
+1. User calls login(email, password)
+2. Directus SDK sends request with mode: 'session'
+3. Directus returns session token as httpOnly cookie
+4. Cookie is automatically included in subsequent requests
+5. Plugin auto-fetches user on app load if cookie exists
+6. Server routes use useServerDirectus(event) to access user's session
+
+## WebSocket Authentication Flow (Development)
+
+1. Client connects to ws://localhost:3000/directus-ws
+2. WebSocket proxy intercepts upgrade request
+3. Proxy reads session cookie from request headers
+4. Proxy forwards cookie to Directus WebSocket
+5. Directus authenticates based on cookie
+6. Connection established
+
+## WebSocket Authentication Flow (Production)
+
+1. Client connects directly to wss://api.yourdomain.com/websocket
+2. Browser sends cookies if same domain or CORS configured
+3. Directus authenticates based on cookie
+4. Connection established
+
+## Security Considerations
+
+1. Session tokens stored as httpOnly cookies (not accessible to JS)
+2. CORS credentials must be enabled on Directus
+3. SameSite=None required for cross-domain cookies
+4. Secure=true required in production (HTTPS)
+5. Server-side storage adapter prevents localStorage errors in SSR
+6. Dev proxy only enabled in development mode
+

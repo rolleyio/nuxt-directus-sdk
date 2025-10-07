@@ -1,7 +1,6 @@
 import type { Ref } from '#imports'
 import { useRequestHeaders, useRuntimeConfig, useState } from '#imports'
 import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
-import { joinURL } from 'ufo'
 import { useUrl } from '../utils'
 import { useDirectusStorage } from './storage'
 
