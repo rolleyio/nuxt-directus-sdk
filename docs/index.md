@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: "Nuxt Directus SDK"
-  text: "The Complete Integration"
-  tagline: "Seamlessly connect Nuxt with Directus CMS - featuring authentication, realtime, file management, visual editing, and 101+ production-ready features"
+  text: "Seamlessly connect Nuxt with Directus"
+  tagline: "Featuring authentication, realtime, file management, visual editing and more"
   actions:
     - theme: brand
       text: Get Started
