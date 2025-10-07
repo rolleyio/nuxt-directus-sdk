@@ -39,7 +39,7 @@ export default defineConfig({
       },
     ],
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/directus-community/nuxt-directus-sdk' },
+      { icon: 'github', link: 'https://github.com/rolleyio/nuxt-directus-sdk' },
     ],
   },
 })

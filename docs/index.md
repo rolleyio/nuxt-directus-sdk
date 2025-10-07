@@ -11,7 +11,7 @@ hero:
       link: /guide/getting-started
     - theme: alt
       text: View on GitHub
-      link: https://github.com/directus-community/nuxt-directus-sdk
+      link: https://github.com/rolleyio/nuxt-directus-sdk
 
 features:
   - icon: 🔐
