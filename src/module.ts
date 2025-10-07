@@ -3,6 +3,7 @@ import type { ImportPresetWithDeprecation } from '@nuxt/schema'
 
 import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, installModule, useLogger } from '@nuxt/kit'
 import { defu } from 'defu'
+import { joinURL } from 'ufo'
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
 import { useUrl } from './runtime/utils'
@@ -166,7 +167,7 @@ export default defineNuxtModule<ModuleOptions>({
       enableGlobalAuthMiddleware: false,
       autoRefresh: true,
       credentials: 'include',
-      realtimeAuthMode: 'handshake',
+      realtimeAuthMode: 'public',
       readMeFields: [],
       redirect: {
         home: '/',
@@ -200,17 +201,89 @@ export default defineNuxtModule<ModuleOptions>({
       // Get the dev server configuration from Nuxt
       const devPort = nuxtApp.options.devServer?.port ?? 3000
       const devHost = nuxtApp.options.devServer?.host ?? 'localhost'
-      const proxyUrl = `http://${devHost}:${devPort}${devProxyPath}/`
+      const baseUrl = `http://${devHost}:${devPort}`
+      const proxyUrl = `${baseUrl}${devProxyPath}/`
+
+      // Use a separate route for WebSocket proxy to avoid conflicts with the HTTP handler
+      const wsProxyPath = `${devProxyPath}-ws`
+      const wsTarget = joinURL(directusUrl, 'websocket')
 
       logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
       logger.info(`🔄 Directus Development Proxy Enabled`)
       logger.info(`   Proxy path: ${devProxyPath}`)
       logger.info(`   Forwarding to: ${directusUrl}`)
       logger.info(`   Local URL: ${proxyUrl}`)
+      logger.info(`   WebSocket proxy path: ${wsProxyPath}`)
+      logger.info(`   WebSocket target: ${wsTarget}`)
       logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
 
-      // Store proxy info to add handler later (after resolver is created)
+      // Configure WebSocket proxy for realtime support (WebSocket only)
+      nuxtApp.options.nitro = nuxtApp.options.nitro || {}
+      nuxtApp.options.nitro.devProxy = nuxtApp.options.nitro.devProxy || {}
 
+      nuxtApp.options.nitro.devProxy[wsProxyPath] = {
+        target: directusUrl,
+        changeOrigin: true,
+        ws: true,
+      }
+
+      // Set up WebSocket proxy handler using http-proxy
+      // Point to the base Directus URL, we'll rewrite the path in the proxy
+      const httpProxy = await import('http-proxy')
+      const proxy = httpProxy.default.createProxyServer({
+        target: directusUrl,
+        changeOrigin: true,
+        ws: true,
+        secure: false, // Allow self-signed certificates
+      })
+
+      // Add error handling to the proxy
+      proxy.on('error', (err: any, _req: any, socket: any) => {
+        logger.error(`WebSocket proxy error:`, err.message)
+        if (socket && !socket.destroyed) {
+          socket.end()
+        }
+      })
+
+      proxy.on('proxyReqWs', (proxyReq: any, req: any, _socket: any) => {
+        // Rewrite the path from /_directus-ws to /websocket
+        proxyReq.path = '/websocket'
+
+        // Forward cookies for authentication
+        if (req.headers.cookie) {
+          proxyReq.setHeader('cookie', req.headers.cookie)
+        }
+      })
+
+      nuxtApp.hook('ready', () => {
+        const originalUpgrade = nuxtApp.server?.upgrade
+
+        // Replace the nuxt server upgrade handler with our WebSocket proxy
+        if (nuxtApp.server) {
+          nuxtApp.server.upgrade = (req: any, socket: any, head: any) => {
+            // Check if this is our WebSocket proxy route
+            if (req.url?.startsWith(wsProxyPath)) {
+              try {
+                proxy.ws(req, socket, head)
+              }
+              catch (err: any) {
+                logger.error('WebSocket proxy error:', err.message)
+                if (!socket.destroyed) {
+                  socket.destroy()
+                }
+              }
+            }
+            else if (originalUpgrade) {
+              return originalUpgrade(req, socket, head)
+            }
+            else if (!socket.destroyed) {
+              socket.destroy()
+            }
+          }
+        }
+      })
+
+      // Add HTTP handler for regular requests
       addServerHandler({
         route: `${devProxyPath}/**`,
         handler: resolver.resolve('./runtime/server/routes/directus'),
@@ -218,6 +291,9 @@ export default defineNuxtModule<ModuleOptions>({
 
       // Update the URL to use the proxy for runtime requests
       options.url = proxyUrl
+
+      // Store the WebSocket proxy path for client use
+      ;(options as any).wsProxyUrl = joinURL(baseUrl, wsProxyPath)
     }
     else if (!nuxtApp.options.dev) {
       logger.info(`🌐 Production mode: Connecting directly to ${directusUrl}`)
@@ -359,8 +435,6 @@ export default defineNuxtModule<ModuleOptions>({
         logger.warn('Directus types generation is disabled, set the admin token in the config or .env file as DIRECTUS_ADMIN_TOKEN')
       }
       else {
-        logger.info('Generating Directus types')
-
         try {
           // Generate types once and cache the result
           let cachedTypes: string | null = null
@@ -369,7 +443,6 @@ export default defineNuxtModule<ModuleOptions>({
             filename: `types/${configKey}.d.ts`,
             async getContents() {
               if (!cachedTypes) {
-                logger.info('Fetching types from Directus...')
                 // Use the original URL for type generation (not the proxy URL)
                 cachedTypes = await generateTypes({
                   url: useUrl(directusUrl),
@@ -393,11 +466,16 @@ export default defineNuxtModule<ModuleOptions>({
   },
 })
 
+interface NuxtDirectusModuleOptions extends ModuleOptions {
+  directusUrl: string
+  wsProxyUrl?: string
+}
+
 declare module '@nuxt/schema' {
   interface ConfigSchema {
-    directus?: ModuleOptions & { directusUrl: string }
+    directus?: NuxtDirectusModuleOptions
     publicRuntimeConfig?: {
-      directus?: Omit<ModuleOptions, 'adminToken'> & { directusUrl: string }
+      directus?: Omit<NuxtDirectusModuleOptions, 'adminToken'>
     }
   }
 }

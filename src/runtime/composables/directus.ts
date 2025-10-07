@@ -1,8 +1,7 @@
 import type { Ref } from '#imports'
-
 import { useRequestHeaders, useRuntimeConfig, useState } from '#imports'
-
 import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
+import { joinURL } from 'ufo'
 import { useUrl } from '../utils'
 import { useDirectusStorage } from './storage'
 
@@ -16,7 +15,7 @@ export function useDirectusUrl(path = ''): string {
 
 function createDirectusClient() {
   const config = useRuntimeConfig()
-  const authConfig = config.public.directus.auth as any
+  const authConfig = config.public.directus.auth
 
   // Capture headers during composable setup (in Nuxt context)
   const requestHeaders = import.meta.server ? useRequestHeaders(['cookie']) : null
@@ -38,7 +37,11 @@ function createDirectusClient() {
     return globalThis.$fetch(url, { ...options, credentials: 'include' })
   }
 
-  const directus = createDirectus<DirectusSchema>(useDirectusUrl(), {
+  const baseUrl = useDirectusUrl()
+
+  // In dev mode with proxy, use the separate WebSocket proxy path
+  // Otherwise, let the SDK use the default (baseUrl + /websocket)
+  const directus = createDirectus<DirectusSchema>(baseUrl, {
     globals: {
       fetch: customFetch,
     },
@@ -47,18 +50,15 @@ function createDirectusClient() {
       autoRefresh: authConfig.autoRefresh ?? true,
       credentials: authConfig.credentials || 'include',
       // Only use custom storage on server to prevent localStorage errors
-      ...(import.meta.server ? { storage: useDirectusStorage() } : {}),
+      storage: import.meta.server ? useDirectusStorage() : undefined,
     }))
     .with(rest({
       credentials: authConfig.credentials || 'include',
     }))
     .with(realtime({
       authMode: authConfig.realtimeAuthMode || 'handshake',
-      // Use actual Directus URL for WebSockets (Nitro devProxy doesn't support WS upgrades)
-      // The SDK will use handshake mode to authenticate after connection
-      url: config.public.directus.directusUrl
-        ? useUrl(config.public.directus.directusUrl, 'websocket')
-        : undefined,
+      // Only set custom URL if we have a proxy path (dev mode with proxy enabled)
+      url: config.public.directus.wsProxyUrl,
     }))
 
   return directus
