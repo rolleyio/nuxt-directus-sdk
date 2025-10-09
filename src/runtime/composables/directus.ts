@@ -49,15 +49,15 @@ function createDirectusClient() {
       autoRefresh: authConfig.autoRefresh ?? true,
       credentials: authConfig.credentials || 'include',
       // Only use custom storage on server to prevent localStorage errors
-      storage: import.meta.server ? useDirectusStorage() : undefined,
+      ...(import.meta.server ? { storage: useDirectusStorage() } : {}),
     }))
     .with(rest({
       credentials: authConfig.credentials || 'include',
     }))
     .with(realtime({
-      authMode: authConfig.realtimeAuthMode || 'handshake',
+      authMode: authConfig.realtimeAuthMode || 'public',
       // Only set custom URL if we have a proxy path (dev mode with proxy enabled)
-      url: config.public.directus.wsProxyUrl,
+      ...(config.public.directus.wsProxyUrl ? { url: config.public.directus.wsProxyUrl } : {}),
     }))
 
   return directus

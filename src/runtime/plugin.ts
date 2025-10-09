@@ -1,4 +1,4 @@
-import { defineNuxtPlugin, refreshNuxtData, useRequestHeaders, useRoute, useRuntimeConfig } from '#app'
+import { defineNuxtPlugin, refreshNuxtData, useRoute, useRuntimeConfig } from '#app'
 import { useDirectusAuth } from './composables/auth'
 import { useDirectus, useDirectusPreview } from './composables/directus'
 
@@ -30,14 +30,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   const authEnabled = config.public.directus.auth?.enabled ?? true
 
   if (authEnabled && directusAuth.user.value === null) {
-    // Only fetch if we haven't already loaded the user
-    // Check if session token exists before attempting to fetch user
-    const hasSessionToken = import.meta.server
-      ? useRequestHeaders(['cookie']).cookie?.includes('directus_session_token')
-      : document.cookie.includes('directus_session_token')
-
-    if (hasSessionToken) {
-      await directusAuth.readMe()
-    }
+    const user = await directusAuth.readMe()
+    await nuxtApp.callHook('directus:loggedIn', user)
   }
 })

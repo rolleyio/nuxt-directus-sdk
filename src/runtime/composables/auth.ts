@@ -38,7 +38,6 @@ export function useDirectusAuth(): DirectusAuth {
   const directus = useDirectus()
   const user = useDirectusUser()
   const loading = useDirectusUserLoading()
-  const nuxtApp = useNuxtApp()
 
   const loggedIn = computed(() => user.value !== null)
 
@@ -60,8 +59,6 @@ export function useDirectusAuth(): DirectusAuth {
     finally {
       loading.value = false
     }
-
-    await nuxtApp.callHook('directus:loggedIn', user.value)
 
     return user.value
   }
