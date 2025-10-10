@@ -2,7 +2,7 @@ import type { ComputedRef, Ref } from '#imports'
 import type { RouteLocationRaw } from '#vue-router'
 
 import type { LoginOptions } from '@directus/sdk'
-import { navigateTo, useNuxtApp, useRouter, useRuntimeConfig } from '#app'
+import { navigateTo, useRouter, useRuntimeConfig } from '#app'
 import { computed, useState } from '#imports'
 import { acceptUserInvite as directusAcceptUserInvite, createUser as directusCreateUser, inviteUser as directusInviteUser, passwordRequest as directusPasswordRequest, passwordReset as directusPasswordReset, readMe as directusReadMe, updateMe as directusUpdateMe } from '@directus/sdk'
 import { useDirectus, useDirectusUrl } from './directus'

@@ -66,6 +66,12 @@ function createDirectusClient() {
 let directus: ReturnType<typeof createDirectusClient> | null = null
 
 export function useDirectus() {
+  // On server, always create a fresh client to capture current request headers
+  // On client, use singleton to maintain state
+  if (import.meta.server) {
+    return createDirectusClient()
+  }
+
   if (!directus) {
     directus = createDirectusClient()
   }
