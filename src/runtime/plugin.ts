@@ -1,4 +1,4 @@
-import { defineNuxtPlugin, refreshNuxtData, useRoute, useRuntimeConfig } from '#app'
+import { defineNuxtPlugin, refreshNuxtData, useCookie, useRoute, useRuntimeConfig } from '#app'
 import { useDirectusAuth } from './composables/auth'
 import { useDirectus, useDirectusPreview } from './composables/directus'
 
@@ -28,9 +28,13 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   // Fetch user session if auth is enabled
   // Only fetch once - user state is cached in useState, so subsequent calls won't refetch
   const authEnabled = config.public.directus.auth?.enabled ?? true
+  const sessionCookie = useCookie('directus_session_token')
 
-  if (authEnabled && directusAuth.user.value === null) {
+  if (authEnabled && directusAuth.user.value === null && sessionCookie.value) {
     const user = await directusAuth.readMe()
     await nuxtApp.callHook('directus:loggedIn', user)
+  }
+  else {
+    await nuxtApp.callHook('directus:loggedIn', null)
   }
 })

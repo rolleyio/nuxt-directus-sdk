@@ -196,6 +196,8 @@ export default defineNuxtModule<ModuleOptions>({
     // Store the original URL for type generation and server-side use
     const directusUrl = options.url
 
+    logger.info(`Nuxt Directus SDK Version: ${version}`)
+
     // Set up development proxy if enabled and in dev mode
     if (devProxyEnabled && nuxtApp.options.dev) {
       // Get the dev server configuration from Nuxt
