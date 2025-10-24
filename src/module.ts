@@ -182,6 +182,7 @@ export default defineNuxtModule<ModuleOptions>({
       return
     }
 
+    console.log(nuxtApp.options)
     const resolver = createResolver(import.meta.url)
 
     // Normalize devProxy options
@@ -201,9 +202,12 @@ export default defineNuxtModule<ModuleOptions>({
     // Set up development proxy if enabled and in dev mode
     if (devProxyEnabled && nuxtApp.options.dev) {
       // Get the dev server configuration from Nuxt
+      // devServer.url is automatically populated by Nuxt after the server starts,
+      // but we may need to construct it from host/port during module setup
+      const devServerUrl = nuxtApp.options.devServer?.url
       const devPort = nuxtApp.options.devServer?.port ?? 3000
       const devHost = nuxtApp.options.devServer?.host ?? 'localhost'
-      const baseUrl = `http://${devHost}:${devPort}`
+      const baseUrl = devServerUrl ?? `http://${devHost}:${devPort}`
       const proxyUrl = `${baseUrl}${devProxyPath}/`
 
       // Use a separate route for WebSocket proxy to avoid conflicts with the HTTP handler
@@ -218,6 +222,26 @@ export default defineNuxtModule<ModuleOptions>({
       logger.info(`   WebSocket proxy path: ${wsProxyPath}`)
       logger.info(`   WebSocket target: ${wsTarget}`)
       logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
+
+      // Log the actual URLs after the dev server starts listening
+      nuxtApp.hook('listen', (server) => {
+        logger.info(`🎧 Listen hook fired!`)
+        const address = server.address()
+        logger.info(`   Server address:`, address)
+        if (address && typeof address === 'object') {
+          const actualPort = address.port
+          const actualHost = address.address === '::' ? 'localhost' : address.address
+          const actualBaseUrl = `http://${actualHost}:${actualPort}`
+          const actualProxyUrl = `${actualBaseUrl}${devProxyPath}/`
+          const actualWsUrl = `${actualBaseUrl}${wsProxyPath}`
+
+          logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
+          logger.info(`🌐 Directus Proxy URLs (actual)`)
+          logger.info(`   Local URL: ${actualProxyUrl}`)
+          logger.info(`   WebSocket URL: ${actualWsUrl}`)
+          logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
+        }
+      })
 
       // Configure WebSocket proxy for realtime support (WebSocket only)
       nuxtApp.options.nitro = nuxtApp.options.nitro || {}
