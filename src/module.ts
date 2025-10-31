@@ -182,7 +182,6 @@ export default defineNuxtModule<ModuleOptions>({
       return
     }
 
-    console.log(nuxtApp.options)
     const resolver = createResolver(import.meta.url)
 
     // Normalize devProxy options
