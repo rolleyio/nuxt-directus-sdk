@@ -29,6 +29,18 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   // Only fetch once - user state is cached in useState, so subsequent calls won't refetch
   const authEnabled = config.public.directus.auth?.enabled ?? true
   const sessionCookie = useCookie('directus_session_token')
+  const directusUrlCookie = useCookie('directus_instance_url')
+
+  // Check if we're connecting to a different Directus instance
+  // If so, clear the session cookie to prevent session leakage between instances
+  const currentDirectusUrl = (config.public.directus as any).directusUrl || config.public.directus.url
+  if (directusUrlCookie.value && directusUrlCookie.value !== currentDirectusUrl) {
+    // Different Directus instance detected - clear the session
+    sessionCookie.value = null
+  }
+
+  // Update the Directus URL cookie to track which instance we're connected to
+  directusUrlCookie.value = currentDirectusUrl
 
   if (authEnabled && directusAuth.user.value === null && sessionCookie.value) {
     const user = await directusAuth.readMe()
