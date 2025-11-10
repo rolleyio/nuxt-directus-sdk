@@ -1,5 +1,5 @@
 import type { Query } from '@directus/sdk'
-import type { ImageProviders } from '@nuxt/image'
+import type { ImageModifiers, ImageProviders } from '@nuxt/image'
 
 import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, hasNuxtModule, installModule, useLogger } from '@nuxt/kit'
 import { defu } from 'defu'
@@ -67,10 +67,22 @@ export interface ModuleOptions {
      * @default true
      */
     enabled?: boolean
+
     /**
-     * Custom options for @nuxt/image directus provider
+     * Set Directus as the default provider for NuxtImg
+     * @default false
+     */
+    setDefaultProvider?: boolean
+
+    /**
+     * Custom Directus provider configuration
      */
     directus?: ImageProviders['directus']
+
+    /**
+     * Default modifiers for Directus provider
+     */
+    modifiers?: ImageModifiers
   }
 
   /**
@@ -344,11 +356,17 @@ export default defineNuxtModule<ModuleOptions>({
     const imageEnabled = imageConfig?.enabled ?? true
 
     if (imageEnabled) {
-      await registerModule('@nuxt/image', 'image', defu(imageConfig?.directus, {
+      const { setDefaultProvider, modifiers } = imageConfig || {}
+
+      await registerModule('@nuxt/image', 'image', {
+        // Set default provider if requested
+        ...(setDefaultProvider && { provider: 'directus' }),
+        // Configure Directus provider
         directus: {
           baseURL: useUrl(options.url, 'assets'),
+          modifiers,
         },
-      }))
+      })
     }
 
     // Add plugin to load user before bootstrap

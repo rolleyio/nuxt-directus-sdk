@@ -138,6 +138,65 @@ export default defineNuxtConfig({
 
 When disabled, the `DirectusVisualEditor` component will be a no-op.
 
+### `image`
+
+- **Type:** `boolean | { enabled?: boolean, setDefaultProvider?: boolean }`
+- **Default:** `true`
+
+Configure `@nuxt/image` integration with Directus provider.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    // Enable with defaults
+    image: true,
+
+    // Disable @nuxt/image integration
+    image: false,
+
+    // Set Directus as default provider
+    image: {
+      setDefaultProvider: true,
+    },
+  },
+})
+```
+
+#### Options
+
+- **`enabled`** (`boolean`, default: `true`) - Enable/disable `@nuxt/image` integration
+- **`setDefaultProvider`** (`boolean`, default: `false`) - Set Directus as the default provider for `<NuxtImg>` components (no need to specify `provider="directus"`)
+
+When enabled, the module automatically:
+- Installs and configures `@nuxt/image`
+- Sets up the Directus provider with your instance's assets endpoint
+
+#### Usage
+
+With `setDefaultProvider: false` (default):
+
+```vue
+<NuxtImg
+  provider="directus"
+  src="your-file-id"
+  width="800"
+  height="600"
+/>
+```
+
+With `setDefaultProvider: true`:
+
+```vue
+<!-- No need to specify provider -->
+<NuxtImg
+  src="your-file-id"
+  width="800"
+  height="600"
+/>
+```
+
+See the [File Management Guide](/guide/files#using-with-nuxt-image) for more details.
+
 ## Type Generation
 
 ### `types`
@@ -368,6 +427,7 @@ export default defineNuxtConfig({
 
   directus: {
     // Core configuration
+    url: process.env.DIRECTUS_URL,
     adminToken: process.env.DIRECTUS_ADMIN_TOKEN,
 
     // Development
@@ -377,6 +437,9 @@ export default defineNuxtConfig({
     },
     devtools: true,
     visualEditor: true,
+
+    // Image integration
+    image: true, // Directus provider is automatically configured
 
     // Type generation
     types: {
