@@ -1,4 +1,5 @@
 import type { Query } from '@directus/sdk'
+import type { ImageProviders } from '@nuxt/image'
 
 import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, hasNuxtModule, installModule, useLogger } from '@nuxt/kit'
 import { defu } from 'defu'
@@ -69,7 +70,7 @@ export interface ModuleOptions {
     /**
      * Custom options for @nuxt/image directus provider
      */
-    directus?: Record<string, any>
+    directus?: ImageProviders['directus']
   }
 
   /**
