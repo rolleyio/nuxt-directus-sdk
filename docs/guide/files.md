@@ -315,21 +315,16 @@ await directus.request(deleteFiles(['uuid1', 'uuid2']))
 
 ```vue
 <script setup>
-import { ref } from 'vue'
-import { uploadDirectusFiles, getDirectusFileUrl } from '#imports'
-
 const directus = useDirectus()
-const images = ref([])
 const uploading = ref(false)
 
 // Load existing images
-const { data } = await useAsyncData('gallery', () =>
+const { data: images } = await useAsyncData('gallery', () =>
   directus.request(readFiles({
     filter: { type: { _starts_with: 'image/' } },
     sort: ['-uploaded_on'],
   }))
 )
-images.value = data.value || []
 
 async function handleUpload(event) {
   const files = Array.from(event.target.files).map(file => ({ file }))
