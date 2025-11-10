@@ -10,7 +10,8 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   const directusPreview = useDirectusPreview()
 
   // Live Preview/Visual Editor
-  directusPreview.value = !!(route.query.preview === 'true' || route.query.preview === '1' || route.query['visual-editor'] === 'true' || route.query['visual-editor'] === '1')
+  const isPreviewEnabled = (value: any) => value === 'true' || value === '1' || value === true || value === 1
+  directusPreview.value = isPreviewEnabled(route.query.preview) || isPreviewEnabled(route.query['visual-editor'])
 
   if (directusPreview.value) {
     // If we are in preview mode, we need to use the token from the query string
@@ -25,15 +26,13 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     }
   }
 
-  // Fetch user session if auth is enabled
-  // Only fetch once - user state is cached in useState, so subsequent calls won't refetch
-  const authEnabled = config.public.directus.auth?.enabled ?? true
   const sessionCookie = useCookie('directus_session_token')
   const directusUrlCookie = useCookie('directus_instance_url')
 
   // Check if we're connecting to a different Directus instance
   // If so, clear the session cookie to prevent session leakage between instances
   const currentDirectusUrl = (config.public.directus as any).directusUrl || config.public.directus.url
+
   if (directusUrlCookie.value && directusUrlCookie.value !== currentDirectusUrl) {
     // Different Directus instance detected - clear the session
     sessionCookie.value = null
@@ -41,6 +40,10 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
   // Update the Directus URL cookie to track which instance we're connected to
   directusUrlCookie.value = currentDirectusUrl
+
+  // Fetch user session if auth is enabled
+  // Only fetch once - user state is cached in useState, so subsequent calls won't refetch
+  const authEnabled = config.public.directus.auth?.enabled ?? true
 
   if (authEnabled && directusAuth.user.value === null && sessionCookie.value) {
     const user = await directusAuth.readMe()
