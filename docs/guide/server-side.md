@@ -38,8 +38,6 @@ This automatically:
 
 ```typescript
 // server/api/my-articles.ts
-import { readItems } from '@directus/sdk'
-
 export default defineEventHandler(async (event) => {
   const directus = useServerDirectus(event)
 
@@ -77,8 +75,6 @@ Use the admin token for privileged operations:
 
 ```typescript
 // server/api/admin/users.ts
-import { readUsers } from '@directus/sdk'
-
 export default defineEventHandler(async () => {
   const directus = useAdminDirectus()
 
@@ -100,7 +96,6 @@ Requirements:
 
 ```typescript
 // server/api/admin/create-user.ts
-import { createUser } from '@directus/sdk'
 
 export default defineEventHandler(async (event) => {
   const directus = useAdminDirectus()
@@ -209,7 +204,6 @@ export default defineEventHandler((event) => {
 
 ```typescript
 // server/api/protected/data.ts
-import { readItems } from '@directus/sdk'
 
 export default defineEventHandler(async (event) => {
   // Verify user is authenticated
@@ -247,7 +241,6 @@ Combine user and admin authentication:
 
 ```typescript
 // server/api/analytics.ts
-import { readItems } from '@directus/sdk'
 
 export default defineEventHandler(async (event) => {
   // Try user authentication first
@@ -291,7 +284,6 @@ export default defineEventHandler(async (event) => {
 
 ```typescript
 // server/api/batch/import.ts
-import { createItems } from '@directus/sdk'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -312,9 +304,6 @@ export default defineEventHandler(async (event) => {
 
 ```typescript
 // server/api/upload.ts
-import { uploadFiles } from '@directus/sdk'
-import { readFiles } from 'h3'
-
 export default defineEventHandler(async (event) => {
   const directus = useServerDirectus(event)
 
@@ -345,7 +334,6 @@ export default defineEventHandler(async (event) => {
 
 ```typescript
 // server/tasks/sync.ts
-import { readItems, updateItem } from '@directus/sdk'
 
 export default defineTask({
   meta: {
