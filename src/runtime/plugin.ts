@@ -1,6 +1,7 @@
 import { defineNuxtPlugin, refreshNuxtData, useCookie, useRoute, useRuntimeConfig } from '#app'
 import { useDirectusAuth } from './composables/auth'
 import { useDirectus, useDirectusPreview } from './composables/directus'
+import { queryParamIsEnabled } from './utils'
 
 export default defineNuxtPlugin(async (nuxtApp) => {
   const route = useRoute()
@@ -10,8 +11,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   const directusPreview = useDirectusPreview()
 
   // Live Preview/Visual Editor
-  const isPreviewEnabled = (value: any) => value === 'true' || value === '1' || value === true || value === 1
-  directusPreview.value = isPreviewEnabled(route.query.preview) || isPreviewEnabled(route.query['visual-editor'])
+  directusPreview.value = queryParamIsEnabled(route.query.preview) || queryParamIsEnabled(route.query['visual-editor'])
 
   if (directusPreview.value) {
     // If we are in preview mode, we need to use the token from the query string
