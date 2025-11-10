@@ -7,8 +7,6 @@ nuxt-directus-sdk provides utilities for uploading files to Directus and generat
 ### Upload Single File
 
 ```typescript
-import { uploadDirectusFile } from '#imports'
-
 const file = event.target.files[0]
 
 const uploadedFile = await uploadDirectusFile({
@@ -25,8 +23,6 @@ console.log('File uploaded:', uploadedFile.id)
 ### Upload Multiple Files
 
 ```typescript
-import { uploadDirectusFiles } from '#imports'
-
 const files = Array.from(event.target.files).map(file => ({
   file,
   data: {
@@ -43,9 +39,6 @@ console.log('Uploaded files:', uploadedFiles)
 
 ```vue
 <script setup>
-import { ref } from 'vue'
-import { uploadDirectusFile } from '#imports'
-
 const uploading = ref(false)
 const uploadedFile = ref(null)
 
@@ -94,8 +87,6 @@ async function handleFileUpload(event) {
 ### Basic File URL
 
 ```typescript
-import { getDirectusFileUrl } from '#imports'
-
 // From file ID
 const url = getDirectusFileUrl('file-uuid')
 
@@ -215,8 +206,6 @@ Create responsive images with multiple sizes:
 
 ```vue
 <script setup>
-import { getDirectusFileUrl } from '#imports'
-
 const props = defineProps({
   image: Object,
   alt: String,
@@ -328,12 +317,14 @@ const { data: images } = await useAsyncData('gallery', () =>
 
 async function handleUpload(event) {
   const files = Array.from(event.target.files).map(file => ({ file }))
-
   uploading.value = true
 
   try {
     const uploaded = await uploadDirectusFiles(files)
-    images.value.unshift(...(Array.isArray(uploaded) ? uploaded : [uploaded]))
+    images.value = [
+      ...(Array.isArray(uploaded) ? uploaded : [uploaded]),
+      ...(images.value || [])
+    ]
   } finally {
     uploading.value = false
   }

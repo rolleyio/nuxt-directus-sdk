@@ -333,7 +333,7 @@ await directus.request(deleteItem('articles', 'item-id'))
 const settings = await directus.request(readSingleton('settings'))
 
 // Custom queries
-const { data } = await useAsyncData('articles', () =>
+const { data: articles } = await useAsyncData('articles', () =>
   directus.request(readItems('articles', {
     filter: { status: { _eq: 'published' } },
     sort: ['-date_created'],
@@ -345,19 +345,6 @@ const { data } = await useAsyncData('articles', () =>
 **Common Operations:**
 
 ```typescript
-import {
-  readItems,
-  readItem,
-  createItem,
-  createItems,
-  updateItem,
-  updateItems,
-  deleteItem,
-  deleteItems,
-  readSingleton,
-  updateSingleton,
-} from '@directus/sdk'
-
 const directus = useDirectus()
 
 // Collections
@@ -466,8 +453,6 @@ Upload a single file to Directus.
 **Returns:** `Promise<DirectusFiles>`
 
 ```typescript
-import { uploadDirectusFile } from '#imports'
-
 const file = event.target.files[0]
 
 const uploaded = await uploadDirectusFile({
@@ -497,8 +482,6 @@ Upload multiple files to Directus.
 **Returns:** `Promise<DirectusFiles[]>`
 
 ```typescript
-import { uploadDirectusFiles } from '#imports'
-
 const files = Array.from(event.target.files).map(file => ({
   file,
   data: {
@@ -524,8 +507,6 @@ Generate a URL for a Directus file with optional transformations.
 **Returns:** `string`
 
 ```typescript
-import { getDirectusFileUrl } from '#imports'
-
 // Basic URL
 const url = getDirectusFileUrl('file-uuid')
 
@@ -664,7 +645,6 @@ aggregate, generateUid, withToken, importFile
 **Usage:**
 
 ```typescript
-// No import needed - auto-imported
 const directus = useDirectus()
 
 const articles = await directus.request(readItems('articles', {
