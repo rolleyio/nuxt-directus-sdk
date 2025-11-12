@@ -6,6 +6,6 @@ export function useUrl(base: string, ...paths: string[]): string {
   return cleanDoubleSlashes(withTrailingSlash(joinURL(base, '/', ...paths)))
 }
 
-export function queryParamIsEnabled(value: any) {
+export function isQueryParamEnabled(value: any) {
   return value === 'true' || value === '1' || value === true || value === 1
 }
