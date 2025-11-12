@@ -10,7 +10,8 @@ export function getDirectusSessionToken(event: H3Event): string | undefined {
 }
 
 export function useDirectusUrl(path = ''): string {
-  return useUrl(useRuntimeConfig().public.directus.url, path)
+  const config = useRuntimeConfig()
+  return useUrl(config.public.directus.url, path)
 }
 
 export function useTokenDirectus(token?: string) {

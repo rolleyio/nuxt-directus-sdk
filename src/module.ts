@@ -1,7 +1,7 @@
 import type { Query } from '@directus/sdk'
-import type { ImportPresetWithDeprecation } from '@nuxt/schema'
+import type { ImageModifiers, ImageProviders } from '@nuxt/image'
 
-import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, installModule, useLogger } from '@nuxt/kit'
+import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, hasNuxtModule, installModule, useLogger } from '@nuxt/kit'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
 import { name, version } from '../package.json'
@@ -56,6 +56,34 @@ export interface ModuleOptions {
    * @default true
    */
   visualEditor?: boolean
+
+  /**
+   * @nuxt/image integration
+   * @default true
+   */
+  image?: boolean | {
+    /**
+     * Enable @nuxt/image integration
+     * @default true
+     */
+    enabled?: boolean
+
+    /**
+     * Set Directus as the default provider for NuxtImg
+     * @default false
+     */
+    setDefaultProvider?: boolean
+
+    /**
+     * Custom Directus provider configuration
+     */
+    directus?: ImageProviders['directus']
+
+    /**
+     * Default modifiers for Directus provider
+     */
+    modifiers?: ImageModifiers
+  }
 
   /**
    * Auth options
@@ -158,6 +186,7 @@ export default defineNuxtModule<ModuleOptions>({
     adminToken: import.meta.env.DIRECTUS_ADMIN_TOKEN ?? '',
     devtools: true,
     visualEditor: true,
+    image: true,
     types: {
       enabled: true,
       prefix: '',
@@ -183,6 +212,16 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     const resolver = createResolver(import.meta.url)
+
+    // Helper function to register modules
+    async function registerModule(name: string, key: string, moduleOptions: Record<string, any>) {
+      if (!hasNuxtModule(name)) {
+        await installModule(name, defu((nuxtApp.options as any)[key], moduleOptions))
+      }
+      else {
+        (nuxtApp.options as any)[key] = defu((nuxtApp.options as any)[key], moduleOptions)
+      }
+    }
 
     // Normalize devProxy options
     const devProxyConfig = typeof options.devProxy === 'boolean'
@@ -312,11 +351,23 @@ export default defineNuxtModule<ModuleOptions>({
 
     delete (nuxtApp.options.runtimeConfig.public[configKey] as any).adminToken
 
-    await installModule('@nuxt/image', {
-      directus: {
-        baseURL: useUrl(options.url, 'assets'),
-      },
-    })
+    // Register @nuxt/image with Directus provider
+    const imageConfig = typeof options.image === 'boolean' ? { enabled: options.image } : options.image
+    const imageEnabled = imageConfig?.enabled ?? true
+
+    if (imageEnabled) {
+      const { setDefaultProvider, modifiers } = imageConfig || {}
+
+      await registerModule('@nuxt/image', 'image', {
+        // Set default provider if requested
+        ...(setDefaultProvider && { provider: 'directus' }),
+        // Configure Directus provider
+        directus: {
+          baseURL: useUrl(options.url, 'assets'),
+          modifiers,
+        },
+      })
+    }
 
     // Add plugin to load user before bootstrap
     addPlugin(resolver.resolve('./runtime/plugin'))
@@ -342,7 +393,7 @@ export default defineNuxtModule<ModuleOptions>({
       global: true,
     })
 
-    const directusSdkImports: ImportPresetWithDeprecation = {
+    const directusSdkImports = {
       from: '@directus/sdk',
       imports: [
         'aggregate',
