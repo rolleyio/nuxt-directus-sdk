@@ -131,12 +131,6 @@ export interface ModuleOptions {
      * @default true
      */
     enabled?: boolean
-    /**
-     * The prefix to your custom types
-     * @type string
-     * @default ''
-     */
-    prefix?: string
   }
 }
 
@@ -457,7 +451,6 @@ export default defineNuxtModule<ModuleOptions>({
                 cachedTypes = await generateTypes({
                   url: useUrl(directusUrl),
                   token: options.adminToken!,
-                  prefix: options.types?.prefix ?? '',
                 })
               }
               return cachedTypes
