@@ -285,9 +285,6 @@ export default defineNuxtModule<ModuleOptions>({
         handler: resolver.resolve('./runtime/server/routes/directus'),
       })
 
-      // Don't overwrite options.url - let composables construct it dynamically
-      // This ensures the correct port is used when Nuxt picks a dynamic port
-
       // Store normalized devProxy config for runtime use
       options.devProxy = {
         enabled: true,
