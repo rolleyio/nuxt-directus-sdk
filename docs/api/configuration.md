@@ -142,7 +142,7 @@ When disabled, the `DirectusVisualEditor` component will be a no-op.
 
 ### `types`
 
-- **Type:** `boolean`
+- **Type:** `boolean | { enabled?: boolean, prefix?: string }`
 - **Default:** `true`
 
 Enable/disable automatic type generation from your Directus schema.
@@ -179,6 +179,55 @@ export default defineNuxtConfig({
   },
 })
 ```
+
+#### Type Prefix
+
+Add a prefix to your custom collection types to avoid naming conflicts:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    types: {
+      enabled: true,
+      prefix: 'App', // Prefix custom collection types
+    },
+  },
+})
+```
+
+With a prefix, your generated types will be:
+
+```typescript
+// Custom collections are prefixed
+interface AppBlog {
+  id: string
+  title: string
+  content: string
+}
+
+interface AppAuthor {
+  id: string
+  name: string
+}
+
+// DirectusSchema keys remain unchanged (match API endpoints)
+interface DirectusSchema {
+  blogs: AppBlog[]
+  authors: AppAuthor[]
+}
+
+// Directus system collections are NOT prefixed
+interface DirectusUsers {
+  id: string
+  email: string
+}
+```
+
+**How it works:**
+- Custom collection interface names get prefixed (e.g., `Blog` → `AppBlog`)
+- DirectusSchema keys stay unchanged (e.g., `blogs`, `authors`) to match API endpoints
+- Directus system collections (e.g., `DirectusUsers`, `DirectusFiles`) are NOT prefixed
+- All type references are updated to use the prefixed names
 
 ## Authentication Options
 
