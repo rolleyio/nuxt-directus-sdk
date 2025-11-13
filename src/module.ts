@@ -124,14 +124,12 @@ export interface ModuleOptions {
     }
   }
 
-  types?: {
-    /**
-     * Generate types for your Directus instance
-     * @type boolean
-     * @default true
-     */
-    enabled?: boolean
-  }
+  /**
+   * Generate types for your Directus instance
+   * @type boolean
+   * @default true
+   */
+  types?: boolean
 }
 
 const configKey = 'directus'
@@ -152,10 +150,7 @@ export default defineNuxtModule<ModuleOptions>({
     adminToken: import.meta.env.DIRECTUS_ADMIN_TOKEN ?? '',
     devtools: true,
     visualEditor: true,
-    types: {
-      enabled: true,
-      prefix: '',
-    },
+    types: true,
     auth: {
       enabled: true,
       enableGlobalAuthMiddleware: false,
@@ -434,7 +429,7 @@ export default defineNuxtModule<ModuleOptions>({
       logger.info('Set devtools to true to view the Directus admin panel from inside Nuxt Devtools')
     }
 
-    if (options.types?.enabled) {
+    if (options.types) {
       if (!options.adminToken) {
         logger.warn('Directus types generation is disabled, set the admin token in the config or .env file as DIRECTUS_ADMIN_TOKEN')
       }

@@ -142,40 +142,40 @@ When disabled, the `DirectusVisualEditor` component will be a no-op.
 
 ### `types`
 
-Configure TypeScript type generation from your Directus schema.
-
-#### `types.enabled`
-
 - **Type:** `boolean`
 - **Default:** `true`
 
-Enable/disable automatic type generation.
+Enable/disable automatic type generation from your Directus schema.
 
 ```typescript
 export default defineNuxtConfig({
   directus: {
-    types: {
-      enabled: true, // Generate types from Directus schema
-    },
+    types: true, // Generate types from Directus schema
   },
 })
 ```
 
-Requires `adminToken` to be set.
+**Requires `adminToken` to be set.**
 
-#### `types.prefix`
+When enabled, types are automatically generated and available globally:
 
-- **Type:** `string`
-- **Default:** `''`
+```typescript
+// Access generated types
+type Article = DirectusSchema['articles']
+type User = DirectusUsers
+type File = DirectusFiles
 
-Add a prefix to your custom collection types.
+// Use with Directus SDK - fully typed!
+const directus = useDirectus()
+const articles = await directus.request(readItems('articles'))
+// articles is typed as Article[]
+```
 
+**Disable type generation:**
 ```typescript
 export default defineNuxtConfig({
   directus: {
-    types: {
-      prefix: 'App', // Types become: AppArticles, AppProducts, etc.
-    },
+    types: false,
   },
 })
 ```
