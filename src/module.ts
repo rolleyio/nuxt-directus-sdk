@@ -19,8 +19,8 @@ export interface ModuleOptions {
    * Development proxy configuration
    * When enabled, creates a proxy at /directus that forwards to your Directus URL
    * This solves CORS and cookie issues in development
-   * @default { enabled: true, path: '/directus' } in dev mode
-   * @type boolean | { enabled?: boolean, path?: string }
+   * @default { enabled: true, path: '/directus', wsPath: '/directus-ws' } in dev mode
+   * @type boolean | { enabled?: boolean, path?: string, wsPath?: string }
    */
   devProxy?: boolean | {
     /**
@@ -33,6 +33,11 @@ export interface ModuleOptions {
      * @default '/directus'
      */
     path?: string
+    /**
+     * WebSocket proxy path (for realtime connections)
+     * @default '/directus-ws'
+     */
+    wsPath?: string
   }
 
   /**
@@ -191,6 +196,7 @@ export default defineNuxtModule<ModuleOptions>({
     // Default values
     const devProxyEnabled = devProxyConfig.enabled ?? nuxtApp.options.dev
     const devProxyPath = devProxyConfig.path ?? '/directus'
+    const wsProxyPath = devProxyConfig.wsPath ?? `${devProxyPath}-ws`
 
     // Store the original URL for type generation and server-side use
     const directusUrl = options.url
@@ -200,13 +206,11 @@ export default defineNuxtModule<ModuleOptions>({
 
     // Set up development proxy if enabled and in dev mode
     if (devProxyEnabled && nuxtApp.options.dev) {
-      // Use a separate route for WebSocket proxy to avoid conflicts with the HTTP handler
-      const wsProxyPath = `${devProxyPath}-ws`
-
       logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
       logger.info(`🔄 Directus Development Proxy Enabled`)
       logger.info(`   Proxy path: ${devProxyPath}`)
       logger.info(`   WebSocket proxy path: ${wsProxyPath}`)
+      logger.info(`   Forwarding to: ${directusUrl}`)
       logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
 
       // Configure WebSocket proxy for realtime support (WebSocket only)
@@ -288,10 +292,8 @@ export default defineNuxtModule<ModuleOptions>({
       options.devProxy = {
         enabled: true,
         path: devProxyPath,
+        wsPath: wsProxyPath,
       }
-
-      // Store the WebSocket proxy path pattern for client use
-      ;(options as any).wsProxyPath = wsProxyPath
     }
     else if (!nuxtApp.options.dev) {
       logger.info(`🌐 Production mode: Connecting directly to ${directusUrl}`)

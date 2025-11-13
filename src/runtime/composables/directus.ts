@@ -64,6 +64,12 @@ function createDirectusClient() {
 
   const baseUrl = useDirectusUrl()
 
+  // Get WebSocket URL if devProxy is enabled
+  const devProxy = config.public.directus.devProxy
+  const devProxyWsUrl = devProxy && typeof devProxy === 'object' && devProxy.wsPath && import.meta.client
+    ? `${window.location.origin}${devProxy.wsPath}`
+    : undefined
+
   // In dev mode with proxy, use the separate WebSocket proxy path
   // Otherwise, let the SDK use the default (baseUrl + /websocket)
   const directus = createDirectus<DirectusSchema>(baseUrl, {
@@ -73,17 +79,17 @@ function createDirectusClient() {
   })
     .with(authentication('session', {
       autoRefresh: authConfig.autoRefresh ?? true,
-      credentials: authConfig.credentials || 'include',
+      credentials: (authConfig.credentials as any) || 'include',
       // Only use custom storage on server to prevent localStorage errors
       ...(import.meta.server ? { storage: useDirectusStorage() } : {}),
     }))
     .with(rest({
-      credentials: authConfig.credentials || 'include',
+      credentials: (authConfig.credentials as any) || 'include',
     }))
     .with(realtime({
-      authMode: authConfig.realtimeAuthMode || 'public',
-      // Only set custom URL if we have a proxy path (dev mode with proxy enabled)
-      ...(config.public.directus.wsProxyUrl ? { url: config.public.directus.wsProxyUrl } : {}),
+      authMode: (authConfig.realtimeAuthMode as any) || 'public',
+      // Only set custom URL if we have a WebSocket proxy path
+      ...(devProxyWsUrl ? { url: devProxyWsUrl } : {}),
     }))
 
   return directus
