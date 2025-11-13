@@ -13,6 +13,9 @@ export default defineNuxtConfig({
     auth: {
       readMeFields: ['id', 'first_name', 'last_name', 'email'],
     },
+    types: {
+      prefix: 'Rolley',
+    },
   },
 
   typescript: {

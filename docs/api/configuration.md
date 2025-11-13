@@ -142,43 +142,92 @@ When disabled, the `DirectusVisualEditor` component will be a no-op.
 
 ### `types`
 
-Configure TypeScript type generation from your Directus schema.
-
-#### `types.enabled`
-
-- **Type:** `boolean`
+- **Type:** `boolean | { enabled?: boolean, prefix?: string }`
 - **Default:** `true`
 
-Enable/disable automatic type generation.
+Enable/disable automatic type generation from your Directus schema.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    types: true, // Generate types from Directus schema
+  },
+})
+```
+
+**Requires `adminToken` to be set.**
+
+When enabled, types are automatically generated and available globally:
+
+```typescript
+// Access generated types
+type Article = DirectusSchema['articles']
+type User = DirectusUsers
+type File = DirectusFiles
+
+// Use with Directus SDK - fully typed!
+const directus = useDirectus()
+const articles = await directus.request(readItems('articles'))
+// articles is typed as Article[]
+```
+
+**Disable type generation:**
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    types: false,
+  },
+})
+```
+
+#### Type Prefix
+
+Add a prefix to your custom collection types to avoid naming conflicts:
 
 ```typescript
 export default defineNuxtConfig({
   directus: {
     types: {
-      enabled: true, // Generate types from Directus schema
+      enabled: true,
+      prefix: 'App', // Prefix custom collection types
     },
   },
 })
 ```
 
-Requires `adminToken` to be set.
-
-#### `types.prefix`
-
-- **Type:** `string`
-- **Default:** `''`
-
-Add a prefix to your custom collection types.
+With a prefix, your generated types will be:
 
 ```typescript
-export default defineNuxtConfig({
-  directus: {
-    types: {
-      prefix: 'App', // Types become: AppArticles, AppProducts, etc.
-    },
-  },
-})
+// Custom collections are prefixed
+interface AppBlog {
+  id: string
+  title: string
+  content: string
+}
+
+interface AppAuthor {
+  id: string
+  name: string
+}
+
+// DirectusSchema keys remain unchanged (match API endpoints)
+interface DirectusSchema {
+  blogs: AppBlog[]
+  authors: AppAuthor[]
+}
+
+// Directus system collections are NOT prefixed
+interface DirectusUsers {
+  id: string
+  email: string
+}
 ```
+
+**How it works:**
+- Custom collection interface names get prefixed (e.g., `Blog` → `AppBlog`)
+- DirectusSchema keys stay unchanged (e.g., `blogs`, `authors`) to match API endpoints
+- Directus system collections (e.g., `DirectusUsers`, `DirectusFiles`) are NOT prefixed
+- All type references are updated to use the prefixed names
 
 ## Authentication Options
 

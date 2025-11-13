@@ -124,15 +124,15 @@ export interface ModuleOptions {
     }
   }
 
-  types?: {
+  types?: boolean | {
     /**
-     * Generate types for your Directus instance
+     * Enable type generation
      * @type boolean
      * @default true
      */
     enabled?: boolean
     /**
-     * The prefix to your custom types
+     * Prefix for custom collection types (does not affect DirectusSchema keys)
      * @type string
      * @default ''
      */
@@ -440,7 +440,11 @@ export default defineNuxtModule<ModuleOptions>({
       logger.info('Set devtools to true to view the Directus admin panel from inside Nuxt Devtools')
     }
 
-    if (options.types?.enabled) {
+    // Normalize types option
+    const typesEnabled = typeof options.types === 'boolean' ? options.types : options.types?.enabled ?? true
+    const typesPrefix = typeof options.types === 'object' ? options.types.prefix ?? '' : ''
+
+    if (typesEnabled) {
       if (!options.adminToken) {
         logger.warn('Directus types generation is disabled, set the admin token in the config or .env file as DIRECTUS_ADMIN_TOKEN')
       }
@@ -457,7 +461,7 @@ export default defineNuxtModule<ModuleOptions>({
                 cachedTypes = await generateTypes({
                   url: useUrl(directusUrl),
                   token: options.adminToken!,
-                  prefix: options.types?.prefix ?? '',
+                  prefix: typesPrefix,
                 })
               }
               return cachedTypes
