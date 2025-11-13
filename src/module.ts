@@ -3,7 +3,6 @@ import type { ImportPresetWithDeprecation } from '@nuxt/schema'
 
 import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, installModule, useLogger } from '@nuxt/kit'
 import { defu } from 'defu'
-import { joinURL } from 'ufo'
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
 import { useUrl } from './runtime/utils'
@@ -20,8 +19,8 @@ export interface ModuleOptions {
    * Development proxy configuration
    * When enabled, creates a proxy at /directus that forwards to your Directus URL
    * This solves CORS and cookie issues in development
-   * @default { enabled: true, path: '/directus' } in dev mode
-   * @type boolean | { enabled?: boolean, path?: string }
+   * @default { enabled: true, path: '/directus', wsPath: '/directus-ws' } in dev mode
+   * @type boolean | { enabled?: boolean, path?: string, wsPath?: string }
    */
   devProxy?: boolean | {
     /**
@@ -34,6 +33,11 @@ export interface ModuleOptions {
      * @default '/directus'
      */
     path?: string
+    /**
+     * WebSocket proxy path (for realtime connections)
+     * @default '/directus-ws'
+     */
+    wsPath?: string
   }
 
   /**
@@ -192,34 +196,21 @@ export default defineNuxtModule<ModuleOptions>({
     // Default values
     const devProxyEnabled = devProxyConfig.enabled ?? nuxtApp.options.dev
     const devProxyPath = devProxyConfig.path ?? '/directus'
+    const wsProxyPath = devProxyConfig.wsPath ?? `${devProxyPath}-ws`
 
     // Store the original URL for type generation and server-side use
     const directusUrl = options.url
 
     logger.info(`Nuxt Directus SDK Version: ${version}`)
+    logger.info(`Directus: ${directusUrl}`)
 
     // Set up development proxy if enabled and in dev mode
     if (devProxyEnabled && nuxtApp.options.dev) {
-      // Get the dev server configuration from Nuxt
-      // devServer.url is automatically populated by Nuxt after the server starts,
-      // but we may need to construct it from host/port during module setup
-      const devServerUrl = nuxtApp.options.devServer?.url
-      const devPort = nuxtApp.options.devServer?.port ?? 3000
-      const devHost = nuxtApp.options.devServer?.host ?? 'localhost'
-      const baseUrl = devServerUrl ?? `http://${devHost}:${devPort}`
-      const proxyUrl = `${baseUrl}${devProxyPath}/`
-
-      // Use a separate route for WebSocket proxy to avoid conflicts with the HTTP handler
-      const wsProxyPath = `${devProxyPath}-ws`
-      const wsTarget = joinURL(directusUrl, 'websocket')
-
       logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
       logger.info(`🔄 Directus Development Proxy Enabled`)
       logger.info(`   Proxy path: ${devProxyPath}`)
-      logger.info(`   Forwarding to: ${directusUrl}`)
-      logger.info(`   Local URL: ${proxyUrl}`)
       logger.info(`   WebSocket proxy path: ${wsProxyPath}`)
-      logger.info(`   WebSocket target: ${wsTarget}`)
+      logger.info(`   Forwarding to: ${directusUrl}`)
       logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
 
       // Configure WebSocket proxy for realtime support (WebSocket only)
@@ -294,14 +285,17 @@ export default defineNuxtModule<ModuleOptions>({
         handler: resolver.resolve('./runtime/server/routes/directus'),
       })
 
-      // Update the URL to use the proxy for runtime requests
-      options.url = proxyUrl
-
-      // Store the WebSocket proxy path for client use
-      ;(options as any).wsProxyUrl = joinURL(baseUrl, wsProxyPath)
+      // Store normalized devProxy config for runtime use
+      options.devProxy = {
+        enabled: true,
+        path: devProxyPath,
+        wsPath: wsProxyPath,
+      }
     }
     else if (!nuxtApp.options.dev) {
       logger.info(`🌐 Production mode: Connecting directly to ${directusUrl}`)
+      // Ensure devProxy is disabled in production
+      options.devProxy = false
     }
 
     (options as any).directusUrl = directusUrl
@@ -312,9 +306,16 @@ export default defineNuxtModule<ModuleOptions>({
 
     delete (nuxtApp.options.runtimeConfig.public[configKey] as any).adminToken
 
+    // Configure Nuxt Image
+    // If devProxy is enabled, use relative path so it works with dynamic ports
+    // Otherwise use the full Directus URL
+    const imageBaseUrl = devProxyEnabled
+      ? `${devProxyPath}/assets`
+      : useUrl(options.url, 'assets')
+
     await installModule('@nuxt/image', {
       directus: {
-        baseURL: useUrl(options.url, 'assets'),
+        baseURL: imageBaseUrl,
       },
     })
 
@@ -421,9 +422,6 @@ export default defineNuxtModule<ModuleOptions>({
     })
 
     if (options.devtools) {
-      const adminUrl = useUrl(directusUrl, 'admin')
-      logger.info(`Directus Admin URL: ${adminUrl}`)
-
       nuxtApp.hook('devtools:customTabs' as any, (iframeTabs: any) => {
         iframeTabs.push({
           name: 'directus',
@@ -431,7 +429,7 @@ export default defineNuxtModule<ModuleOptions>({
           icon: 'simple-icons:directus',
           view: {
             type: 'iframe',
-            src: adminUrl,
+            src: useUrl(directusUrl, 'admin'),
           },
         })
       })

@@ -69,11 +69,11 @@ DIRECTUS_ADMIN_TOKEN=your-admin-token-here
 
 ### `devProxy`
 
-- **Type:** `boolean | { enabled?: boolean, path?: string }`
-- **Default:** `{ enabled: true, path: '/directus' }` in dev mode
+- **Type:** `boolean | { enabled?: boolean, path?: string, wsPath?: string }`
+- **Default:** `{ enabled: true, path: '/directus', wsPath: '/directus-ws' }` in dev mode
 - **Default:** `false` in production
 
-Development proxy configuration. When enabled, creates a proxy that forwards requests to your Directus instance, eliminating CORS issues.
+Development proxy configuration. When enabled, creates a proxy that forwards requests to your Directus instance, eliminating CORS issues and supporting dynamic ports.
 
 ```typescript
 export default defineNuxtConfig({
@@ -84,16 +84,18 @@ export default defineNuxtConfig({
     // Or detailed configuration
     devProxy: {
       enabled: true,
-      path: '/directus', // Proxy mount path
+      path: '/directus',      // HTTP proxy mount path
+      wsPath: '/directus-ws', // WebSocket proxy path (optional)
     },
   },
 })
 ```
 
 **How it works:**
-- In development: Requests to `http://localhost:3000/directus` forward to your Directus URL
+- In development: Requests automatically route through the proxy using the current port
+- Supports Nuxt's dynamic port changes (e.g., port 3000 → 3001)
 - In production: Direct connection to Directus URL
-- WebSocket proxy available at `${path}-ws` for realtime features
+- WebSocket proxy available at `wsPath` for realtime features
 
 **Disable proxy:**
 ```typescript
@@ -374,6 +376,7 @@ export default defineNuxtConfig({
     devProxy: {
       enabled: true,
       path: '/directus',
+      wsPath: '/directus-ws',
     },
     devtools: true,
     visualEditor: true,
