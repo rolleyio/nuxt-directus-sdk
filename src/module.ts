@@ -45,14 +45,12 @@ export interface ModuleOptions {
 
   /**
    * Add Directus Admin in Nuxt Devtools
-   *
    * @default true
    */
   devtools?: boolean
 
   /**
    * Add Directus Visual Editor capabilities
-   *
    * @default true
    */
   visualEditor?: boolean
@@ -65,7 +63,6 @@ export interface ModuleOptions {
      * Enable auth middleware
      * @default true
      * @type boolean
-     *
      */
     enabled?: boolean
 
@@ -108,17 +105,17 @@ export interface ModuleOptions {
     redirect?: {
       /**
        * Redirect to home page after login
-       * @default '/home'
+       * @default '/'
        */
       home?: string
       /**
-       * Redirect to login page after logout
+       * Redirect to login when using auth middleware
        * @default '/auth/login'
        */
       login?: string
       /**
-       * Redirect to login page after logout
-       * @default '/auth/login'
+       * Redirect to home page page after logout
+       * @default '/'
        */
       logout?: string
     }
@@ -171,7 +168,7 @@ export default defineNuxtModule<ModuleOptions>({
       readMeFields: [],
       redirect: {
         home: '/',
-        login: '/account/login',
+        login: '/auth/login',
         logout: '/',
       },
     },
@@ -297,8 +294,8 @@ export default defineNuxtModule<ModuleOptions>({
       // Update the URL to use the proxy for runtime requests
       options.url = proxyUrl
 
-      // Store the WebSocket proxy path for client use
-      ;(options as any).wsProxyUrl = joinURL(baseUrl, wsProxyPath)
+        // Store the WebSocket proxy path for client use
+        ; (options as any).wsProxyUrl = joinURL(baseUrl, wsProxyPath)
     }
     else if (!nuxtApp.options.dev) {
       logger.info(`🌐 Production mode: Connecting directly to ${directusUrl}`)

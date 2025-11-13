@@ -53,6 +53,7 @@
     "@nuxt/module-builder": "^1.0.2",
     "@nuxt/schema": "^4.1.2",
     "@nuxt/test-utils": "^3.19.2",
+    "@types/http-proxy": "^1.17.17",
     "changelogen": "^0.6.1",
     "eslint": "^9.22.0",
     "nuxt": "^4.1.2",

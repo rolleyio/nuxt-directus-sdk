@@ -27,6 +27,10 @@ export const Slot = defineComponent({
 
       const firstNonCommentChildren = childrens[firstNonCommentChildrenIndex]
 
+      if (!firstNonCommentChildren) {
+        console.error('DirectusVisualEditor requires a slot')
+        return null
+      }
       // Remove props ref from being inferred
       delete firstNonCommentChildren.props?.ref
 
