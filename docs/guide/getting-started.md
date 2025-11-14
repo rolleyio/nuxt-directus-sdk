@@ -31,9 +31,6 @@ Add the module to your `nuxt.config.ts`:
 ```typescript
 export default defineNuxtConfig({
   modules: ['nuxt-directus-sdk'],
-
-  directus: {
-  },
 })
 ```
 
@@ -136,7 +133,6 @@ You can configure the proxy:
 ```typescript
 export default defineNuxtConfig({
   directus: {
-
     // Proxy configuration (optional)
     devProxy: {
       enabled: true,  // default: true in dev mode
@@ -145,6 +141,23 @@ export default defineNuxtConfig({
   },
 })
 ```
+
+### Configuring Dev Server Host and Port
+
+The proxy automatically detects the host and port from Nuxt's dev server configuration. You can customize these using the `devServer` option:
+
+```typescript
+export default defineNuxtConfig({
+  devServer: {
+    port: 3001,  // default: 3000
+    host: '0.0.0.0',  // default: 'localhost'
+  },
+})
+```
+
+::: warning
+If port 3000 is already in use, Nuxt will automatically find an available port. The proxy can't currently follow the which port Nuxt actually binds to, so you'll need to manually set the devServer.
+:::
 
 ## Type Generation
 
@@ -155,7 +168,6 @@ To disable type generation:
 ```typescript
 export default defineNuxtConfig({
   directus: {
-
     types: {
       enabled: false,
     },

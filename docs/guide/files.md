@@ -234,7 +234,7 @@ const sizes = {
 
 ## Using with Nuxt Image
 
-The module integrates with `@nuxt/image` for advanced image optimization:
+The module automatically integrates with `@nuxt/image` for advanced image optimization. The Directus provider is pre-configured and ready to use:
 
 ```vue
 <script setup>
@@ -254,6 +254,56 @@ const props = defineProps({
     fit="cover"
   />
 </template>
+```
+
+### Setting Directus as Default Provider
+
+By default, you need to specify `provider="directus"` on `<NuxtImg>` components. You can make Directus the default provider:
+
+```typescript
+export default defineNuxtConfig({
+  modules: ['nuxt-directus-sdk'],
+
+  directus: {
+    url: 'https://directus.example.com',
+
+    image: {
+      // Set Directus as default provider
+      setDefaultProvider: true,
+      modifiers: {
+        withoutEnlargement: 'true',
+        // array of options from sharp api (https://sharp.pixelplumbing.com/api-operation/)
+        transforms: [['blur', 4], ['negate']] 
+      }
+    },
+  },
+})
+```
+
+With this setting, you can use `<NuxtImg>` without specifying the provider:
+
+```vue
+<template>
+  <!-- No need to specify provider="directus" -->
+  <NuxtImg
+    src="your-file-id"
+    width="800"
+    height="600"
+  />
+</template>
+```
+
+### Disabling Nuxt Image Integration
+
+If you don't want to use `@nuxt/image`, you can disable it:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    url: 'https://directus.example.com',
+    image: false, // Disable @nuxt/image integration
+  },
+})
 ```
 
 ## File Management

@@ -9,7 +9,8 @@ export function useDirectusPreview(): Ref<boolean> {
 }
 
 export function useDirectusUrl(path = ''): string {
-  return useUrl(useRuntimeConfig().public.directus.url, path)
+  const config = useRuntimeConfig()
+  return useUrl(config.public.directus.url, path)
 }
 
 function createDirectusClient() {
