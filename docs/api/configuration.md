@@ -20,12 +20,14 @@ export default defineNuxtConfig({
 
 ### `url`
 
-- **Type:** `string`
+- **Type:** `string | { client: string, server: string }`
 - **Required:** Yes
 - **Default:** `process.env.DIRECTUS_URL`
 - **Environment Variable:** `DIRECTUS_URL`
 
 Your Directus instance URL.
+
+**Simple configuration (most common):**
 
 ```typescript
 export default defineNuxtConfig({
@@ -40,6 +42,23 @@ Or use environment variable:
 ```env
 DIRECTUS_URL=https://your-directus-instance.com
 ```
+
+**Advanced: Different URLs for client and server**
+
+Useful for Docker deployments where the server can access Directus via an internal container URL while the client uses a public URL:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    url: {
+      client: 'https://your-directus-instance.com',
+      server: 'http://directus:8055', // Internal Docker container URL
+    },
+  },
+})
+```
+
+This allows the server-side code to connect directly to Directus via the internal network, improving performance and security.
 
 ### `adminToken`
 
@@ -432,8 +451,27 @@ DIRECTUS_ADMIN_TOKEN=your-token
 ```
 
 **Docker:**
+
+For Docker deployments, you can use different URLs for client and server:
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  directus: {
+    url: {
+      // Client uses public URL
+      client: process.env.DIRECTUS_PUBLIC_URL || 'https://your-directus.com',
+      // Server uses internal container URL for better performance
+      server: process.env.DIRECTUS_INTERNAL_URL || 'http://directus:8055',
+    },
+    adminToken: process.env.DIRECTUS_ADMIN_TOKEN,
+  },
+})
+```
+
 ```dockerfile
-ENV DIRECTUS_URL=https://your-directus.com
+ENV DIRECTUS_PUBLIC_URL=https://your-directus.com
+ENV DIRECTUS_INTERNAL_URL=http://directus:8055
 ENV DIRECTUS_ADMIN_TOKEN=your-token
 ```
 
