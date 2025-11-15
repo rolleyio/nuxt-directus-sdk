@@ -9,7 +9,20 @@ export function useDirectusPreview(): Ref<boolean> {
 }
 
 export function useDirectusUrl(path = ''): string {
-  return useUrl(useRuntimeConfig().public.directus.url, path)
+  const config = useRuntimeConfig().public.directus
+  const urlConfig = config.url
+
+  // Handle both string (legacy) and { client, server } formats
+  let baseUrl: string
+  if (typeof urlConfig === 'string') {
+    baseUrl = urlConfig
+  }
+  else {
+    // Use client URL on client, server URL on server
+    baseUrl = import.meta.client ? urlConfig.client : urlConfig.server
+  }
+
+  return useUrl(baseUrl, path)
 }
 
 function createDirectusClient() {

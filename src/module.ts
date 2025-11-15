@@ -11,10 +11,13 @@ import { useUrl } from './runtime/utils'
 export interface ModuleOptions {
   /**
    * Directus API URL
+   * Can be a string for same URL on client and server,
+   * or an object with separate client/server URLs for different environments
+   * (e.g., internal Docker container URLs for server)
    * @default process.env.DIRECTUS_URL
-   * @type string
+   * @type string | { client: string, server: string }
    */
-  url: string
+  url: string | { client: string, server: string }
 
   /**
    * Development proxy configuration
@@ -193,8 +196,14 @@ export default defineNuxtModule<ModuleOptions>({
     const devProxyEnabled = devProxyConfig.enabled ?? nuxtApp.options.dev
     const devProxyPath = devProxyConfig.path ?? '/directus'
 
-    // Store the original URL for type generation and server-side use
-    const directusUrl = options.url
+    // Normalize URL configuration
+    // Support both string and { client, server } formats
+    const normalizedUrl = typeof options.url === 'string'
+      ? { client: options.url, server: options.url }
+      : options.url
+
+    // Use server URL for all server-side operations (proxy, type generation, etc.)
+    const directusUrl = normalizedUrl.server
 
     logger.info(`Nuxt Directus SDK Version: ${version}`)
 
@@ -295,13 +304,19 @@ export default defineNuxtModule<ModuleOptions>({
       })
 
       // Update the URL to use the proxy for runtime requests
-      options.url = proxyUrl
+      // In dev mode with proxy, both client and server use the proxy URL
+      ;(options as any).url = { client: proxyUrl, server: proxyUrl }
 
       // Store the WebSocket proxy path for client use
       ;(options as any).wsProxyUrl = joinURL(baseUrl, wsProxyPath)
     }
-    else if (!nuxtApp.options.dev) {
-      logger.info(`🌐 Production mode: Connecting directly to ${directusUrl}`)
+    else {
+      // No proxy - use the normalized URLs (could be different for client/server)
+      ;(options as any).url = normalizedUrl
+
+      if (!nuxtApp.options.dev) {
+        logger.info(`🌐 Production mode: Connecting directly to ${directusUrl}`)
+      }
     }
 
     (options as any).directusUrl = directusUrl
@@ -314,7 +329,7 @@ export default defineNuxtModule<ModuleOptions>({
 
     await installModule('@nuxt/image', {
       directus: {
-        baseURL: useUrl(options.url, 'assets'),
+        baseURL: useUrl(directusUrl, 'assets'),
       },
     })
 
