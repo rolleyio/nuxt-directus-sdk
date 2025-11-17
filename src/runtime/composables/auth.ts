@@ -1,30 +1,41 @@
-import type { ComputedRef, Ref } from '#imports'
-import type { RouteLocationRaw } from '#vue-router'
-
-import type { LoginOptions } from '@directus/sdk'
 import { navigateTo, useRouter, useRuntimeConfig } from '#app'
 import { computed, useState } from '#imports'
-import { acceptUserInvite as directusAcceptUserInvite, createUser as directusCreateUser, inviteUser as directusInviteUser, passwordRequest as directusPasswordRequest, passwordReset as directusPasswordReset, readMe as directusReadMe, updateMe as directusUpdateMe } from '@directus/sdk'
+import type { ComputedRef, Ref } from '#imports'
+import type { RouteLocationRaw } from '#vue-router'
 import { useDirectus, useDirectusUrl } from './directus'
+import type { LoginOptions, DirectusUser } from '@directus/sdk'
+import {
+  acceptUserInvite as directusAcceptUserInvite,
+  createUser as directusCreateUser,
+  inviteUser as directusInviteUser,
+  passwordRequest as directusPasswordRequest,
+  passwordReset as directusPasswordReset,
+  readMe as directusReadMe,
+  updateMe as directusUpdateMe
+} from '@directus/sdk'
+import type {
+  DirectusError,
+  RegisterUserInput
+} from '@directus/types'
 
 // Auto types don't seem to be generating correctly here, so we need to specify the return type
 export interface DirectusAuth {
-  user: Ref<DirectusUsers | null>
+  user: Ref<Partial<DirectusUser> | null>
   loggedIn: ComputedRef<boolean>
-  readMe: () => Promise<DirectusUsers | null>
-  updateMe: (data: Partial<DirectusUsers>) => Promise<DirectusUsers | null>
-  login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<DirectusUsers | null>
+  readMe: () => Promise<Partial<DirectusUser> | DirectusError | null>
+  updateMe: (data: Partial<DirectusUser>) => Promise<Partial<DirectusUser> | DirectusError | null>
+  login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<DirectusUser | null>
   loginWithProvider: (provider: string, redirectOnLogin?: string) => Promise<void>
   logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
-  createUser: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
-  register: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
+  createUser: (data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>) => Promise<Omit<DirectusUser, 'last_access'>>
+  register: (data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>) => Promise<Omit<DirectusUser, 'last_access'>>
   inviteUser: (email: string, role: string, inviteUrl?: string | undefined) => Promise<void>
   acceptUserInvite: (token: string, password: string) => Promise<void>
   passwordRequest: (email: string, resetUrl?: string | undefined) => Promise<void>
   passwordReset: (token: string, password: string) => Promise<void>
 }
 
-export function useDirectusUser(): Ref<DirectusUsers | null> {
+export function useDirectusUser(): Ref<DirectusUser | null> {
   return useState('directus.user', () => null)
 }
 
@@ -50,7 +61,12 @@ export function useDirectusAuth(): DirectusAuth {
     loading.value = true
 
     try {
-      user.value = await directus.request(directusReadMe({ fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
+      // Types are generated with Admin Token but User Tokens may not have access to all fields, including required fields.
+      const response: Partial<DirectusUser> = await directus.request(directusReadMe({ fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
+      if (!response.id) {
+        console.warn('Directus is not configured to return the \'id\' field for DirectusUsers.')
+      }
+      user.value = response as DirectusUser
     }
     catch (error) {
       console.error('[Auth] Failed to fetch user:', error)
@@ -62,15 +78,16 @@ export function useDirectusAuth(): DirectusAuth {
 
     return user.value
   }
-
-  async function updateMe(data: Partial<DirectusUsers>) {
+  //FIXME: Avatar requires a separated upload and/or ability to apply Object or string -> Possible Solution is to chunk into uploadDirectusFile -> Attach 'id' string to data.avatar UpdateMe call.
+  //FIXME: Role and Policies will work, but due to the Omit won't get type safety (Previous implementation also didn't have typesafety for them but now it's explicit.)
+  async function updateMe(data: Partial<Omit<DirectusUser, 'avatar' | 'role' | 'policies'>>) {
     const currentUser = user.value
 
     if (!currentUser?.id)
       throw new Error('No user available')
-
-    user.value = await directus.request(directusUpdateMe(data, { fields: config.public.directus.auth?.readMeFields ?? ['*'] }))
-
+    //INVESTIGATE: Does this cause issues with creative inputs in the config? Config won't have typesafety so probably a heavy lift for a low return.
+    const response: Partial<DirectusUser> = await directus.request(directusUpdateMe(data, { fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
+    user.value = response as DirectusUser
     return user.value
   }
 
@@ -105,13 +122,14 @@ export function useDirectusAuth(): DirectusAuth {
     await navigateTo(useDirectusUrl(`/auth/login/${provider}?redirect=${encodeURIComponent(redirect)}`), { external: true })
   }
 
-  async function createUser(data: Partial<DirectusUsers>) {
-    return directus.request(directusCreateUser(data))
+  async function createUser(data: RegisterUserInput) {
+    const response = await directus.request(directusCreateUser(data))
+    return response as DirectusUser
   }
 
   // Alias for createUser
-  async function register(data: Partial<DirectusUsers>) {
-    return createUser(data)
+  async function register(data: RegisterUserInput) {
+    return createUser(data as RegisterUserInput)
   }
 
   async function inviteUser(email: string, role: string, inviteUrl?: string | undefined) {

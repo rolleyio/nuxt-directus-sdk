@@ -1,67 +1,68 @@
 {
-  "name": "nuxt-directus-sdk",
-  "type": "module",
-  "version": "4.0.6",
-  "description": "A Directus nuxt module that uses the Directus SDK",
-  "author": "Matthew Rollinson <matt@rolley.io>",
-  "license": "MIT",
-  "exports": {
-    ".": {
-      "types": "./dist/module.d.mts",
-      "import": "./dist/module.mjs"
-    }
-  },
-  "main": "./dist/module.mjs",
-  "types": "./dist/module.d.mts",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "prepack": "nuxt-module-build build",
-    "dev": "nuxi dev playground",
-    "dev:build": "nuxi build playground",
-    "dev:prepare": "nuxt-module-build --stub && nuxi prepare playground",
-    "release": "npm run lint && npm run prepack && npm publish && git push --follow-tags",
-    "lint": "eslint .",
-    "test": "vitest run",
-    "test:watch": "vitest watch",
-    "docs:dev": "bun run dev:prepare && vitepress dev docs",
-    "docs:build": "bun run dev:prepare && vitepress build docs",
-    "docs:preview": "vitepress preview docs"
-  },
-  "peerDependencies": {
-    "@directus/sdk": "^20.0.0",
-    "@directus/types": "^13.0.0",
-    "@nuxt/image": "^1.0.0",
-    "@nuxt/kit": "^4.0.0",
-    "nuxt": "^4.0.0"
-  },
-  "dependencies": {
-    "@directus/visual-editing": "^1.1.0",
-    "change-case": "^4.1.2",
-    "defu": "^6.1.1",
-    "http-proxy": "^1.18.1",
-    "ufo": "^1.6.1"
-  },
-  "devDependencies": {
-    "@antfu/eslint-config": "^4.10.0",
-    "@directus/sdk": "^20.0.0",
-    "@directus/types": "^13.0.0",
-    "@nuxt/devtools": "latest",
-    "@nuxt/image": "^1.11.0",
-    "@nuxt/kit": "^4.1.2",
-    "@nuxt/module-builder": "^1.0.2",
-    "@nuxt/schema": "^4.1.2",
-    "@nuxt/test-utils": "^3.19.2",
-    "@types/http-proxy": "^1.17.17",
-    "changelogen": "^0.6.1",
-    "eslint": "^9.22.0",
-    "nuxt": "^4.1.2",
-    "vitepress": "^1.6.3",
-    "vitest": "^3.0.8",
-    "vue-tsc": "^3.0.8"
-  },
-  "unbuild": {
-    "failOnWarn": false
-  }
+	"name": "nuxt-directus-sdk",
+	"type": "module",
+	"version": "4.0.7",
+	"description": "A Directus nuxt module that uses the Directus SDK",
+	"author": "Matthew Rollinson <matt@rolley.io>",
+	"license": "MIT",
+	"exports": {
+		".": {
+			"types": "./dist/module.d.mts",
+			"import": "./dist/module.mjs"
+		}
+	},
+	"main": "./dist/module.mjs",
+	"types": "./dist/module.d.mts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"prepack": "nuxt-module-build build",
+		"dev": "nuxi dev playground",
+		"dev:build": "nuxi build playground",
+		"dev:prepare": "nuxt-module-build --stub && nuxi prepare playground",
+		"release": "npm run lint && npm run prepack && npm publish && git push --follow-tags",
+		"lint": "eslint .",
+		"test": "vitest run",
+		"test:watch": "vitest watch",
+		"docs:dev": "bun run dev:prepare && vitepress dev docs",
+		"docs:build": "bun run dev:prepare && vitepress build docs",
+		"docs:preview": "vitepress preview docs"
+	},
+	"peerDependencies": {
+		"@directus/sdk": "^20.0.0",
+		"@directus/types": "^13.0.0",
+		"@nuxt/image": "^1.0.0",
+		"@nuxt/kit": "^4.0.0",
+		"nuxt": "^4.0.0"
+	},
+	"dependencies": {
+		"@directus/visual-editing": "^1.1.0",
+		"change-case": "^4.1.2",
+		"defu": "^6.1.1",
+		"directus-sdk-typegen": "^0.2.1",
+		"http-proxy": "^1.18.1",
+		"ufo": "^1.6.1"
+	},
+	"devDependencies": {
+		"@antfu/eslint-config": "^4.10.0",
+		"@directus/sdk": "^20.0.0",
+		"@directus/types": "^13.0.0",
+		"@nuxt/devtools": "latest",
+		"@nuxt/image": "^1.11.0",
+		"@nuxt/kit": "^4.1.2",
+		"@nuxt/module-builder": "^1.0.2",
+		"@nuxt/schema": "^4.1.2",
+		"@nuxt/test-utils": "^3.19.2",
+		"@types/http-proxy": "^1.17.17",
+		"changelogen": "^0.6.1",
+		"eslint": "^9.22.0",
+		"nuxt": "^4.1.2",
+		"vitepress": "^1.6.3",
+		"vitest": "^3.0.8",
+		"vue-tsc": "^3.0.8"
+	},
+	"unbuild": {
+		"failOnWarn": false
+	}
 }

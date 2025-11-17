@@ -1,5 +1,5 @@
 import type { Query } from '@directus/sdk'
-import type { ImportPresetWithDeprecation } from '@nuxt/schema'
+import type { InlinePreset } from 'unimport'
 
 import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, installModule, useLogger } from '@nuxt/kit'
 import { defu } from 'defu'
@@ -7,6 +7,8 @@ import { joinURL } from 'ufo'
 import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
 import { useUrl } from './runtime/utils'
+import { colors } from 'consola/utils'
+import type { DirectusSchema } from '#build/types/directus'
 
 export interface ModuleOptions {
   /**
@@ -105,12 +107,12 @@ export interface ModuleOptions {
     redirect?: {
       /**
        * Redirect to home page after login
-       * @default '/'
+       * @default '/dashboard'
        */
       home?: string
       /**
        * Redirect to login when using auth middleware
-       * @default '/auth/login'
+       * @default '/account/login'
        */
       login?: string
       /**
@@ -121,7 +123,7 @@ export interface ModuleOptions {
     }
   }
 
-  types?: {
+  types?: boolean | {
     /**
      * Generate types for your Directus instance
      * @type boolean
@@ -167,8 +169,8 @@ export default defineNuxtModule<ModuleOptions>({
       realtimeAuthMode: 'public',
       readMeFields: [],
       redirect: {
-        home: '/',
-        login: '/auth/login',
+        home: '/dashboard',
+        login: '/account/login',
         logout: '/',
       },
     },
@@ -192,9 +194,8 @@ export default defineNuxtModule<ModuleOptions>({
 
     // Store the original URL for type generation and server-side use
     const directusUrl = options.url
-
-    logger.info(`Nuxt Directus SDK Version: ${version}`)
-
+    //TODO: logger
+    let loggerMessage = new Array()
     // Set up development proxy if enabled and in dev mode
     if (devProxyEnabled && nuxtApp.options.dev) {
       // Get the dev server configuration from Nuxt
@@ -209,16 +210,9 @@ export default defineNuxtModule<ModuleOptions>({
       // Use a separate route for WebSocket proxy to avoid conflicts with the HTTP handler
       const wsProxyPath = `${devProxyPath}-ws`
       const wsTarget = joinURL(directusUrl, 'websocket')
-
-      logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
-      logger.info(`🔄 Directus Development Proxy Enabled`)
-      logger.info(`   Proxy path: ${devProxyPath}`)
-      logger.info(`   Forwarding to: ${directusUrl}`)
-      logger.info(`   Local URL: ${proxyUrl}`)
-      logger.info(`   WebSocket proxy path: ${wsProxyPath}`)
-      logger.info(`   WebSocket target: ${wsTarget}`)
-      logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
-
+      loggerMessage.push(`🌐 Development mode:`)
+      loggerMessage.push(`URL${colors.dim(` ${proxyUrl}`)} proxies ${colors.underline(colors.green(`${directusUrl}`))}`)
+      loggerMessage.push(`WS URL${colors.dim(` ${baseUrl}${wsProxyPath}`)} proxies ${colors.underline(colors.green(`${wsTarget}`))}`)
       // Configure WebSocket proxy for realtime support (WebSocket only)
       nuxtApp.options.nitro = nuxtApp.options.nitro || {}
       nuxtApp.options.nitro.devProxy = nuxtApp.options.nitro.devProxy || {}
@@ -298,7 +292,7 @@ export default defineNuxtModule<ModuleOptions>({
         ; (options as any).wsProxyUrl = joinURL(baseUrl, wsProxyPath)
     }
     else if (!nuxtApp.options.dev) {
-      logger.info(`🌐 Production mode: Connecting directly to ${directusUrl}`)
+      loggerMessage.push(`🌐 Production mode:`, ` SDK connects directly to ${colors.dim(`${directusUrl}`)}`)
     }
 
     (options as any).directusUrl = directusUrl
@@ -339,7 +333,7 @@ export default defineNuxtModule<ModuleOptions>({
       global: true,
     })
 
-    const directusSdkImports: ImportPresetWithDeprecation = {
+    const directusSdkImports: InlinePreset = {
       from: '@directus/sdk',
       imports: [
         'aggregate',
@@ -416,11 +410,10 @@ export default defineNuxtModule<ModuleOptions>({
         ],
       })
     })
-
+    loggerMessage.push(``)
+    const adminUrl = useUrl(directusUrl, 'admin')
     if (options.devtools) {
-      const adminUrl = useUrl(directusUrl, 'admin')
-      logger.info(`Directus Admin URL: ${adminUrl}`)
-
+      loggerMessage.push(`Directus Admin added to Nuxt DevTools`)
       nuxtApp.hook('devtools:customTabs' as any, (iframeTabs: any) => {
         iframeTabs.push({
           name: 'directus',
@@ -434,42 +427,42 @@ export default defineNuxtModule<ModuleOptions>({
       })
     }
     else {
-      logger.info('Set devtools to true to view the Directus admin panel from inside Nuxt Devtools')
+      loggerMessage.push(`${colors.dim(`  Directus Admin was not added to Nuxt DevTools`)}`)
     }
 
-    if (options.types?.enabled) {
+    const typesEnabled = (typeof options.types === 'boolean' && options.types) || options.types && options.types['enabled'] === true
+    const typesPrefix = typeof options.types === 'object' ? options.types.prefix ?? '' : ''
+    if (typesEnabled) {
       if (!options.adminToken) {
-        logger.warn('Directus types generation is disabled, set the admin token in the config or .env file as DIRECTUS_ADMIN_TOKEN')
+        loggerMessage.push(``, `${colors.bgRedBright(`${colors.red('⚑ ERROR:')} Unable to generate Types`)}`, `  Fix: Set adminToken in config or DIRECTUS_ADMIN_TOKEN in .env`)
       }
       else {
         try {
           // Generate types once and cache the result
           let cachedTypes: string | null = null
 
-          const typesPath = addTypeTemplate({
+          addTypeTemplate({
             filename: `types/${configKey}.d.ts`,
             async getContents() {
               if (!cachedTypes) {
                 // Use the original URL for type generation (not the proxy URL)
                 cachedTypes = await generateTypes({
-                  url: useUrl(directusUrl),
+                  url: directusUrl,
                   token: options.adminToken!,
-                  prefix: options.types?.prefix ?? '',
+                  prefix: typesPrefix,
                 })
               }
               return cachedTypes
             },
-          }, { nitro: true, nuxt: true }).dst
-
-          nuxtApp.hook('prepare:types', (options) => {
-            options.references.push({ path: typesPath })
-          })
+          }, { nitro: true, nuxt: true })
+          loggerMessage.push(`${colors.dim(`  Directus Types saved successfully to #build/types/${configKey}.d.ts`)}`)
         }
         catch (error) {
           logger.error((error as Error).message)
         }
       }
     }
+    logger.box({ message: loggerMessage.join('\n'), title: `${colors.magenta(`Nuxt Directus SDK Version: ${colors.magentaBright(`${version}`)}`)}`, style: { padding: 3, borderColor: 'magenta', borderStyle: 'double-single-rounded' } })
   },
 })
 

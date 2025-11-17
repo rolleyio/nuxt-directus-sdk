@@ -1,10 +1,11 @@
 import type { Query } from '@directus/sdk'
 import { uploadFiles } from '@directus/sdk'
 import { useDirectus, useDirectusUrl } from './directus'
+import type { DirectusFile, DirectusSchema } from '#build/types/directus'
 
 interface DirectusFileUpload {
   file: File
-  data?: Record<keyof DirectusFiles, string>
+  data?: Record<keyof DirectusFile, string>
 }
 
 export async function uploadDirectusFile(file: DirectusFileUpload, query?: Query<DirectusSchema, DirectusSchema['directus_files']>) {
@@ -27,7 +28,7 @@ export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Q
     formData.set('file', file)
   })
 
-  return directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFiles[] | DirectusFiles
+  return directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFile[] | DirectusFile
 }
 
 export type DirectusThumbnailFormat = 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'
@@ -45,7 +46,7 @@ export interface DirectusFileOptions {
   key?: string
 }
 
-export function getDirectusFileUrl(file: string | DirectusFiles, options?: DirectusFileOptions): string {
+export function getDirectusFileUrl(file: string | DirectusFile, options?: DirectusFileOptions): string {
   const fileId = typeof file === 'string' ? file : file.id
   const url = new URL(useDirectusUrl(`assets/${fileId}${options?.filename ? `/${options.filename}` : ''}`))
 
