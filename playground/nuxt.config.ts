@@ -1,28 +1,35 @@
 export default defineNuxtConfig({
   modules: ['../src/module'],
   devtools: {
-    enabled: false,
+    enabled: true,
   },
-
   directus: {
-    devtools: false,
-    // devProxy automatically enabled in dev mode
-    // Customize if needed:
-    // devProxy: false, // disable
-    // devProxy: { enabled: true, path: '/api' }, // custom path
-    auth: {
-      readMeFields: ['id', 'first_name', 'last_name', 'email'],
+    // url: import.emeta.env.DIRECTUS_URL
+    // adminToken: import.meta.env.DIRECTUS_ADMIN_TOKEN
+    devProxy: {
+      enabled: true,
+      path: '/directus'
     },
+    devtools: true,
+    visualEditor: true,
     types: {
       enabled: true,
-      prefix: 'TheTest'
+      prefix: 'DPRE',
+    },
+    auth: {
+      enabled: true,
+      enableGlobalAuthMiddleware: false,
+      autoRefresh: true,
+      credentials: 'include',
+      realtimeAuthMode: 'public',
+      readMeFields: ['id', 'first_name', 'last_name', 'email'],
+      redirect: {
+        home: '/dashboard',
+        login: '/auth/login',
+        logout: '/',
+      },
     }
   },
-
-  typescript: {
-    includeWorkspace: true,
-  },
-
   routeRules: {
     '/**': {
       headers: {
@@ -32,4 +39,7 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2025-03-13',
+  typescript: {
+    includeWorkspace: true
+  }
 })

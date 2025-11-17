@@ -1,92 +1,25 @@
-<script lang="ts" setup>
-import { reactive, readItem, useAsyncData, useDirectus, useDirectusAuth } from '#imports'
-
-// definePageMeta({
-//   middleware: ['auth'],
-// })
-
-const directus = useDirectus()
-
-const { data } = await useAsyncData(async () => {
-  return directus.request(readItem('blogs', 1))
-})
-
-const { user, login, loggedIn } = useDirectusAuth()
-
-const form = reactive({
-  email: '',
-  password: '',
-})
-
-async function loginForm() {
-  const _test = await login(form.email, form.password, { redirect: false })
-
-  // console.log(test)
-}
-
-async function testServer() {
-  const _res = await $fetch('/api/test')
-
-  // console.log(res)
-}
-</script>
+<script setup></script>
 
 <template>
-  <div>
-    <DirectusVisualEditor v-if="data" collection="blogs" :item="data.id" :fields="['title']" mode="drawer">
-      <p>
-        {{ data.title }}
-      </p>
-    </DirectusVisualEditor>
+	<div>
+		<h1>Nuxt-Directus-SDK Playground</h1>
+		<p>Examples of how to use the nuxt-directus-sdk in your application.</p>
+		<p>
+			These examples will try to call out any potential security vulnerabilities
+			within code comments.
+		</p>
 
-    <p>{{ user }}</p>
-
-    <form
-      v-if="!loggedIn"
-      class="space-y-3 mb-4"
-      @submit.prevent="loginForm"
-    >
-      <div>
-        <label
-          class="label"
-          for="email-input"
-        >Email</label>
-        <input
-          id="email-input"
-          v-model="form.email"
-          type="email"
-          class="text-black"
-          autocomplete="email"
-          required
-        >
-      </div>
-
-      <div>
-        <label
-          class="label"
-          for="password-input"
-        >Password</label>
-        <input
-          id="password-input"
-          v-model="form.password"
-          type="password"
-          class="text-black"
-          autocomplete="current-password"
-          required
-        >
-      </div>
-
-      <button>Submit</button>
-    </form>
-
-    <p v-else>
-      <NuxtLink to="/auth">
-        Hello
-      </NuxtLink>
-    </p>
-
-    <button @click="testServer">
-      Test server
-    </button>
-  </div>
+		<h2>Playground To Do's:</h2>
+		<ul>
+			<li>Visual Editor Example</li>
+			<li>useServerDirectus</li>
+			<li>useAdminDirectus</li>
+			<li>useTokenDirectus</li>
+			<li>liginWithProvider</li>
+			<li>createUser / register (alias)</li>
+			<li>inviteUser</li>
+			<li>acceptUserInvite</li>
+			<li>passwordRequest / passwordReset</li>
+		</ul>
+	</div>
 </template>
