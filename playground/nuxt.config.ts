@@ -13,6 +13,10 @@ export default defineNuxtConfig({
     auth: {
       readMeFields: ['id', 'first_name', 'last_name', 'email'],
     },
+    types: {
+      enabled: true,
+      prefix: 'TheTest'
+    }
   },
 
   typescript: {
@@ -22,7 +26,7 @@ export default defineNuxtConfig({
   routeRules: {
     '/**': {
       headers: {
-        'x-frame-options': false,
+        'x-frame-options': 'allowall',
       },
     },
   },
