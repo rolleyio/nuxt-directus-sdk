@@ -112,7 +112,7 @@ export interface ModuleOptions {
       home?: string
       /**
        * Redirect to login when using auth middleware
-       * @default '/account/login'
+       * @default '/auth/login'
        */
       login?: string
       /**
@@ -170,7 +170,7 @@ export default defineNuxtModule<ModuleOptions>({
       readMeFields: [],
       redirect: {
         home: '/dashboard',
-        login: '/account/login',
+        login: '/auth/login',
         logout: '/',
       },
     },
