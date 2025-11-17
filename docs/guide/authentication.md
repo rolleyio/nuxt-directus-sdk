@@ -200,7 +200,7 @@ export default defineNuxtConfig({
   directus: {
     auth: {
       redirect: {
-        login: '/account/login',    // Where to go when not logged in
+        login: '/auth/login',    // Where to go when not logged in
         home: '/dashboard',          // Where to go after login
         logout: '/',                 // Where to go after logout
       },
@@ -257,7 +257,7 @@ export default defineNuxtConfig({
       readMeFields: ['*'],              // fields to fetch for current user
       redirect: {
         home: '/',
-        login: '/account/login',
+        login: '/auth/login',
         logout: '/',
       },
     },

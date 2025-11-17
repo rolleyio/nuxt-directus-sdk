@@ -136,7 +136,7 @@ export default defineNuxtConfig({
       realtimeAuthMode: 'public',
       enableGlobalAuthMiddleware: false,
       redirect: {
-        login: '/account/login',
+        login: '/auth/login',
         home: '/',
         logout: '/',
       },
