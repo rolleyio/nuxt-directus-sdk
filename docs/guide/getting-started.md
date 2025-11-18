@@ -44,7 +44,7 @@ DIRECTUS_ADMIN_TOKEN=admin_token_required_for_typegen
 ```
 
   - **`DIRECTUS_URL`** (required): Your Directus instance URL
-  - **`DIRECTUS_ADMIN_TOKEN`** (optional): Admin token for type generation and admin operations
+  - **`DIRECTUS_ADMIN_TOKEN`** (optional): Admin token for type generation and `useAdminDirectus()` module.
 
 
 ## Directus Configuration
@@ -102,7 +102,9 @@ npx directus-template-cli@latest apply
 The template cli will attempt to merge with your existing content, but is not guaranteed to preserve anything. It is recommended that you use the cli on a fresh instance for testing as needed or modify the examples to work with your existing data structures.
 :::
 
-# STOP #
+<!-- 
+//TODO: Convert to snippets to avoid code replication and ability to edit in multiple places.
+-->
 
 ## Development Proxy
 
