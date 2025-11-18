@@ -13,9 +13,7 @@
 	},
 	"main": "./dist/module.mjs",
 	"types": "./dist/module.d.mts",
-	"files": [
-		"dist"
-	],
+	"files": ["dist"],
 	"scripts": {
 		"prepack": "nuxt-module-build build",
 		"dev": "nuxi dev playground",
