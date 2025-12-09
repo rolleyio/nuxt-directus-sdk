@@ -484,7 +484,7 @@ export default defineNuxtConfig({
   directus: {
     auth: {
       redirect: {
-        login: '/account/login',    // Where to go when not logged in
+        login: '/auth/login',    // Where to go when not logged in
         home: '/dashboard',          // Where to go after login
         logout: '/',                 // Where to go after logout
       },
@@ -542,7 +542,7 @@ export default defineNuxtConfig({
       readMeFields: ['*'],              // fields to fetch for current user
       redirect: {
         home: '/',
-        login: '/account/login',
+        login: '/auth/login',
         logout: '/',
       },
     },
@@ -3152,7 +3152,7 @@ export default defineNuxtConfig({
     auth: {
       redirect: {
         home: '/',                  // After login
-        login: '/account/login',    // When not authenticated
+        login: '/auth/login',    // When not authenticated
         logout: '/',                // After logout
       },
     },
@@ -3170,7 +3170,7 @@ Where to redirect after successful login.
 ##### `auth.redirect.login`
 
 - **Type:** `string`
-- **Default:** `'/account/login'`
+- **Default:** `'/auth/login'`
 
 Where to redirect when authentication is required.
 

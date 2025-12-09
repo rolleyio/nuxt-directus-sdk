@@ -379,7 +379,7 @@ export default defineNuxtConfig({
     auth: {
       redirect: {
         home: '/',                  // After login
-        login: '/account/login',    // When not authenticated
+        login: '/auth/login',    // When not authenticated
         logout: '/',                // After logout
       },
     },
@@ -397,7 +397,7 @@ Where to redirect after successful login.
 ##### `auth.redirect.login`
 
 - **Type:** `string`
-- **Default:** `'/account/login'`
+- **Default:** `'/auth/login'`
 
 Where to redirect when authentication is required.
 
@@ -442,9 +442,9 @@ export default defineNuxtConfig({
       realtimeAuthMode: 'handshake',
       readMeFields: ['id', 'email', 'first_name', 'last_name', 'avatar', 'role'],
       redirect: {
-        home: '/dashboard',
+        home: '/',
         login: '/auth/login',
-        logout: '/auth/login',
+        logout: '/',
       },
     },
   },

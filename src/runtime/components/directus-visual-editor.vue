@@ -1,11 +1,20 @@
 <script setup lang="ts" generic="T extends keyof DirectusSchema">
 import type { PrimaryKey } from '@directus/types'
-import { computed, onBeforeUnmount, onMounted, ref, useRuntimeConfig } from '#imports'
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useRuntimeConfig,
+} from '#imports'
 import { apply, setAttr } from '@directus/visual-editing'
 import { useDirectusPreview } from '../composables/directus'
 import { Slot } from '../utils'
+import type { DirectusSchema } from '#build/types/directus'
 
-type SingleDirectusCollection = DirectusSchema[T] extends Array<any> ? DirectusSchema[T][0] : DirectusSchema[T]
+type SingleDirectusCollection = DirectusSchema[T] extends Array<any>
+  ? DirectusSchema[T][0]
+  : DirectusSchema[T]
 type FieldKey = keyof SingleDirectusCollection
 
 const props = defineProps<{
@@ -42,7 +51,11 @@ const attributes = computed(() => {
 })
 
 onMounted(async () => {
-  if (!config.public.directus.visualEditor || !editorElement.value || import.meta.server) {
+  if (
+    !config.public.directus.visualEditor ||
+    !editorElement.value ||
+    import.meta.server
+  ) {
     return
   }
 
@@ -61,7 +74,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Slot ref="editorElement" v-bind="attributes">
+  <Slot
+    ref="editorElement"
+    v-bind="attributes">
     <slot />
   </Slot>
 </template>

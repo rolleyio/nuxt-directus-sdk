@@ -3,6 +3,7 @@ import { useRuntimeConfig } from '#imports'
 import { authentication, createDirectus, rest } from '@directus/sdk'
 import { getCookie } from 'h3'
 import { useUrl } from '../../utils'
+import type { DirectusSchema } from '#build/types/directus'
 
 export function getDirectusSessionToken(event: H3Event): string | undefined {
   // Session mode: look for the session token cookie set by Directus
