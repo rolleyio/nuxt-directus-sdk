@@ -1,4 +1,5 @@
 import type { Ref } from '#imports'
+import type { WebSocketAuthModes } from '@directus/sdk'
 import { useRequestHeaders, useRuntimeConfig, useState } from '#imports'
 import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
 import { useUrl } from '../utils'
@@ -44,13 +45,13 @@ function createDirectusClient() {
 
   // Create custom fetch that forwards cookies during SSR
   const customFetch: typeof fetch = async (url, options) => {
-    // Convert URL to string for $fetch
-    const urlString = typeof url === 'string' ? url : url.toString()
+    // normalize url into string for $fetch
+    const urlString = url instanceof URL ? url.href : url
 
     // During SSR, forward cookies from the incoming request
     if (import.meta.server && requestHeaders?.cookie) {
       return globalThis.$fetch(urlString, {
-        ...options as any,
+        ...options as any, // $fetch will normalize the method for us
         headers: {
           ...options?.headers,
           cookie: requestHeaders.cookie,
@@ -79,16 +80,16 @@ function createDirectusClient() {
   })
     .with(authentication('session', {
       autoRefresh: authConfig.autoRefresh ?? true,
-      credentials: (authConfig.credentials as any) || 'include',
+      credentials: authConfig.credentials as RequestCredentials || 'include',
       // Only use custom storage on server to prevent localStorage errors
       ...(import.meta.server ? { storage: useDirectusStorage() } : {}),
     }))
     .with(rest({
-      credentials: (authConfig.credentials as any) || 'include',
+      credentials: authConfig.credentials as RequestCredentials || 'include',
     }))
     .with(realtime({
-      authMode: (authConfig.realtimeAuthMode as any) || 'public',
-      // Only set custom URL if we have a WebSocket proxy path
+      authMode: authConfig.realtimeAuthMode as WebSocketAuthModes || 'public',
+      // Only set custom URL if we have a proxy path (dev mode with proxy enabled)
       ...(devProxyWsUrl ? { url: devProxyWsUrl } : {}),
     }))
 

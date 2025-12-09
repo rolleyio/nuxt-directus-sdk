@@ -1,6 +1,7 @@
 import type { GenerateOptions } from './types'
 import { useLogger } from '@nuxt/kit'
 import { generateDirectusTypes } from 'directus-sdk-typegen'
+import { cleanDoubleSlashes } from 'ufo'
 
 const logger = useLogger('nuxt-directus-sdk')
 
@@ -13,7 +14,7 @@ export async function generateTypes(options: GenerateOptions) {
 
   // Generate types using directus-sdk-typegen
   const generatedTypes = await generateDirectusTypes({
-    directusUrl: options.url.replace(/\/$/, ''),
+    directusUrl: cleanDoubleSlashes(options.url),
     directusToken: options.token,
   })
 
@@ -30,12 +31,12 @@ export async function generateTypes(options: GenerateOptions) {
           return match
         }
         return `export interface ${options.prefix}${interfaceName}`
-      }
+      },
     )
 
     // Step 2: Update type references throughout (but not interface declarations)
     // Split by lines to process each line separately and avoid double-prefixing interface names
-    processedTypes = processedTypes.split('\n').map(line => {
+    processedTypes = processedTypes.split('\n').map((line) => {
       // Skip lines that define interfaces (already handled in Step 1)
       if (line.match(/^export interface /)) {
         return line
@@ -47,14 +48,14 @@ export async function generateTypes(options: GenerateOptions) {
         (match, typeName, array) => {
           // Skip if it's a Directus type, a primitive, or common TS types
           if (
-            typeName.startsWith('Directus') ||
-            ['String', 'Number', 'Boolean', 'Date', 'Array', 'Record', 'Promise', 'Partial', 'Required', 'Readonly', 'Pick', 'Omit', 'Exclude', 'Extract'].includes(typeName) ||
-            ['string', 'number', 'boolean', 'any', 'unknown', 'void', 'never', 'null', 'undefined'].includes(typeName.toLowerCase())
+            typeName.startsWith('Directus')
+            || ['String', 'Number', 'Boolean', 'Date', 'Array', 'Record', 'Promise', 'Partial', 'Required', 'Readonly', 'Pick', 'Omit', 'Exclude', 'Extract'].includes(typeName)
+            || ['string', 'number', 'boolean', 'any', 'unknown', 'void', 'never', 'null', 'undefined'].includes(typeName.toLowerCase())
           ) {
             return match
           }
           return `${options.prefix}${typeName}${array || ''}`
-        }
+        },
       )
     }).join('\n')
   }

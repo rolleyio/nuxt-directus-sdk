@@ -1,7 +1,7 @@
 {
   "name": "nuxt-directus-sdk",
   "type": "module",
-  "version": "4.0.6",
+  "version": "4.0.7",
   "description": "A Directus nuxt module that uses the Directus SDK",
   "author": "Matthew Rollinson <matt@rolley.io>",
   "license": "MIT",
@@ -13,9 +13,7 @@
   },
   "main": "./dist/module.mjs",
   "types": "./dist/module.d.mts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "prepack": "nuxt-module-build build",
     "dev": "nuxi dev playground",
@@ -37,6 +35,7 @@
     "@nuxt/kit": "^4.0.0",
     "change-case": "^4.1.2",
     "defu": "^6.1.1",
+    "directus-sdk-typegen": "^0.2.1",
     "http-proxy": "^1.18.1",
     "ufo": "^1.6.1"
   },
