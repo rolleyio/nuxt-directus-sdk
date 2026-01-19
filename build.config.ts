@@ -6,6 +6,8 @@ export default defineBuildConfig({
     { input: 'src/module.ts' },
     // Standalone rules entry point
     { input: 'src/rules/index.ts' },
+    // CLI entry point
+    { input: 'src/cli/index.ts' },
   ],
   declaration: true,
   rollup: {

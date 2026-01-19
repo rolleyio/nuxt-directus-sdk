@@ -8,10 +8,13 @@
  *   rules:diff-remote - Compare two remote Directus instances
  */
 
-import { createDirectus, rest, staticToken } from '@directus/sdk'
+/* eslint-disable node/prefer-global/process */
+
+import type { DirectusRulesPayload } from '../rules/types/directus-api'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { parseArgs } from 'node:util'
+import { createDirectus, rest, staticToken } from '@directus/sdk'
 import {
   compareRulesPayloads,
   diffRemoteRules,
@@ -19,7 +22,11 @@ import {
   fetchRemoteRulesAsJson,
   formatDiff,
 } from '../rules/sync'
-import type { DirectusRulesPayload } from '../rules/types/directus-api'
+
+interface ConnectionConfig {
+  url: string
+  token: string
+}
 
 // Load .env file if it exists
 function loadEnv(): void {
@@ -41,21 +48,26 @@ function loadEnv(): void {
   }
 }
 
-function getEnvConfig() {
-  const url = process.env.DIRECTUS_URL
-  const token = process.env.DIRECTUS_ADMIN_TOKEN
+/**
+ * Get connection config, with CLI flags taking precedence over env vars
+ */
+function getConnectionConfig(
+  urlFlag: string | undefined,
+  tokenFlag: string | undefined,
+  label: string,
+): ConnectionConfig {
+  const url = urlFlag ?? process.env.DIRECTUS_URL
+  const token = tokenFlag ?? process.env.DIRECTUS_ADMIN_TOKEN
 
   if (!url) {
-    console.error('Error: DIRECTUS_URL environment variable is required')
-    console.error('Set it in your .env file or export it:')
-    console.error('  export DIRECTUS_URL=https://your-directus.com')
+    console.error(`Error: ${label} URL is required`)
+    console.error(`Provide --${label.toLowerCase()}-url or set DIRECTUS_URL in your .env file`)
     process.exit(1)
   }
 
   if (!token) {
-    console.error('Error: DIRECTUS_ADMIN_TOKEN environment variable is required')
-    console.error('Set it in your .env file or export it:')
-    console.error('  export DIRECTUS_ADMIN_TOKEN=your-admin-token')
+    console.error(`Error: ${label} token is required`)
+    console.error(`Provide --${label.toLowerCase()}-token or set DIRECTUS_ADMIN_TOKEN in your .env file`)
     process.exit(1)
   }
 
@@ -76,43 +88,69 @@ Usage:
   npx nuxt-directus-sdk <command> [options]
 
 Commands:
-  rules:pull              Download rules from Directus and save as JSON
-  rules:diff <file>       Compare local JSON file with remote Directus
-  rules:diff-remote       Compare two remote Directus instances
+  rules:pull                Download rules from Directus and save as JSON
+  rules:diff <file>         Compare local JSON file with remote Directus
+  rules:diff-files <a> <b>  Compare two local JSON files
+  rules:diff-remote         Compare two remote Directus instances
 
 Options:
-  -h, --help              Show this help message
-  -o, --output <file>     Output file path (default: rules.json)
-  --compact               Output compact JSON (no pretty-print)
-  --target-url <url>      Target Directus URL (for rules:diff-remote)
-  --target-token <token>  Target admin token (for rules:diff-remote)
+  -h, --help                Show this help message
+  -o, --output <file>       Output file path (default: rules.json)
+  --compact                 Output compact JSON (no pretty-print)
+
+  Connection options (override DIRECTUS_URL / DIRECTUS_ADMIN_TOKEN):
+  --source-url <url>        Source Directus URL
+  --source-token <token>    Source admin token
+  --target-url <url>        Target Directus URL (for rules:diff-remote)
+  --target-token <token>    Target admin token (for rules:diff-remote)
 
 Environment Variables:
-  DIRECTUS_URL            Directus instance URL (required)
-  DIRECTUS_ADMIN_TOKEN    Admin token for API access (required)
+  DIRECTUS_URL              Default Directus URL (used if --source-url not provided)
+  DIRECTUS_ADMIN_TOKEN      Default admin token (used if --source-token not provided)
 
 Examples:
-  # Pull rules from Directus
+  # Pull rules from Directus (uses env vars)
   npx nuxt-directus-sdk rules:pull
-  npx nuxt-directus-sdk rules:pull -o my-rules.json
+
+  # Pull from a specific instance
+  npx nuxt-directus-sdk rules:pull --source-url https://my-directus.com --source-token my-token
 
   # Compare local file with remote
   npx nuxt-directus-sdk rules:diff rules.json
 
-  # Compare staging with production
-  DIRECTUS_URL=https://staging.example.com \\
-  DIRECTUS_ADMIN_TOKEN=staging-token \\
+  # Compare two local JSON files
+  npx nuxt-directus-sdk rules:diff-files staging.json production.json
+
+  # Compare two remote instances
   npx nuxt-directus-sdk rules:diff-remote \\
-    --target-url https://production.example.com \\
-    --target-token production-token
+    --source-url https://staging.example.com --source-token staging-token \\
+    --target-url https://production.example.com --target-token production-token
 `)
 }
 
-async function commandPull(options: { output: string, compact: boolean }): Promise<void> {
-  const { url, token } = getEnvConfig()
-  const client = createClient(url, token)
+function loadJsonFile(filePath: string): DirectusRulesPayload {
+  if (!existsSync(filePath)) {
+    console.error(`Error: File not found: ${filePath}`)
+    process.exit(1)
+  }
 
-  console.log(`Fetching rules from ${url}...`)
+  const content = readFileSync(filePath, 'utf-8')
+  try {
+    return JSON.parse(content)
+  }
+  catch {
+    console.error(`Error: Invalid JSON in ${filePath}`)
+    process.exit(1)
+  }
+}
+
+async function commandPull(
+  options: { output: string, compact: boolean },
+  connection: ConnectionConfig,
+): Promise<void> {
+  const client = createClient(connection.url, connection.token)
+
+  console.log(`Fetching rules from ${connection.url}...`)
 
   const json = await fetchRemoteRulesAsJson(client, !options.compact)
 
@@ -126,27 +164,15 @@ async function commandPull(options: { output: string, compact: boolean }): Promi
   console.log(`  ${rules.permissions.length} permissions`)
 }
 
-async function commandDiff(localFile: string): Promise<void> {
-  const { url, token } = getEnvConfig()
+async function commandDiff(
+  localFile: string,
+  connection: ConnectionConfig,
+): Promise<void> {
+  const local = loadJsonFile(localFile)
 
-  if (!existsSync(localFile)) {
-    console.error(`Error: File not found: ${localFile}`)
-    process.exit(1)
-  }
+  console.log(`Comparing ${localFile} with ${connection.url}...`)
 
-  const localContent = readFileSync(localFile, 'utf-8')
-  let local: DirectusRulesPayload
-  try {
-    local = JSON.parse(localContent)
-  }
-  catch {
-    console.error(`Error: Invalid JSON in ${localFile}`)
-    process.exit(1)
-  }
-
-  console.log(`Comparing ${localFile} with ${url}...`)
-
-  const client = createClient(url, token)
+  const client = createClient(connection.url, connection.token)
   const remote = await fetchRemoteRules(client)
   const diff = compareRulesPayloads(local, remote)
 
@@ -158,23 +184,30 @@ async function commandDiff(localFile: string): Promise<void> {
   }
 }
 
-async function commandDiffRemote(targetUrl: string, targetToken: string): Promise<void> {
-  const { url: sourceUrl, token: sourceToken } = getEnvConfig()
+async function commandDiffFiles(fileA: string, fileB: string): Promise<void> {
+  console.log(`Comparing ${fileA} with ${fileB}...`)
 
-  if (!targetUrl) {
-    console.error('Error: --target-url is required for rules:diff-remote')
-    process.exit(1)
+  const rulesA = loadJsonFile(fileA)
+  const rulesB = loadJsonFile(fileB)
+
+  const diff = compareRulesPayloads(rulesA, rulesB)
+
+  console.log()
+  console.log(formatDiff(diff))
+
+  if (diff.hasChanges) {
+    process.exit(1) // Exit with error code if there are differences
   }
+}
 
-  if (!targetToken) {
-    console.error('Error: --target-token is required for rules:diff-remote')
-    process.exit(1)
-  }
+async function commandDiffRemote(
+  source: ConnectionConfig,
+  target: ConnectionConfig,
+): Promise<void> {
+  console.log(`Comparing ${source.url} with ${target.url}...`)
 
-  console.log(`Comparing ${sourceUrl} with ${targetUrl}...`)
-
-  const sourceClient = createClient(sourceUrl, sourceToken)
-  const targetClient = createClient(targetUrl, targetToken)
+  const sourceClient = createClient(source.url, source.token)
+  const targetClient = createClient(target.url, target.token)
 
   const diff = await diffRemoteRules(sourceClient, targetClient)
 
@@ -192,9 +225,11 @@ async function main(): Promise<void> {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     options: {
-      help: { type: 'boolean', short: 'h' },
-      output: { type: 'string', short: 'o', default: 'rules.json' },
-      compact: { type: 'boolean', default: false },
+      'help': { type: 'boolean', short: 'h' },
+      'output': { type: 'string', short: 'o', default: 'rules.json' },
+      'compact': { type: 'boolean', default: false },
+      'source-url': { type: 'string' },
+      'source-token': { type: 'string' },
       'target-url': { type: 'string' },
       'target-token': { type: 'string' },
     },
@@ -209,28 +244,57 @@ async function main(): Promise<void> {
 
   try {
     switch (command) {
-      case 'rules:pull':
+      case 'rules:pull': {
+        const connection = getConnectionConfig(
+          values['source-url'],
+          values['source-token'],
+          'Source',
+        )
         await commandPull({
           output: values.output!,
           compact: values.compact!,
-        })
+        }, connection)
         break
+      }
 
-      case 'rules:diff':
+      case 'rules:diff': {
         if (!positionals[1]) {
           console.error('Error: rules:diff requires a file path')
           console.error('Usage: npx nuxt-directus-sdk rules:diff <file>')
           process.exit(1)
         }
-        await commandDiff(positionals[1])
+        const connection = getConnectionConfig(
+          values['source-url'],
+          values['source-token'],
+          'Source',
+        )
+        await commandDiff(positionals[1], connection)
+        break
+      }
+
+      case 'rules:diff-files':
+        if (!positionals[1] || !positionals[2]) {
+          console.error('Error: rules:diff-files requires two file paths')
+          console.error('Usage: npx nuxt-directus-sdk rules:diff-files <file-a> <file-b>')
+          process.exit(1)
+        }
+        await commandDiffFiles(positionals[1], positionals[2])
         break
 
-      case 'rules:diff-remote':
-        await commandDiffRemote(
-          values['target-url'] ?? '',
-          values['target-token'] ?? '',
+      case 'rules:diff-remote': {
+        const source = getConnectionConfig(
+          values['source-url'],
+          values['source-token'],
+          'Source',
         )
+        const target = getConnectionConfig(
+          values['target-url'],
+          values['target-token'],
+          'Target',
+        )
+        await commandDiffRemote(source, target)
         break
+      }
 
       default:
         console.error(`Unknown command: ${command}`)
