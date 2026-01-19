@@ -1,0 +1,17 @@
+/**
+ * Loader exports for the Directus Rules DSL
+ */
+
+export {
+  loadRulesFromJson,
+  loadRulesFromJsonFile,
+  rulesToJson,
+} from './json'
+
+export type {
+  CollectionPermissionsJson,
+  PermissionConfigJson,
+  PolicyJson,
+  RoleJson,
+  RulesJson,
+} from './json'
