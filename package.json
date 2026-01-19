@@ -17,6 +17,10 @@
   },
   "main": "./dist/module.mjs",
   "types": "./dist/module.d.mts",
+  "bin": {
+    "directus-rules": "./dist/cli/index.mjs",
+    "nuxt-directus-sdk": "./dist/cli/index.mjs"
+  },
   "files": [
     "dist"
   ],
