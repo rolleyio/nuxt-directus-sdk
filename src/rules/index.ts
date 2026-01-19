@@ -169,3 +169,19 @@ export {
   required,
   toDirectusValidation,
 } from './validation'
+
+// ============================================================================
+// Sync / Diff
+// ============================================================================
+
+export type {
+  ChangeType,
+  DiffChange,
+  DiffSummary,
+  PermissionDiffChange,
+  PolicyDiffChange,
+  RoleDiffChange,
+  RulesDiff,
+} from './sync'
+
+export { compareRulesPayloads, diffRemoteRules, diffRules, fetchRemoteRules, fetchRemoteRulesAsJson, formatDiff } from './sync'
