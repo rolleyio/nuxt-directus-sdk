@@ -103,7 +103,18 @@ export function normalizeRules<Schema>(
 
   // Process roles, extracting and registering inline policies
   const normalizedRoles: NormalizedRole[] = rules.roles.map((role) => {
-    const policyIds = role.policies.map(policy => registerPolicy(policy))
+    // Get policy IDs from resolved policies
+    const resolvedPolicyIds = role.policies.map(policy => registerPolicy(policy))
+
+    // If role has no resolved policies but has original IDs, use those
+    // This preserves references that couldn't be resolved during loading
+    let policyIds: string[]
+    if (resolvedPolicyIds.length === 0 && role._originalPolicyIds && role._originalPolicyIds.length > 0) {
+      policyIds = role._originalPolicyIds
+    }
+    else {
+      policyIds = resolvedPolicyIds
+    }
 
     return {
       id: role.id,
@@ -232,7 +243,7 @@ function serializePermission<Schema, Collection extends keyof Schema>(
       permissions: null, // No filter = all items
       validation: null,
       presets: null,
-      fields: null, // null = all fields
+      fields: ['*'], // All fields - matches Directus format
     }
   }
 
@@ -262,7 +273,7 @@ function serializePermission<Schema, Collection extends keyof Schema>(
     permissions: permConfig.filter as Record<string, unknown> ?? null,
     validation,
     presets: permConfig.presets as Record<string, unknown> ?? null,
-    fields: permConfig.fields === '*' ? null : (permConfig.fields as string[] ?? null),
+    fields: permConfig.fields === '*' ? ['*'] : (permConfig.fields as string[] ?? null),
   }
 }
 

@@ -50,6 +50,8 @@ export { defineDirectusRules } from './builders'
 export {
   loadRulesFromJson,
   loadRulesFromJsonFile,
+  loadRulesFromPayload,
+  loadRulesFromPayloadFile,
   rulesToJson,
 } from './loaders'
 
@@ -148,7 +150,14 @@ export type {
 } from './utils'
 
 export {
+  addPolicyToRole,
+  createAdminPolicy,
+  createAdminPolicyConfig,
+  createPolicy,
+  extendRules,
+  mergeRules,
   normalizeRules,
+  policyPermissionsToObject,
   serializeToDirectusApi,
   serializeToJson,
 } from './utils'
@@ -171,17 +180,32 @@ export {
 } from './validation'
 
 // ============================================================================
-// Sync / Diff
+// Sync / Diff / Push
 // ============================================================================
 
 export type {
   ChangeType,
+  CompareOptions,
   DiffChange,
   DiffSummary,
   PermissionDiffChange,
   PolicyDiffChange,
+  PushOperationResult,
+  PushOptions,
+  PushProgressEvent,
+  PushResult,
   RoleDiffChange,
   RulesDiff,
 } from './sync'
 
-export { compareRulesPayloads, diffRemoteRules, diffRules, fetchRemoteRules, fetchRemoteRulesAsJson, formatDiff } from './sync'
+export {
+  compareRulesPayloads,
+  diffRemoteRules,
+  diffRules,
+  fetchRemoteRules,
+  fetchRemoteRulesAsJson,
+  formatDiff,
+  formatPushResult,
+  pullRules,
+  pushRules,
+} from './sync'

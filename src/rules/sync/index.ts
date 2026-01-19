@@ -8,9 +8,15 @@ export type {
   DiffSummary,
   PermissionDiffChange,
   PolicyDiffChange,
+  PushOperationResult,
+  PushOptions,
+  PushProgressEvent,
+  PushResult,
   RoleDiffChange,
   RulesDiff,
 } from './types'
 
-export { compareRulesPayloads, diffRemoteRules, diffRules, fetchRemoteRules, fetchRemoteRulesAsJson } from './diff'
+export type { CompareOptions } from './diff'
+export { compareRulesPayloads, diffRemoteRules, diffRules, fetchRemoteRules, fetchRemoteRulesAsJson, pullRules } from './diff'
 export { formatDiff } from './format'
+export { formatPushResult, pushRules } from './push'

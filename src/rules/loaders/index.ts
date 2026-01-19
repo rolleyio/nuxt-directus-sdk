@@ -5,6 +5,8 @@
 export {
   loadRulesFromJson,
   loadRulesFromJsonFile,
+  loadRulesFromPayload,
+  loadRulesFromPayloadFile,
   rulesToJson,
 } from './json'
 

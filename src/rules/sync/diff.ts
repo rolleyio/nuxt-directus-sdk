@@ -11,6 +11,7 @@ import type {
   DirectusRulesPayload,
 } from '../types/directus-api'
 import type { PermissionAction, RulesConfig } from '../types/schema'
+import { loadRulesFromPayload } from '../loaders/json'
 import { serializeToDirectusApi } from '../utils/serialize'
 import { formatDiff } from './format'
 import type {
@@ -156,23 +157,134 @@ export async function fetchRemoteRulesAsJson<Schema>(
 }
 
 /**
+ * Pull rules from a remote Directus instance as a RulesConfig
+ *
+ * This is a convenience function that fetches remote rules and converts them
+ * to the internal RulesConfig format, ready for use with createRulesTester,
+ * extendRules, or other rules utilities.
+ *
+ * @example
+ * ```typescript
+ * import { pullRules, extendRules, createRulesTester } from 'nuxt-directus-sdk/rules'
+ *
+ * // Pull current rules from Directus
+ * const remoteRules = await pullRules(client)
+ *
+ * // Use directly for testing
+ * const tester = createRulesTester(remoteRules)
+ * expect(tester.can('Editor', 'read', 'posts').allowed).toBe(true)
+ *
+ * // Or extend with local additions
+ * const extendedRules = extendRules(remoteRules, {
+ *   roles: [{ name: 'NewRole', policies: [...] }]
+ * })
+ * ```
+ */
+export async function pullRules<Schema>(
+  client: DirectusClient<Schema> & RestClient<Schema>,
+): Promise<RulesConfig<Schema>> {
+  const payload = await fetchRemoteRules(client)
+  return loadRulesFromPayload<Schema>(payload)
+}
+
+/**
+ * Options for comparing rules payloads
+ */
+export interface CompareOptions {
+  /**
+   * Exclude Directus system collections (directus_*) from the diff.
+   * These are managed by Directus and typically shouldn't be overwritten.
+   * @default true
+   */
+  excludeSystemCollections?: boolean
+}
+
+/**
+ * Directus system collections that should be excluded from diff by default.
+ * These are internal to Directus and typically shouldn't be managed via the rules DSL.
+ *
+ * Note: directus_users and directus_files are NOT excluded because they are
+ * commonly extended with custom fields and permissions.
+ */
+const EXCLUDED_SYSTEM_COLLECTIONS = new Set([
+  'directus_activity',
+  'directus_collections',
+  'directus_comments',
+  'directus_dashboards',
+  'directus_extensions',
+  'directus_fields',
+  'directus_flows',
+  'directus_folders',
+  'directus_migrations',
+  'directus_notifications',
+  'directus_operations',
+  'directus_panels',
+  'directus_permissions',
+  'directus_policies',
+  'directus_presets',
+  'directus_relations',
+  'directus_revisions',
+  'directus_roles',
+  'directus_sessions',
+  'directus_settings',
+  'directus_shares',
+  'directus_translations',
+  'directus_versions',
+  'directus_webhooks',
+])
+
+/**
+ * Check if a collection is an internal Directus system collection
+ * that should be excluded from diffs.
+ *
+ * Note: directus_users and directus_files are NOT excluded.
+ */
+function isInternalSystemCollection(collection: string): boolean {
+  return EXCLUDED_SYSTEM_COLLECTIONS.has(collection)
+}
+
+/**
  * Compare two DirectusRulesPayload objects and generate diff
  *
  * Exported for testing and direct use when you already have both payloads.
  *
  * @example
  * ```typescript
+ * // Exclude system collections (default)
  * const diff = compareRulesPayloads(localPayload, remotePayload)
- * console.log(diff.summary)
+ *
+ * // Include system collections
+ * const fullDiff = compareRulesPayloads(localPayload, remotePayload, {
+ *   excludeSystemCollections: false
+ * })
  * ```
  */
 export function compareRulesPayloads(
   local: DirectusRulesPayload,
   remote: DirectusRulesPayload,
+  options: CompareOptions = {},
 ): RulesDiff {
+  const { excludeSystemCollections = true } = options
+
   const roles = compareRoles(local.roles, remote.roles)
   const policies = comparePolicies(local.policies, remote.policies)
-  const permissions = comparePermissions(local.permissions, remote.permissions)
+
+  // Filter permissions:
+  // - Exclude internal system collections if option is set
+  // - Always exclude permissions with policy: null (these are Directus "app access" permissions
+  //   that aren't managed through the rules DSL)
+  const localPerms = local.permissions.filter((p) => {
+    if (p.policy === null) return false
+    if (excludeSystemCollections && isInternalSystemCollection(p.collection)) return false
+    return true
+  })
+  const remotePerms = remote.permissions.filter((p) => {
+    if (p.policy === null) return false
+    if (excludeSystemCollections && isInternalSystemCollection(p.collection)) return false
+    return true
+  })
+
+  const permissions = comparePermissions(localPerms, remotePerms)
 
   const summary = {
     roles: countChanges(roles),

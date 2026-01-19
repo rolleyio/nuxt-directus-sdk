@@ -15,12 +15,15 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { createDirectus, rest, staticToken } from '@directus/sdk'
+import { loadRulesFromPayload } from '../rules/loaders'
 import {
   compareRulesPayloads,
   diffRemoteRules,
   fetchRemoteRules,
   fetchRemoteRulesAsJson,
   formatDiff,
+  formatPushResult,
+  pushRules,
 } from '../rules/sync'
 
 interface ConnectionConfig {
@@ -89,6 +92,7 @@ Usage:
 
 Commands:
   rules:pull                Download rules from Directus and save as JSON
+  rules:push <file>         Push local JSON rules to remote Directus
   rules:diff <file>         Compare local JSON file with remote Directus
   rules:diff-files <a> <b>  Compare two local JSON files
   rules:diff-remote         Compare two remote Directus instances
@@ -97,6 +101,9 @@ Options:
   -h, --help                Show this help message
   -o, --output <file>       Output file path (default: rules.json)
   --compact                 Output compact JSON (no pretty-print)
+  --dry-run                 Show what would be changed without making changes (rules:push)
+  --add-only                Only add new items, don't modify or delete existing (rules:push)
+  --skip-deletes            Skip deleting items that exist remotely but not locally (rules:push)
 
   Connection options (override DIRECTUS_URL / DIRECTUS_ADMIN_TOKEN):
   --source-url <url>        Source Directus URL
@@ -114,6 +121,15 @@ Examples:
 
   # Pull from a specific instance
   npx nuxt-directus-sdk rules:pull --source-url https://my-directus.com --source-token my-token
+
+  # Preview what would be pushed (dry run)
+  npx nuxt-directus-sdk rules:push rules.json --dry-run
+
+  # Push rules to Directus
+  npx nuxt-directus-sdk rules:push rules.json
+
+  # Push only new items (safe mode)
+  npx nuxt-directus-sdk rules:push rules.json --add-only
 
   # Compare local file with remote
   npx nuxt-directus-sdk rules:diff rules.json
@@ -219,6 +235,60 @@ async function commandDiffRemote(
   }
 }
 
+interface PushCommandOptions {
+  dryRun: boolean
+  addOnly: boolean
+  skipDeletes: boolean
+}
+
+async function commandPush(
+  localFile: string,
+  connection: ConnectionConfig,
+  options: PushCommandOptions,
+): Promise<void> {
+  const payload = loadJsonFile(localFile)
+  const rules = loadRulesFromPayload(payload)
+
+  const client = createClient(connection.url, connection.token)
+
+  if (options.dryRun) {
+    // Dry run: just show the diff
+    console.log(`Dry run: comparing ${localFile} with ${connection.url}...`)
+    const remote = await fetchRemoteRules(client)
+    const diff = compareRulesPayloads(payload, remote)
+
+    console.log()
+    console.log(formatDiff(diff))
+
+    if (!diff.hasChanges) {
+      console.log('\nNo changes to push.')
+    }
+    else {
+      console.log('\nRun without --dry-run to apply these changes.')
+    }
+    return
+  }
+
+  // Actual push
+  console.log(`Pushing rules from ${localFile} to ${connection.url}...`)
+
+  const result = await pushRules(client, rules, {
+    addOnly: options.addOnly,
+    skipDeletes: options.skipDeletes,
+    onProgress: (event) => {
+      const action = event.action === 'create' ? '+' : event.action === 'update' ? '~' : '-'
+      console.log(`  [${event.current}/${event.total}] ${action} ${event.phase}: ${event.name}`)
+    },
+  })
+
+  console.log()
+  console.log(formatPushResult(result))
+
+  if (!result.success) {
+    process.exit(1)
+  }
+}
+
 async function main(): Promise<void> {
   loadEnv()
 
@@ -228,6 +298,9 @@ async function main(): Promise<void> {
       'help': { type: 'boolean', short: 'h' },
       'output': { type: 'string', short: 'o', default: 'rules.json' },
       'compact': { type: 'boolean', default: false },
+      'dry-run': { type: 'boolean', default: false },
+      'add-only': { type: 'boolean', default: false },
+      'skip-deletes': { type: 'boolean', default: false },
       'source-url': { type: 'string' },
       'source-token': { type: 'string' },
       'target-url': { type: 'string' },
@@ -254,6 +327,25 @@ async function main(): Promise<void> {
           output: values.output!,
           compact: values.compact!,
         }, connection)
+        break
+      }
+
+      case 'rules:push': {
+        if (!positionals[1]) {
+          console.error('Error: rules:push requires a file path')
+          console.error('Usage: npx nuxt-directus-sdk rules:push <file> [--dry-run]')
+          process.exit(1)
+        }
+        const connection = getConnectionConfig(
+          values['source-url'],
+          values['source-token'],
+          'Source',
+        )
+        await commandPush(positionals[1], connection, {
+          dryRun: values['dry-run']!,
+          addOnly: values['add-only']!,
+          skipDeletes: values['skip-deletes']!,
+        })
         break
       }
 

@@ -88,6 +88,12 @@ export interface RoleConfig<Schema> {
   parent?: string
   /** Policies attached to this role */
   policies: PolicyConfig<Schema>[]
+  /**
+   * Original policy IDs from Directus API (internal use only).
+   * Used to preserve policy references that couldn't be resolved during loading.
+   * @internal
+   */
+  _originalPolicyIds?: string[]
 }
 
 /**

@@ -9,7 +9,12 @@
 
 import type {
   CollectionPermissions,
+  DirectusPermissionPayload,
+  DirectusPolicyPayload,
+  DirectusRolePayload,
+  DirectusRulesPayload,
   DirectusValidation,
+  PermissionAction,
   PermissionConfig,
   PolicyConfig,
   RoleConfig,
@@ -276,5 +281,199 @@ function permissionConfigToJson<Schema, Collection extends keyof Schema>(
     filter: config.filter as Record<string, unknown> | undefined,
     presets: config.presets as Record<string, unknown> | undefined,
     validation: config.validation as Record<string, unknown> | undefined,
+  }
+}
+
+// ============================================================================
+// Directus API Payload Loader
+// ============================================================================
+
+/**
+ * Load rules from a DirectusRulesPayload (the format from rules:pull CLI command)
+ *
+ * This is useful when you've pulled rules from Directus and want to:
+ * - Use them in tests with createRulesTester
+ * - Combine them with additional local policies
+ * - Convert them to the RulesConfig format for manipulation
+ *
+ * @example
+ * ```typescript
+ * import { readFileSync } from 'fs'
+ * import { loadRulesFromPayload, defineDirectusRules } from 'nuxt-directus-sdk/rules'
+ *
+ * // Load rules pulled from Directus
+ * const payload = JSON.parse(readFileSync('./rules.json', 'utf-8'))
+ * const remoteRules = loadRulesFromPayload<DirectusSchema>(payload)
+ *
+ * // Combine with additional local policies
+ * const combinedRules = defineDirectusRules<DirectusSchema>({
+ *   roles: remoteRules.roles,
+ *   policies: [
+ *     ...remoteRules.policies,
+ *     {
+ *       name: 'My Additional Policy',
+ *       permissions: {
+ *         posts: { read: true }
+ *       }
+ *     }
+ *   ]
+ * })
+ * ```
+ */
+export function loadRulesFromPayload<Schema>(
+  payload: DirectusRulesPayload,
+): RulesConfig<Schema> {
+  // Build a map of policy ID -> permissions
+  const permissionsByPolicy = new Map<string | null, DirectusPermissionPayload[]>()
+  for (const perm of payload.permissions) {
+    const key = perm.policy ?? null
+    if (!permissionsByPolicy.has(key)) {
+      permissionsByPolicy.set(key, [])
+    }
+    permissionsByPolicy.get(key)!.push(perm)
+  }
+
+  // Convert policies
+  const policies = payload.policies.map((policy) => {
+    const policyPerms = permissionsByPolicy.get(policy.id ?? null) ?? []
+    return convertPayloadPolicy<Schema>(policy, policyPerms)
+  })
+
+  // Build a map of policy ID -> PolicyConfig for role reference
+  const policyById = new Map<string, PolicyConfig<Schema>>()
+  for (let i = 0; i < payload.policies.length; i++) {
+    const apiPolicy = payload.policies[i]
+    if (apiPolicy.id) {
+      policyById.set(apiPolicy.id, policies[i])
+    }
+  }
+
+  // Convert roles with their attached policies
+  const roles = payload.roles.map((role) => {
+    const rolePolicies: PolicyConfig<Schema>[] = []
+    if (role.policies) {
+      for (const policyId of role.policies) {
+        const policy = policyById.get(policyId)
+        if (policy) {
+          rolePolicies.push(policy)
+        }
+      }
+    }
+    // Pass original policy IDs so they can be preserved during serialization
+    return convertPayloadRole<Schema>(role, rolePolicies, role.policies ?? undefined)
+  })
+
+  return { roles, policies }
+}
+
+/**
+ * Load rules from a JSON file containing DirectusRulesPayload format
+ *
+ * @example
+ * ```typescript
+ * const rules = await loadRulesFromPayloadFile<DirectusSchema>('./rules.json')
+ * ```
+ */
+export async function loadRulesFromPayloadFile<Schema>(
+  filePath: string,
+): Promise<RulesConfig<Schema>> {
+  const fs = await import('node:fs/promises')
+  const content = await fs.readFile(filePath, 'utf-8')
+  const payload: DirectusRulesPayload = JSON.parse(content)
+  return loadRulesFromPayload<Schema>(payload)
+}
+
+/**
+ * Convert a Directus API policy to PolicyConfig
+ */
+function convertPayloadPolicy<Schema>(
+  policy: DirectusPolicyPayload,
+  permissions: DirectusPermissionPayload[],
+): PolicyConfig<Schema> {
+  const permissionsMap = new Map<keyof Schema, CollectionPermissions<Schema, keyof Schema>>()
+
+  // Group permissions by collection
+  const permsByCollection = new Map<string, DirectusPermissionPayload[]>()
+  for (const perm of permissions) {
+    if (!permsByCollection.has(perm.collection)) {
+      permsByCollection.set(perm.collection, [])
+    }
+    permsByCollection.get(perm.collection)!.push(perm)
+  }
+
+  // Convert each collection's permissions
+  for (const [collection, collectionPerms] of permsByCollection) {
+    const collPerms: Partial<CollectionPermissions<Schema, keyof Schema>> = {}
+
+    for (const perm of collectionPerms) {
+      const action = perm.action as PermissionAction
+      const config = convertPayloadPermission<Schema>(perm)
+      if (action === 'create')
+        collPerms.create = config
+      else if (action === 'read')
+        collPerms.read = config
+      else if (action === 'update')
+        collPerms.update = config
+      else if (action === 'delete')
+        collPerms.delete = config
+      else if (action === 'share')
+        collPerms.share = config
+    }
+
+    permissionsMap.set(collection as keyof Schema, collPerms as CollectionPermissions<Schema, keyof Schema>)
+  }
+
+  return {
+    id: policy.id,
+    name: policy.name,
+    icon: policy.icon,
+    description: policy.description ?? undefined,
+    ipAccess: policy.ip_access ? policy.ip_access.split(',').map(s => s.trim()) : undefined,
+    enforceTfa: policy.enforce_tfa,
+    adminAccess: policy.admin_access,
+    appAccess: policy.app_access,
+    permissions: permissionsMap,
+  }
+}
+
+/**
+ * Convert a Directus API permission to PermissionConfig
+ */
+function convertPayloadPermission<Schema>(
+  perm: DirectusPermissionPayload,
+): PermissionConfig<Schema, keyof Schema> | true {
+  const hasConfig = perm.permissions || perm.validation || perm.presets || (perm.fields && perm.fields.length > 0)
+
+  if (!hasConfig) {
+    return true
+  }
+
+  return {
+    fields: perm.fields
+      ? (perm.fields.includes('*') ? '*' : perm.fields) as '*' | (keyof Schema[keyof Schema])[]
+      : undefined,
+    filter: perm.permissions as any,
+    presets: perm.presets as any,
+    validation: perm.validation ?? undefined,
+  }
+}
+
+/**
+ * Convert a Directus API role to RoleConfig
+ */
+function convertPayloadRole<Schema>(
+  role: DirectusRolePayload,
+  policies: PolicyConfig<Schema>[],
+  originalPolicyIds?: string[],
+): RoleConfig<Schema> {
+  return {
+    id: role.id,
+    name: role.name,
+    icon: role.icon,
+    description: role.description ?? undefined,
+    parent: role.parent ?? undefined,
+    policies,
+    // Preserve original policy IDs for serialization when policies couldn't be resolved
+    _originalPolicyIds: originalPolicyIds,
   }
 }

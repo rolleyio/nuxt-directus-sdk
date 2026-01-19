@@ -62,3 +62,63 @@ export interface RulesDiff {
   /** Generate human-readable diff string */
   toString(): string
 }
+
+// ============================================================================
+// Push Types
+// ============================================================================
+
+/** Options for pushing rules to Directus */
+export interface PushOptions {
+  /**
+   * If true, only add new items - don't modify or delete existing ones.
+   * Useful for safely adding new roles/policies without affecting existing config.
+   * @default false
+   */
+  addOnly?: boolean
+
+  /**
+   * If true, skip deleting items that exist remotely but not locally.
+   * @default false
+   */
+  skipDeletes?: boolean
+
+  /**
+   * Callback for progress updates during push
+   */
+  onProgress?: (event: PushProgressEvent) => void
+}
+
+/** Progress event during push */
+export interface PushProgressEvent {
+  phase: 'policies' | 'roles' | 'permissions'
+  action: 'create' | 'update' | 'delete'
+  name: string
+  current: number
+  total: number
+}
+
+/** Result of a single push operation */
+export interface PushOperationResult {
+  type: 'created' | 'updated' | 'deleted' | 'skipped'
+  name: string
+  id?: string
+  error?: string
+}
+
+/** Result of pushing rules */
+export interface PushResult {
+  success: boolean
+  roles: PushOperationResult[]
+  policies: PushOperationResult[]
+  permissions: PushOperationResult[]
+
+  /** Summary counts */
+  summary: {
+    roles: { created: number; updated: number; deleted: number; errors: number }
+    policies: { created: number; updated: number; deleted: number; errors: number }
+    permissions: { created: number; updated: number; deleted: number; errors: number }
+  }
+
+  /** Any errors that occurred */
+  errors: string[]
+}
