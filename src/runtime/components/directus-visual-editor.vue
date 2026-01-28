@@ -46,7 +46,7 @@ onMounted(async () => {
     return
   }
 
-  const applied = await apply({ directusUrl: config.public.directus.url })
+  const applied = await apply({ directusUrl: (config.public.directus as any).directusUrl || config.public.directus.url })
 
   if (!applied) {
     return

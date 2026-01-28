@@ -27,6 +27,7 @@ dist
 .build-*
 .env
 .netlify
+.plans
 
 # Env
 .env
