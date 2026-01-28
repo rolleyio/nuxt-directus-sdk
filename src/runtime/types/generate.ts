@@ -1,7 +1,7 @@
 import type { GenerateOptions } from './types'
 import { useLogger } from '@nuxt/kit'
 import { generateDirectusTypes } from 'directus-sdk-typegen'
-import { cleanDoubleSlashes } from 'ufo'
+import { cleanDoubleSlashes, withoutTrailingSlash } from 'ufo'
 
 const logger = useLogger('nuxt-directus-sdk')
 
@@ -14,7 +14,7 @@ export async function generateTypes(options: GenerateOptions) {
 
   // Generate types using directus-sdk-typegen
   const generatedTypes = await generateDirectusTypes({
-    directusUrl: cleanDoubleSlashes(options.url),
+    directusUrl: withoutTrailingSlash(cleanDoubleSlashes(options.url)),
     directusToken: options.token,
   })
 

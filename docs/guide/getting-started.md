@@ -28,12 +28,8 @@ bun add nuxt-directus-sdk
 
 ```ts
 export default defineNuxtConfig({
-<<<<<<< HEAD
-  modules: ['nuxt-directus-sdk'],
-=======
   modules: ['nuxt-directus-sdk'], // [!code focus]
   directus: {},
->>>>>>> directus-sdk-typegen
 })
 ```
 ::: info

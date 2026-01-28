@@ -30,6 +30,14 @@ export default defineConfig({
         ],
       },
       {
+        text: 'Rules DSL',
+        items: [
+          { text: 'Defining Rules', link: '/guide/rules' },
+          { text: 'Testing Rules', link: '/guide/rules-testing' },
+          { text: 'Sync & CLI', link: '/guide/rules-sync' },
+        ],
+      },
+      {
         text: 'API Reference',
         items: [
           { text: 'Configuration', link: '/api/configuration' },
