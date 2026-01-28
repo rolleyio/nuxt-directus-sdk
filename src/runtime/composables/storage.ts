@@ -1,4 +1,4 @@
-import type { DirectusStorage } from '@directus/sdk'
+import type { DirectusStorage } from '@directus/sdk' //FIXME: AuthenticationStorage?
 
 /**
  * Custom storage implementation for Directus SDK on the server

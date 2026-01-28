@@ -69,11 +69,11 @@ DIRECTUS_ADMIN_TOKEN=your-admin-token-here
 
 ### `devProxy`
 
-- **Type:** `boolean | { enabled?: boolean, path?: string }`
-- **Default:** `{ enabled: true, path: '/directus' }` in dev mode
+- **Type:** `boolean | { enabled?: boolean, path?: string, wsPath?: string }`
+- **Default:** `{ enabled: true, path: '/directus', wsPath: '/directus-ws' }` in dev mode
 - **Default:** `false` in production
 
-Development proxy configuration. When enabled, creates a proxy that forwards requests to your Directus instance, eliminating CORS issues.
+Development proxy configuration. When enabled, creates a proxy that forwards requests to your Directus instance, eliminating CORS issues and supporting dynamic ports.
 
 ```typescript
 export default defineNuxtConfig({
@@ -84,16 +84,18 @@ export default defineNuxtConfig({
     // Or detailed configuration
     devProxy: {
       enabled: true,
-      path: '/directus', // Proxy mount path
+      path: '/directus',      // HTTP proxy mount path
+      wsPath: '/directus-ws', // WebSocket proxy path (optional)
     },
   },
 })
 ```
 
 **How it works:**
-- In development: Requests to `http://localhost:3000/directus` forward to your Directus URL
+- In development: Requests automatically route through the proxy using the current port
+- Supports Nuxt's dynamic port changes (e.g., port 3000 → 3001)
 - In production: Direct connection to Directus URL
-- WebSocket proxy available at `${path}-ws` for realtime features
+- WebSocket proxy available at `wsPath` for realtime features
 
 **Disable proxy:**
 ```typescript
@@ -138,47 +140,155 @@ export default defineNuxtConfig({
 
 When disabled, the `DirectusVisualEditor` component will be a no-op.
 
+### `image`
+
+- **Type:** `boolean | { enabled?: boolean, setDefaultProvider?: boolean }`
+- **Default:** `true`
+
+Configure `@nuxt/image` integration with Directus provider.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    // Enable with defaults
+    image: true,
+
+    // Disable @nuxt/image integration
+    image: false,
+
+    // Set Directus as default provider
+    image: {
+      setDefaultProvider: true,
+    },
+  },
+})
+```
+
+#### Options
+
+- **`enabled`** (`boolean`, default: `true`) - Enable/disable `@nuxt/image` integration
+- **`setDefaultProvider`** (`boolean`, default: `false`) - Set Directus as the default provider for `<NuxtImg>` components (no need to specify `provider="directus"`)
+
+When enabled, the module automatically:
+- Installs and configures `@nuxt/image`
+- Sets up the Directus provider with your instance's assets endpoint
+
+#### Usage
+
+With `setDefaultProvider: false` (default):
+
+```vue
+<NuxtImg
+  provider="directus"
+  src="your-file-id"
+  width="800"
+  height="600"
+/>
+```
+
+With `setDefaultProvider: true`:
+
+```vue
+<!-- No need to specify provider -->
+<NuxtImg
+  src="your-file-id"
+  width="800"
+  height="600"
+/>
+```
+
+See the [File Management Guide](/guide/files#using-with-nuxt-image) for more details.
+
 ## Type Generation
 
 ### `types`
 
-Configure TypeScript type generation from your Directus schema.
-
-#### `types.enabled`
-
-- **Type:** `boolean`
+- **Type:** `boolean | { enabled?: boolean, prefix?: string }`
 - **Default:** `true`
 
-Enable/disable automatic type generation.
+Enable/disable automatic type generation from your Directus schema.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    types: true, // Generate types from Directus schema
+  },
+})
+```
+
+**Requires `adminToken` to be set.**
+
+When enabled, types are automatically generated and available globally:
+
+```typescript
+// Access generated types
+type Article = DirectusSchema['articles']
+type User = DirectusUsers
+type File = DirectusFiles
+
+// Use with Directus SDK - fully typed!
+const directus = useDirectus()
+const articles = await directus.request(readItems('articles'))
+// articles is typed as Article[]
+```
+
+**Disable type generation:**
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    types: false,
+  },
+})
+```
+
+#### Type Prefix
+
+Add a prefix to your custom collection types to avoid naming conflicts:
 
 ```typescript
 export default defineNuxtConfig({
   directus: {
     types: {
-      enabled: true, // Generate types from Directus schema
+      enabled: true,
+      prefix: 'App', // Prefix custom collection types
     },
   },
 })
 ```
 
-Requires `adminToken` to be set.
-
-#### `types.prefix`
-
-- **Type:** `string`
-- **Default:** `''`
-
-Add a prefix to your custom collection types.
+With a prefix, your generated types will be:
 
 ```typescript
-export default defineNuxtConfig({
-  directus: {
-    types: {
-      prefix: 'App', // Types become: AppArticles, AppProducts, etc.
-    },
-  },
-})
+// Custom collections are prefixed
+interface AppBlog {
+  id: string
+  title: string
+  content: string
+}
+
+interface AppAuthor {
+  id: string
+  name: string
+}
+
+// DirectusSchema keys remain unchanged (match API endpoints)
+interface DirectusSchema {
+  blogs: AppBlog[]
+  authors: AppAuthor[]
+}
+
+// Directus system collections are NOT prefixed
+interface DirectusUsers {
+  id: string
+  email: string
+}
 ```
+
+**How it works:**
+- Custom collection interface names get prefixed (e.g., `Blog` → `AppBlog`)
+- DirectusSchema keys stay unchanged (e.g., `blogs`, `authors`) to match API endpoints
+- Directus system collections (e.g., `DirectusUsers`, `DirectusFiles`) are NOT prefixed
+- All type references are updated to use the prefixed names
 
 ## Authentication Options
 
@@ -330,7 +440,7 @@ export default defineNuxtConfig({
     auth: {
       redirect: {
         home: '/',                  // After login
-        login: '/account/login',    // When not authenticated
+        login: '/auth/login',    // When not authenticated
         logout: '/',                // After logout
       },
     },
@@ -348,7 +458,7 @@ Where to redirect after successful login.
 ##### `auth.redirect.login`
 
 - **Type:** `string`
-- **Default:** `'/account/login'`
+- **Default:** `'/auth/login'`
 
 Where to redirect when authentication is required.
 
@@ -368,15 +478,20 @@ export default defineNuxtConfig({
 
   directus: {
     // Core configuration
+    url: process.env.DIRECTUS_URL,
     adminToken: process.env.DIRECTUS_ADMIN_TOKEN,
 
     // Development
     devProxy: {
       enabled: true,
       path: '/directus',
+      wsPath: '/directus-ws',
     },
     devtools: true,
     visualEditor: true,
+
+    // Image integration
+    image: true, // Directus provider is automatically configured
 
     // Type generation
     types: {
@@ -393,9 +508,9 @@ export default defineNuxtConfig({
       realtimeAuthMode: 'handshake',
       readMeFields: ['id', 'email', 'first_name', 'last_name', 'avatar', 'role'],
       redirect: {
-        home: '/dashboard',
+        home: '/',
         login: '/auth/login',
-        logout: '/auth/login',
+        logout: '/',
       },
     },
   },

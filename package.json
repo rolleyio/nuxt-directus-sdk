@@ -1,7 +1,7 @@
 {
   "name": "nuxt-directus-sdk",
   "type": "module",
-  "version": "4.0.6",
+  "version": "5.0.0",
   "description": "A Directus nuxt module that uses the Directus SDK",
   "author": "Matthew Rollinson <matt@rolley.io>",
   "license": "MIT",
@@ -21,9 +21,7 @@
     "directus-rules": "./dist/cli/index.mjs",
     "nuxt-directus-sdk": "./dist/cli/index.mjs"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "prepack": "nuxt-module-build build",
     "dev": "nuxi dev playground",
@@ -37,47 +35,25 @@
     "docs:build": "bun run dev:prepare && vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@directus/sdk": "^20.0.0",
     "@directus/types": "^13.0.0",
-    "@nuxt/image": "^1.0.0",
-    "@nuxt/kit": "^4.0.0",
-    "arktype": "^2.0.0",
-    "nuxt": "^4.0.0",
-    "valibot": "^1.0.0",
-    "zod": "^3.23.0"
-  },
-  "peerDependenciesMeta": {
-    "@nuxt/image": {
-      "optional": true
-    },
-    "arktype": {
-      "optional": true
-    },
-    "valibot": {
-      "optional": true
-    },
-    "zod": {
-      "optional": true
-    }
-  },
-  "dependencies": {
     "@directus/visual-editing": "^1.1.0",
+    "@nuxt/image": "^2.0.0",
+    "@nuxt/kit": "^4.0.0",
     "change-case": "^4.1.2",
     "defu": "^6.1.1",
+    "directus-sdk-typegen": "^0.2.1",
     "http-proxy": "^1.18.1",
     "ufo": "^1.6.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.10.0",
-    "@directus/sdk": "^20.0.0",
-    "@directus/types": "^13.0.0",
     "@nuxt/devtools": "latest",
-    "@nuxt/image": "^1.11.0",
-    "@nuxt/kit": "^4.1.2",
     "@nuxt/module-builder": "^1.0.2",
     "@nuxt/schema": "^4.1.2",
     "@nuxt/test-utils": "^3.19.2",
+    "@types/http-proxy": "^1.17.17",
     "changelogen": "^0.6.1",
     "eslint": "^9.22.0",
     "nuxt": "^4.1.2",
@@ -86,6 +62,7 @@
     "vue-tsc": "^3.0.8"
   },
   "unbuild": {
-    "failOnWarn": false
+    "failOnWarn": false,
+    "externals": ["consola/utils"]
   }
 }
