@@ -58,17 +58,26 @@ onMounted(async () => {
     return
   }
 
-  const applied = await apply({ directusUrl: (config.public.directus as any).directusUrl || config.public.directus.url })
+  // Use the original Directus URL (not the proxy) for visual editor
+  // The visual-editing library validates postMessage origins against this URL
+  const directusUrl = (config.public.directus as any).directusUrl || config.public.directus.url
 
-  if (!applied) {
-    return
+  try {
+    const applied = await apply({ directusUrl })
+
+    if (!applied) {
+      return
+    }
+
+    applied.enable()
+
+    onBeforeUnmount(() => {
+      applied.remove()
+    })
   }
-
-  applied.enable()
-
-  onBeforeUnmount(() => {
-    applied.remove()
-  })
+  catch (error) {
+    console.error('[DirectusVisualEditor] Error:', error)
+  }
 })
 </script>
 
