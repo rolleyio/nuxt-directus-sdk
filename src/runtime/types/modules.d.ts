@@ -4,4 +4,10 @@ declare module '#app' {
   interface RuntimeNuxtHooks {
     'directus:loggedIn': (user: DirectusUsers | null) => void
   }
+
+  interface NuxtApp {
+    $directusVisualEditing?: {
+      refresh: () => Promise<void>
+    }
+  }
 }

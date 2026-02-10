@@ -368,6 +368,9 @@ export default defineNuxtModule<ModuleOptions>({
     // Add plugin to load user before bootstrap
     addPlugin(resolver.resolve('./runtime/plugin'))
 
+    // Add visual editor plugin (client-only)
+    addPlugin(resolver.resolve('./runtime/plugins/visual-editor.client'))
+
     // Add route middleware
     addRouteMiddleware({
       name: 'auth',
