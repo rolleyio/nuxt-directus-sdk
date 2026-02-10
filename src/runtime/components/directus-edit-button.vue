@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="T extends keyof DirectusSchema">
 import type { PrimaryKey } from '@directus/types'
 import { computed, useRuntimeConfig } from '#imports'
-import { useDirectusPreview } from '../composables/directus'
+import { useDirectusVisualEditor } from '../composables/directus'
 
 const props = defineProps<{
   collection: T
@@ -10,10 +10,10 @@ const props = defineProps<{
 }>()
 
 const config = useRuntimeConfig()
-const directusPreview = useDirectusPreview()
+const directusVisualEditing = useDirectusVisualEditor()
 
-// Only show when in preview mode
-const showButton = computed(() => directusPreview.value)
+// Only show when inside Directus visual editor iframe
+const showButton = computed(() => config.public.directus.visualEditor && directusVisualEditing.value)
 
 // Directly trigger the Directus visual editor by sending a postMessage
 function triggerEdit() {

@@ -8,7 +8,7 @@ import {
   useRuntimeConfig,
 } from '#imports'
 import { apply, setAttr } from '@directus/visual-editing'
-import { useDirectusPreview } from '../composables/directus'
+import { useDirectusPreview, useDirectusVisualEditor } from '../composables/directus'
 import { Slot } from '../utils'
 
 type SingleDirectusCollection = DirectusSchema[T] extends Array<any>
@@ -25,6 +25,7 @@ const props = defineProps<{
 
 const config = useRuntimeConfig()
 const directusPreview = useDirectusPreview()
+const directusVisualEditing = useDirectusVisualEditor()
 const editorElement = ref<HTMLElement | null>(null)
 
 const directusAttr = computed(() => {
@@ -40,7 +41,7 @@ const directusAttr = computed(() => {
 })
 
 const attributes = computed(() => {
-  if (!directusPreview.value) {
+  if (!directusPreview.value && !directusVisualEditing.value) {
     return null
   }
 
@@ -68,6 +69,9 @@ onMounted(async () => {
     if (!applied) {
       return
     }
+
+    // apply() succeeded = Directus confirmed the handshake = we're in the visual editor
+    directusVisualEditing.value = true
 
     applied.enable()
 

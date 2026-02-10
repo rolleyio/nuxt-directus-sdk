@@ -9,6 +9,10 @@ export function useDirectusPreview(): Ref<boolean> {
   return useState('directus.preview', () => false)
 }
 
+export function useDirectusVisualEditor(): Ref<boolean> {
+  return useState('directus.visualEditor', () => false)
+}
+
 export function useDirectusUrl(path = ''): string {
   const config = useRuntimeConfig()
 

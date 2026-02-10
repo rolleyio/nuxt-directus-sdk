@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PrimaryKey } from '@directus/types'
 import { computed, useRuntimeConfig } from '#imports'
-import { useDirectusPreview } from '../composables/directus'
+import { useDirectusVisualEditor } from '../composables/directus'
 
 const props = defineProps<{
   /** The parent collection that contains the repeater field */
@@ -13,10 +13,10 @@ const props = defineProps<{
 }>()
 
 const config = useRuntimeConfig()
-const directusPreview = useDirectusPreview()
+const directusVisualEditing = useDirectusVisualEditor()
 
-// Only show when in preview mode
-const showButton = computed(() => directusPreview.value)
+// Only show when inside Directus visual editor iframe
+const showButton = computed(() => config.public.directus.visualEditor && directusVisualEditing.value)
 
 // Open Directus admin to edit the parent item (which contains the repeater)
 // This allows adding new items to the repeater field
