@@ -388,55 +388,62 @@ const adminUrl = useDirectusUrl('admin')
 
 ### `useDirectusPreview()`
 
-Control and check visual editor preview mode.
+Control and check preview mode. Preview mode is typically used to show draft/unpublished content when viewing your site with a `?preview=true` query parameter.
 
 **Returns:** `Ref<boolean>`
 
 ```typescript
 const directusPreview = useDirectusPreview()
 
-// Enable preview mode
-directusPreview.value = true
-
-// Disable preview mode
-directusPreview.value = false
-
 // Check if preview mode is active
 if (directusPreview.value) {
   console.log('Preview mode is enabled')
 }
+```
 
-// Use in templates
+**Note:** Preview mode is separate from visual editor mode. Preview mode is set automatically by the plugin when `?preview=true` is in the URL. Visual editor mode is set automatically when the site is inside a Directus iframe.
+
+```vue
+<script setup>
+const directusPreview = useDirectusPreview()
+</script>
+
 <template>
-  <div v-if="directusPreview">
-    Preview Mode Active
+  <div v-if="directusPreview" class="preview-banner">
+    Preview Mode — Showing draft content
   </div>
 </template>
+```
+
+---
+
+### `useDirectusVisualEditor()`
+
+Check if the visual editor is active (i.e., your site is loaded inside a Directus iframe).
+
+**Returns:** `Ref<boolean>`
+
+This composable is set automatically by the Directus plugin — you do not need to set it manually. When `visualEditor: true` is in your config and the site is inside an iframe, this will be `true`.
+
+```typescript
+const directusVisualEditor = useDirectusVisualEditor()
+
+if (directusVisualEditor.value) {
+  console.log('Inside Directus iframe — editing enabled')
+}
 ```
 
 **Common Usage:**
 
 ```vue
 <script setup>
-const route = useRoute()
-const directusPreview = useDirectusPreview()
-
-// Enable preview mode with ?preview=true
-if (route.query.preview === 'true') {
-  directusPreview.value = true
-}
+const directusVisualEditor = useDirectusVisualEditor()
 </script>
 
 <template>
-  <DirectusVisualEditor
-    v-if="directusPreview"
-    collection="articles"
-    :item="article.id"
-  >
-    <h1>{{ article.title }}</h1>
-  </DirectusVisualEditor>
-
-  <h1 v-else>{{ article.title }}</h1>
+  <div v-if="directusVisualEditor" class="editor-banner">
+    Editing Mode Active
+  </div>
 </template>
 ```
 

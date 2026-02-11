@@ -1,30 +1,40 @@
 # Visual Editor
 
-The Visual Editor allows content editors to preview and edit content directly from your Nuxt frontend without needing to navigate to the Directus admin panel. This creates a seamless editing experience.
+The Visual Editor allows content editors to preview and edit content directly from your Nuxt frontend when embedded inside the Directus admin panel. It automatically detects when your site is loaded inside a Directus iframe and enables inline editing.
 
 ## Features
 
-- Live preview mode with `?preview=true`
-- Inline editing of content
-- Edit modes: drawer, modal, or popover
-- Automatic detection of editable fields
-- Seamless integration with Directus collections
+- Automatic iframe detection — no query parameters needed
+- Inline editing with drawer, modal, or popover modes
+- Edit and Add buttons for quick content management
+- Debug mode via `?debug` for troubleshooting deployments
+- Automatic data refresh on save (no full page reload)
+- MutationObserver-based detection for reliable SSR hydration
+
+## How It Works
+
+When `visualEditor: true` is set in your config (the default), the module:
+
+1. **Detects the iframe** — On the client, the plugin checks `window.parent !== window` to determine if your site is embedded inside Directus
+2. **Renders attributes** — `DirectusVisualEditor` components add `data-directus` attributes to mark editable elements (only when inside the iframe)
+3. **Applies the SDK** — A client-only plugin uses a MutationObserver to detect `data-directus` attributes in the DOM, then calls `apply()` from `@directus/visual-editing` to establish the connection with Directus
+4. **Refreshes on save** — When content is saved in Directus, `refreshNuxtData()` is called to update the page without a full reload
 
 ## Quick Start
 
-### Enable Preview Mode
+### 1. Enable Visual Editor (default)
 
-Add the preview query parameter to any page:
-
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  directus: {
+    url: 'https://your-directus-instance.com',
+    visualEditor: true, // This is the default
+  },
+})
 ```
-https://yourapp.com/blog/my-post?preview=true
-```
 
-This activates the visual editor for that page.
-
-### Basic Usage
-
-Wrap content you want to make editable with the `DirectusVisualEditor` component:
+### 2. Wrap Editable Content
 
 ```vue
 <script setup>
@@ -56,7 +66,11 @@ const { data: article } = await useAsyncData('article', () =>
 </template>
 ```
 
-When visiting the page with `?preview=true`, content editors can click on the wrapped elements to edit them directly.
+### 3. Configure Directus Live Preview
+
+In your Directus admin panel, configure Live Preview to point to your Nuxt app URL. When content editors open the preview, your site loads inside the Directus iframe and editing is automatically enabled.
+
+No `?preview=true` query parameter is needed — the visual editor activates automatically when it detects the iframe.
 
 ## Component Props
 
@@ -128,30 +142,132 @@ Control how the editor opens:
 </DirectusVisualEditor>
 ```
 
-## Preview Mode Detection
+## Edit Button
 
-Check if preview mode is active:
+The `DirectusEditButton` component renders a floating button that opens the Directus editor for a specific item. It only appears when inside the Directus iframe.
+
+```vue
+<template>
+  <article>
+    <h1>{{ article.title }}</h1>
+    <div v-html="article.content" />
+
+    <!-- Floating edit button - appears only inside Directus -->
+    <DirectusEditButton
+      collection="articles"
+      :item="article.id"
+    />
+  </article>
+</template>
+```
+
+### Edit Button Props
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `collection` | `string` | Yes | — | The Directus collection name |
+| `item` | `string \| number` | Yes | — | The item ID (primary key) |
+| `mode` | `'drawer' \| 'modal' \| 'popover'` | No | `'drawer'` | How the editor opens |
+
+The button renders with default styling (purple, fixed bottom-right) and a pencil icon. You can customize it via the default slot:
+
+```vue
+<DirectusEditButton collection="articles" :item="article.id">
+  <span>Custom Edit Label</span>
+</DirectusEditButton>
+```
+
+## Add Button
+
+The `DirectusAddButton` component renders an inline button for adding items to a repeater/relationship field. It only appears when inside the Directus iframe.
+
+```vue
+<template>
+  <div>
+    <div v-for="block in page.blocks" :key="block.id">
+      <component :is="getBlockComponent(block.type)" :data="block" />
+    </div>
+
+    <!-- Add button for the blocks repeater field -->
+    <DirectusAddButton
+      collection="pages"
+      :item="page.id"
+      field="blocks"
+    />
+  </div>
+</template>
+```
+
+### Add Button Props
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `collection` | `string` | Yes | — | The parent collection containing the repeater field |
+| `item` | `string \| number` | Yes | — | The parent item ID |
+| `field` | `string` | Yes | — | The field name of the repeater (e.g., `'blocks'`) |
+
+The button renders as a full-width dashed border area with a plus icon. You can customize it via the default slot:
+
+```vue
+<DirectusAddButton collection="pages" :item="page.id" field="blocks">
+  <span>+ Add new block</span>
+</DirectusAddButton>
+```
+
+## Visual Editor State
+
+### `useDirectusVisualEditor()`
+
+Check if the visual editor is active (i.e., your site is inside the Directus iframe):
 
 ```vue
 <script setup>
-const directusPreview = useDirectusPreview()
+const directusVisualEditor = useDirectusVisualEditor()
 </script>
 
 <template>
   <div>
-    <div v-if="directusPreview" class="preview-banner">
-      Preview Mode Active
+    <div v-if="directusVisualEditor" class="editor-banner">
+      Editing Mode
     </div>
 
+    <h1>{{ article.title }}</h1>
+  </div>
+</template>
+```
+
+This composable is set automatically by the plugin — you don't need to set it manually.
+
+### Preview Mode
+
+Preview mode (`useDirectusPreview()`) and visual editor mode (`useDirectusVisualEditor()`) are separate concepts:
+
+- **Preview mode** — Activated via `?preview=true` query parameter. Use this to show draft/unpublished content with a preview token.
+- **Visual editor mode** — Activated automatically when inside a Directus iframe. Enables inline editing.
+
+They can be used together:
+
+```vue
+<script setup>
+const directusPreview = useDirectusPreview()
+const directusVisualEditor = useDirectusVisualEditor()
+</script>
+
+<template>
+  <div>
+    <!-- Show preview banner when viewing draft content -->
+    <div v-if="directusPreview" class="preview-banner">
+      Preview Mode
+    </div>
+
+    <!-- Editable content - attributes only added inside Directus iframe -->
     <DirectusVisualEditor
-      v-if="directusPreview"
       collection="articles"
       :item="article.id"
+      fields="title"
     >
       <h1>{{ article.title }}</h1>
     </DirectusVisualEditor>
-
-    <h1 v-else>{{ article.title }}</h1>
   </div>
 </template>
 ```
@@ -164,28 +280,16 @@ const directusPreview = useDirectusPreview()
 <script setup>
 const route = useRoute()
 const directus = useDirectus()
-const directusPreview = useDirectusPreview()
 
-// Load article
 const { data: article } = await useAsyncData('article', () =>
   directus.request(readItem('articles', route.params.id, {
     fields: ['*', { author: ['*'] }]
   }))
 )
-
-// Enable preview mode with ?preview=true
-if (route.query.preview === 'true') {
-  directusPreview.value = true
-}
 </script>
 
 <template>
   <article>
-    <!-- Preview mode indicator -->
-    <div v-if="directusPreview" class="preview-banner">
-      <p>Preview Mode - Click any content to edit</p>
-    </div>
-
     <!-- Featured image -->
     <DirectusVisualEditor
       collection="articles"
@@ -209,15 +313,6 @@ if (route.query.preview === 'true') {
       <h1>{{ article.title }}</h1>
     </DirectusVisualEditor>
 
-    <!-- Excerpt -->
-    <DirectusVisualEditor
-      collection="articles"
-      :item="article.id"
-      fields="excerpt"
-    >
-      <p class="excerpt">{{ article.excerpt }}</p>
-    </DirectusVisualEditor>
-
     <!-- Author (related collection) -->
     <DirectusVisualEditor
       collection="directus_users"
@@ -237,162 +332,93 @@ if (route.query.preview === 'true') {
     >
       <div class="content" v-html="article.content" />
     </DirectusVisualEditor>
+
+    <!-- Edit button -->
+    <DirectusEditButton collection="articles" :item="article.id" />
   </article>
 </template>
-
-<style scoped>
-.preview-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #6644ff;
-  color: white;
-  padding: 0.5rem;
-  text-align: center;
-  z-index: 1000;
-}
-
-.excerpt {
-  font-size: 1.2rem;
-  color: #666;
-}
-
-.author {
-  color: #999;
-  font-style: italic;
-}
-
-.content {
-  line-height: 1.6;
-}
-</style>
 ```
 
-### Product Page
+### Page with Dynamic Blocks
 
 ```vue
 <script setup>
 const route = useRoute()
 const directus = useDirectus()
-const directusPreview = useDirectusPreview()
 
-const { data: product } = await useAsyncData('product', () =>
-  directus.request(readItem('products', route.params.id, {
-    fields: ['*', { images: ['*'] }]
+const { data: page } = await useAsyncData('page', () =>
+  directus.request(readItem('pages', route.params.id, {
+    fields: ['*', { blocks: ['*'] }]
   }))
 )
-
-if (route.query.preview === 'true') {
-  directusPreview.value = true
-}
 </script>
 
 <template>
-  <div class="product">
-    <!-- Product images -->
+  <div class="page">
+    <!-- Page title -->
     <DirectusVisualEditor
-      collection="products"
-      :item="product.id"
-      fields="images"
-      mode="modal"
+      collection="pages"
+      :item="page.id"
+      fields="title"
     >
-      <div class="images">
-        <img
-          v-for="image in product.images"
-          :key="image.id"
-          :src="getDirectusFileUrl(image.directus_files_id, { width: 600 })"
-          :alt="product.name"
-        />
-      </div>
+      <h1>{{ page.title }}</h1>
     </DirectusVisualEditor>
 
-    <div class="details">
-      <!-- Product name -->
-      <DirectusVisualEditor
-        collection="products"
-        :item="product.id"
-        fields="name"
-      >
-        <h1>{{ product.name }}</h1>
-      </DirectusVisualEditor>
+    <!-- Dynamic blocks -->
+    <DirectusVisualEditor
+      v-for="block in page.blocks"
+      :key="block.id"
+      collection="blocks"
+      :item="block.id"
+      mode="drawer"
+    >
+      <component :is="getBlockComponent(block.type)" :data="block" />
+    </DirectusVisualEditor>
 
-      <!-- Price -->
-      <DirectusVisualEditor
-        collection="products"
-        :item="product.id"
-        fields="price"
-      >
-        <p class="price">${{ product.price }}</p>
-      </DirectusVisualEditor>
+    <!-- Add new block button -->
+    <DirectusAddButton
+      collection="pages"
+      :item="page.id"
+      field="blocks"
+    />
 
-      <!-- Description -->
-      <DirectusVisualEditor
-        collection="products"
-        :item="product.id"
-        fields="description"
-      >
-        <div class="description" v-html="product.description" />
-      </DirectusVisualEditor>
-
-      <!-- Features -->
-      <DirectusVisualEditor
-        collection="products"
-        :item="product.id"
-        fields="features"
-      >
-        <ul class="features">
-          <li v-for="feature in product.features" :key="feature">
-            {{ feature }}
-          </li>
-        </ul>
-      </DirectusVisualEditor>
-    </div>
+    <!-- Edit page button -->
+    <DirectusEditButton collection="pages" :item="page.id" />
   </div>
 </template>
 ```
 
-## Preview Links
+## Debug Mode
 
-Create preview links for editors:
+Add `?debug` to any page URL to enable debug logging for the visual editor:
 
-```vue
-<script setup>
-const props = defineProps({
-  article: Object,
-})
-
-const previewUrl = computed(() => {
-  const url = new URL(window.location.origin)
-  url.pathname = `/blog/${props.article.slug}`
-  url.searchParams.set('preview', 'true')
-  return url.href
-})
-
-function copyPreviewLink() {
-  navigator.clipboard.writeText(previewUrl.value)
-  // Show success message
-}
-</script>
-
-<template>
-  <div>
-    <button @click="copyPreviewLink">
-      Copy Preview Link
-    </button>
-
-    <a :href="previewUrl" target="_blank">
-      Open Preview
-    </a>
-  </div>
-</template>
 ```
+https://yourapp.com/blog/my-post?debug
+```
+
+This outputs detailed logs to the browser console:
+
+```
+[Directus Plugin] Visual editor config enabled: true
+[Directus Plugin] Is in iframe: true
+[Directus Visual Editor] Config visualEditor: true
+[Directus Visual Editor] Is in iframe: true
+[Directus Visual Editor] Directus URL: https://your-directus.com
+[Directus Visual Editor] MutationObserver started, waiting for [data-directus] elements
+[Directus Visual Editor] MutationObserver: found 12 [data-directus] elements
+[Directus Visual Editor] Calling apply()...
+[Directus Visual Editor] apply() result: true
+```
+
+Debug mode is useful for diagnosing:
+- **CSP issues** — Content-Security-Policy blocking `frame-ancestors` or `postMessage`
+- **URL mismatches** — `directusUrl` in your config not matching the actual Directus admin origin
+- **Iframe detection** — Confirming your site correctly detects the Directus iframe
+- **Element detection** — Verifying `data-directus` attributes are being rendered
 
 ## Configuration
 
 ### Disable Visual Editor
-
-If you want to disable the visual editor globally:
 
 ```typescript
 // nuxt.config.ts
@@ -403,44 +429,13 @@ export default defineNuxtConfig({
 })
 ```
 
-### Custom Preview Parameter
-
-You can use a different query parameter:
-
-```vue
-<script setup>
-const route = useRoute()
-const directusPreview = useDirectusPreview()
-
-// Use ?edit=1 instead of ?preview=true
-if (route.query.edit === '1') {
-  directusPreview.value = true
-}
-</script>
-```
+When disabled, `DirectusVisualEditor` renders as a pass-through wrapper with no `data-directus` attributes, and the visual editor plugin is not loaded.
 
 ## Advanced Usage
 
-### Conditional Editing
-
-Only enable editing for specific users:
-
-```vue
-<script setup>
-const { user, loggedIn } = useDirectusAuth()
-const directusPreview = useDirectusPreview()
-const route = useRoute()
-
-// Only enable preview for admins
-if (route.query.preview === 'true' && loggedIn.value && user.value.role?.name === 'Admin') {
-  directusPreview.value = true
-}
-</script>
-```
-
 ### Nested Collections
 
-Edit related items:
+Edit related items from different collections:
 
 ```vue
 <template>
@@ -479,83 +474,72 @@ Edit related items:
 </template>
 ```
 
-### Layout Builder
-
-Create editable page layouts:
+### Conditional Content Based on Editor State
 
 ```vue
 <script setup>
-const directus = useDirectus()
-const route = useRoute()
-
-const { data: page } = await useAsyncData('page', () =>
-  directus.request(readItem('pages', route.params.id, {
-    fields: ['*', { blocks: ['*'] }]
-  }))
-)
+const directusVisualEditor = useDirectusVisualEditor()
 </script>
 
 <template>
-  <div class="page">
-    <!-- Edit page title -->
+  <div>
+    <!-- Show extra editing tools only inside Directus -->
+    <div v-if="directusVisualEditor" class="editor-toolbar">
+      <DirectusEditButton collection="articles" :item="article.id" />
+    </div>
+
     <DirectusVisualEditor
-      collection="pages"
-      :item="page.id"
+      collection="articles"
+      :item="article.id"
       fields="title"
     >
-      <h1>{{ page.title }}</h1>
+      <h1>{{ article.title }}</h1>
     </DirectusVisualEditor>
-
-    <!-- Edit each block -->
-    <div
-      v-for="block in page.blocks"
-      :key="block.id"
-      class="block"
-    >
-      <DirectusVisualEditor
-        collection="blocks"
-        :item="block.id"
-        mode="drawer"
-      >
-        <component :is="getBlockComponent(block.type)" :data="block" />
-      </DirectusVisualEditor>
-    </div>
   </div>
 </template>
 ```
 
 ## Troubleshooting
 
-### Editor Not Appearing
+### Editor Not Connecting
 
-1. Make sure `?preview=true` is in the URL
-2. Check that `directusPreview.value = true` is set
-3. Verify `visualEditor: true` in module config (default)
-4. Ensure you're logged into Directus in the same browser
+1. Check debug output with `?debug` in the URL
+2. Verify `visualEditor: true` in module config (default)
+3. Ensure your Directus URL config matches the actual Directus admin URL origin
+4. Check that CORS is configured correctly on your Directus instance
 
-### Changes Not Saving
+### `apply() result: false`
 
-1. Check that you have edit permissions for the collection
-2. Verify the `item` ID is correct
-3. Make sure field names match your Directus schema
-4. Check browser console for errors
+The `apply()` function uses `postMessage` to handshake with the Directus parent frame. If it returns `false`:
 
-### CORS Issues
+1. **URL mismatch** — The `url` in your nuxt.config must match the exact origin of the Directus admin panel. For example, if your Directus admin is at `https://api.example.com` but your config points to `https://directus.fly.dev`, the handshake will fail
+2. **CORS issues** — Ensure your Directus instance allows your Nuxt app origin
+3. **CSP restrictions** — Check that `Content-Security-Policy` allows `frame-ancestors` from your Directus origin
 
-The visual editor connects to your Directus instance. Ensure CORS is configured:
+### CORS Configuration
+
+The visual editor connects to your Directus instance via `postMessage`. Ensure CORS is configured:
 
 ```env
 # Directus .env
 CORS_ENABLED=true
-CORS_ORIGIN=http://localhost:3000
+CORS_ORIGIN=https://your-nuxt-app.com
 CORS_CREDENTIALS=true
 ```
+
+### Attributes Not Appearing
+
+If `data-directus` attributes are not being added to elements:
+
+1. Confirm your site is loaded inside the Directus iframe (check `?debug` output)
+2. Verify `visualEditor: true` in your config
+3. The attributes are only rendered when the visual editor detects an iframe — they are hidden from normal visitors
 
 ## API Reference
 
 ### `DirectusVisualEditor`
 
-A component that wraps editable content.
+A component that wraps editable content with `data-directus` attributes.
 
 **Props:**
 ```typescript
@@ -567,26 +551,57 @@ interface DirectusVisualEditorProps {
 }
 ```
 
+### `DirectusEditButton`
+
+A floating button that triggers the Directus editor for a specific item.
+
+**Props:**
+```typescript
+interface DirectusEditButtonProps {
+  collection: string                    // Directus collection name
+  item: string | number                 // Item ID (primary key)
+  mode?: 'drawer' | 'modal' | 'popover' // Editor display mode
+}
+```
+
+### `DirectusAddButton`
+
+An inline button that opens the editor for a repeater/relationship field.
+
+**Props:**
+```typescript
+interface DirectusAddButtonProps {
+  collection: string                    // Parent collection name
+  item: string | number                 // Parent item ID
+  field: string                         // Repeater field name
+}
+```
+
+### `useDirectusVisualEditor()`
+
+Returns a ref indicating whether the visual editor is active.
+
+**Returns:** `Ref<boolean>`
+
+```typescript
+const directusVisualEditor = useDirectusVisualEditor()
+
+if (directusVisualEditor.value) {
+  // Inside Directus iframe — editing is enabled
+}
+```
+
 ### `useDirectusPreview()`
 
 Returns a ref for controlling preview mode.
 
 **Returns:** `Ref<boolean>`
 
-**Example:**
 ```typescript
 const directusPreview = useDirectusPreview()
 
 // Enable preview mode
 directusPreview.value = true
-
-// Disable preview mode
-directusPreview.value = false
-
-// Check if preview mode is active
-if (directusPreview.value) {
-  console.log('Preview mode is active')
-}
 ```
 
 ## See Also
@@ -594,3 +609,4 @@ if (directusPreview.value) {
 - [Directus Visual Editing Documentation](https://docs.directus.io/guides/headless-cms/live-preview-nuxt.html)
 - [Getting Started](/guide/getting-started)
 - [Configuration Reference](/api/configuration)
+- [Components Reference](/api/components)

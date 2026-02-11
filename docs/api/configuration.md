@@ -128,17 +128,25 @@ When enabled, you can access the Directus admin panel directly from Nuxt Devtool
 - **Type:** `boolean`
 - **Default:** `true`
 
-Enable visual editor capabilities for live preview and inline editing.
+Enable visual editor capabilities. When enabled, the module:
+
+- Automatically detects when your site is loaded inside a Directus admin iframe
+- Renders `data-directus` attributes on `DirectusVisualEditor` components (only inside the iframe)
+- Applies the `@directus/visual-editing` SDK to enable inline editing
+- Shows `DirectusEditButton` and `DirectusAddButton` components (only inside the iframe)
+- Calls `refreshNuxtData()` when content is saved (no full page reload)
 
 ```typescript
 export default defineNuxtConfig({
   directus: {
-    visualEditor: true, // Enable DirectusVisualEditor component
+    visualEditor: true, // Enable visual editor (default)
   },
 })
 ```
 
-When disabled, the `DirectusVisualEditor` component will be a no-op.
+When disabled, `DirectusVisualEditor` renders as a pass-through wrapper with no attributes, and `DirectusEditButton`/`DirectusAddButton` are hidden.
+
+Add `?debug` to any page URL to enable debug logging for the visual editor in the browser console. This is useful for diagnosing CSP issues, URL mismatches, and iframe detection on staging/production deployments.
 
 ### `image`
 
