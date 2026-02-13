@@ -2,7 +2,7 @@ import { navigateTo, useRouter, useRuntimeConfig } from '#app'
 import { computed, useState } from '#imports'
 import type { ComputedRef, Ref } from '#imports'
 import type { RouteLocationRaw } from '#vue-router'
-import { useDirectus, useDirectusUrl } from './directus'
+import { useDirectus, useDirectusOriginUrl, useDirectusUrl } from './directus'
 import type { LoginOptions, DirectusUser } from '@directus/sdk'
 import {
   acceptUserInvite as directusAcceptUserInvite,
@@ -118,8 +118,8 @@ export function useDirectusAuth(): DirectusAuth {
   async function loginWithProvider(provider: string, redirectOnLogin?: string) {
     // Build redirect URL for after SSO authentication
     const redirect = `${window.location.origin}${redirectOnLogin ?? router.currentRoute.value.fullPath}`
-    // Redirect to Directus SSO endpoint - session cookie will be set by Directus
-    await navigateTo(useDirectusUrl(`/auth/login/${provider}?redirect=${encodeURIComponent(redirect)}`), { external: true })
+    // Use the real Directus URL — SSO requires direct browser navigation to Directus, not through the dev proxy
+    await navigateTo(useDirectusOriginUrl(`/auth/login/${provider}?redirect=${encodeURIComponent(redirect)}`), { external: true })
   }
 
   async function createUser(data: RegisterUserInput) {

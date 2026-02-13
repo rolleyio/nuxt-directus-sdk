@@ -40,6 +40,12 @@ export function useDirectusUrl(path = ''): string {
   return useUrl(config.public.directus.url, path)
 }
 
+export function useDirectusOriginUrl(path = ''): string {
+  const config = useRuntimeConfig()
+  const directusUrl = (config.public.directus as any).directusUrl || config.public.directus.url
+  return useUrl(directusUrl, path)
+}
+
 function createDirectusClient() {
   const config = useRuntimeConfig()
   const authConfig = config.public.directus.auth

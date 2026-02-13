@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="T extends keyof DirectusSchema">
 import type { PrimaryKey } from '@directus/types'
 import { computed, useRuntimeConfig } from '#imports'
-import { useDirectusVisualEditor } from '../composables/directus'
+import { useDirectusOriginUrl, useDirectusVisualEditor } from '../composables/directus'
 
 const props = defineProps<{
   collection: T
@@ -17,7 +17,7 @@ const showButton = computed(() => config.public.directus.visualEditor && directu
 
 // Directly trigger the Directus visual editor by sending a postMessage
 function triggerEdit() {
-  const directusUrl = (config.public.directus as any).directusUrl || config.public.directus.url
+  const directusUrl = useDirectusOriginUrl()
 
   const editConfig = {
     collection: props.collection as string,

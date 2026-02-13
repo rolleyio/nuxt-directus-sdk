@@ -1,6 +1,6 @@
 import { defineNuxtPlugin, refreshNuxtData, useCookie, useRoute, useRuntimeConfig } from '#app'
 import { useDirectusAuth } from './composables/auth'
-import { useDirectus, useDirectusPreview, useDirectusVisualEditor } from './composables/directus'
+import { useDirectus, useDirectusOriginUrl, useDirectusPreview, useDirectusVisualEditor } from './composables/directus'
 import { isQueryParamEnabled } from './utils'
 
 export default defineNuxtPlugin({
@@ -51,7 +51,7 @@ export default defineNuxtPlugin({
 
     // Check if we're connecting to a different Directus instance
     // If so, clear the session cookie to prevent session leakage between instances
-    const currentDirectusUrl = (config.public.directus as any).directusUrl || config.public.directus.url
+    const currentDirectusUrl = useDirectusOriginUrl()
     if (directusUrlCookie.value && directusUrlCookie.value !== currentDirectusUrl) {
       // Different Directus instance detected - clear the session
       sessionCookie.value = null

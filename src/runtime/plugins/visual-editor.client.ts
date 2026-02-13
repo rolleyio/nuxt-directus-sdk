@@ -1,6 +1,6 @@
 import { defineNuxtPlugin, refreshNuxtData, useRoute, useRuntimeConfig } from '#app'
 import { apply } from '@directus/visual-editing'
-import { useDirectusVisualEditor } from '../composables/directus'
+import { useDirectusOriginUrl, useDirectusVisualEditor } from '../composables/directus'
 
 export default defineNuxtPlugin({
   name: 'directus-visual-editor',
@@ -24,7 +24,7 @@ export default defineNuxtPlugin({
       return
     }
 
-    const directusUrl = (config.public.directus as any).directusUrl || config.public.directus.url
+    const directusUrl = useDirectusOriginUrl()
     log('Directus URL:', directusUrl)
 
     let applied = false

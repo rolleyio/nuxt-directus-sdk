@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PrimaryKey } from '@directus/types'
 import { computed, useRuntimeConfig } from '#imports'
-import { useDirectusVisualEditor } from '../composables/directus'
+import { useDirectusOriginUrl, useDirectusVisualEditor } from '../composables/directus'
 
 const props = defineProps<{
   /** The parent collection that contains the repeater field */
@@ -21,7 +21,7 @@ const showButton = computed(() => config.public.directus.visualEditor && directu
 // Open Directus admin to edit the parent item (which contains the repeater)
 // This allows adding new items to the repeater field
 function triggerAdd() {
-  const directusUrl = (config.public.directus as any).directusUrl || config.public.directus.url
+  const directusUrl = useDirectusOriginUrl()
 
   // Open the parent item's edit page, focusing on the specific field
   // Using the visual editor to edit the parent item with the repeater field
