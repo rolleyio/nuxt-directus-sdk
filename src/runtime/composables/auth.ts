@@ -1,9 +1,12 @@
-import { navigateTo, useRouter, useRuntimeConfig } from '#app'
-import { computed, useState } from '#imports'
 import type { ComputedRef, Ref } from '#imports'
 import type { RouteLocationRaw } from '#vue-router'
-import { useDirectus, useDirectusOriginUrl, useDirectusUrl } from './directus'
-import type { LoginOptions, DirectusUser } from '@directus/sdk'
+import type { DirectusUser, LoginOptions } from '@directus/sdk'
+import type {
+  DirectusError,
+  RegisterUserInput,
+} from '@directus/types'
+import { navigateTo, useRouter, useRuntimeConfig } from '#app'
+import { computed, useState } from '#imports'
 import {
   acceptUserInvite as directusAcceptUserInvite,
   createUser as directusCreateUser,
@@ -11,12 +14,9 @@ import {
   passwordRequest as directusPasswordRequest,
   passwordReset as directusPasswordReset,
   readMe as directusReadMe,
-  updateMe as directusUpdateMe
+  updateMe as directusUpdateMe,
 } from '@directus/sdk'
-import type {
-  DirectusError,
-  RegisterUserInput
-} from '@directus/types'
+import { useDirectus, useDirectusOriginUrl } from './directus'
 
 // Auto types don't seem to be generating correctly here, so we need to specify the return type
 export interface DirectusAuth {
@@ -78,14 +78,14 @@ export function useDirectusAuth(): DirectusAuth {
 
     return user.value
   }
-  //FIXME: Avatar requires a separated upload and/or ability to apply Object or string -> Possible Solution is to chunk into uploadDirectusFile -> Attach 'id' string to data.avatar UpdateMe call.
-  //FIXME: Role and Policies will work, but due to the Omit won't get type safety (Previous implementation also didn't have typesafety for them but now it's explicit.)
+  // FIXME: Avatar requires a separated upload and/or ability to apply Object or string -> Possible Solution is to chunk into uploadDirectusFile -> Attach 'id' string to data.avatar UpdateMe call.
+  // FIXME: Role and Policies will work, but due to the Omit won't get type safety (Previous implementation also didn't have typesafety for them but now it's explicit.)
   async function updateMe(data: Partial<Omit<DirectusUser, 'avatar' | 'role' | 'policies'>>) {
     const currentUser = user.value
 
     if (!currentUser?.id)
       throw new Error('No user available')
-    //INVESTIGATE: Does this cause issues with creative inputs in the config? Config won't have typesafety so probably a heavy lift for a low return.
+    // INVESTIGATE: Does this cause issues with creative inputs in the config? Config won't have typesafety so probably a heavy lift for a low return.
     const response: Partial<DirectusUser> = await directus.request(directusUpdateMe(data, { fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
     user.value = response as DirectusUser
     return user.value

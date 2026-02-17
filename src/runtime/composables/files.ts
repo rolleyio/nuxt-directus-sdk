@@ -1,7 +1,7 @@
+import type { DirectusFile, DirectusSchema } from '#build/types/directus'
 import type { Query } from '@directus/sdk'
 import { uploadFiles } from '@directus/sdk'
 import { useDirectus, useDirectusUrl } from './directus'
-import type { DirectusFile, DirectusSchema } from '#build/types/directus'
 
 interface DirectusFileUpload {
   file: File

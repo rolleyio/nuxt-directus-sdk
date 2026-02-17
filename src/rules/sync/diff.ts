@@ -3,7 +3,6 @@
  */
 
 import type { DirectusClient, RestClient } from '@directus/sdk'
-import { readPermissions, readPolicies, readRoles } from '@directus/sdk'
 import type {
   DirectusPermissionPayload,
   DirectusPolicyPayload,
@@ -11,9 +10,6 @@ import type {
   DirectusRulesPayload,
 } from '../types/directus-api'
 import type { PermissionAction, RulesConfig } from '../types/schema'
-import { loadRulesFromPayload } from '../loaders/json'
-import { serializeToDirectusApi } from '../utils/serialize'
-import { formatDiff } from './format'
 import type {
   DiffChange,
   DiffSummary,
@@ -22,6 +18,10 @@ import type {
   RoleDiffChange,
   RulesDiff,
 } from './types'
+import { readPermissions, readPolicies, readRoles } from '@directus/sdk'
+import { loadRulesFromPayload } from '../loaders/json'
+import { serializeToDirectusApi } from '../utils/serialize'
+import { formatDiff } from './format'
 
 /**
  * Compare local rules with remote Directus instance
@@ -274,13 +274,17 @@ export function compareRulesPayloads(
   // - Always exclude permissions with policy: null (these are Directus "app access" permissions
   //   that aren't managed through the rules DSL)
   const localPerms = local.permissions.filter((p) => {
-    if (p.policy === null) return false
-    if (excludeSystemCollections && isInternalSystemCollection(p.collection)) return false
+    if (p.policy === null)
+      return false
+    if (excludeSystemCollections && isInternalSystemCollection(p.collection))
+      return false
     return true
   })
   const remotePerms = remote.permissions.filter((p) => {
-    if (p.policy === null) return false
-    if (excludeSystemCollections && isInternalSystemCollection(p.collection)) return false
+    if (p.policy === null)
+      return false
+    if (excludeSystemCollections && isInternalSystemCollection(p.collection))
+      return false
     return true
   })
 

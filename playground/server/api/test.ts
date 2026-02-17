@@ -1,4 +1,4 @@
-import { defineEventHandler, readItems, useAdminDirectus } from "#imports"
+import { defineEventHandler, readItems, useAdminDirectus } from '#imports'
 
 export default defineEventHandler(async (_req) => {
   const directus = useAdminDirectus()

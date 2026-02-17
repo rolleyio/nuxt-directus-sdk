@@ -238,7 +238,7 @@ describe('devProxy with { client, server } URL (client-side)', () => {
 
     expect(result).toContain('public.example.com')
     expect(result).not.toContain('internal:8055')
-    expect(result).not.toContain(MOCK_ORIGIN + '/directus')
+    expect(result).not.toContain(`${MOCK_ORIGIN}/directus`)
   })
 
   it('useDirectusOriginUrl always returns client URL regardless of devProxy', async () => {

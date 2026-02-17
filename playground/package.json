@@ -1,13 +1,13 @@
 {
-	"name": "nuxt-directus-sdk-module-playground",
-	"private": true,
-	"scripts": {
-		"dev": "nuxi dev",
-		"build": "nuxi build",
-		"generate": "nuxi generate"
-	},
-	"devDependencies": {
-		"@nuxt/devtools": "latest",
-		"nuxt": "latest"
-	}
+  "name": "nuxt-directus-sdk-module-playground",
+  "private": true,
+  "scripts": {
+    "dev": "nuxi dev",
+    "build": "nuxi build",
+    "generate": "nuxi generate"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "nuxt": "latest"
+  }
 }

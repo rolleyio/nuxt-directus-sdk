@@ -1,8 +1,11 @@
 <script setup lang="ts">
-	import { onMounted, useDirectusAuth } from '#imports'
+import { onMounted, useDirectusAuth } from '#imports'
 
-	onMounted(() => {
-		useDirectusAuth().logout()
-	})
+onMounted(() => {
+  useDirectusAuth().logout()
+})
 </script>
-<template></template>
+
+<template>
+  <p />
+</template>

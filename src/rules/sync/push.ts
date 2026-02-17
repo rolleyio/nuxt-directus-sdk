@@ -3,6 +3,11 @@
  */
 
 import type { DirectusClient, RestClient } from '@directus/sdk'
+import type { RulesConfig } from '../types'
+import type {
+  PushOptions,
+  PushResult,
+} from './types'
 import {
   createPermission,
   createPolicy,
@@ -14,15 +19,8 @@ import {
   updatePolicy,
   updateRole,
 } from '@directus/sdk'
-import type { RulesConfig } from '../types'
 import { serializeToDirectusApi } from '../utils/serialize'
 import { compareRulesPayloads, fetchRemoteRules } from './diff'
-import type {
-  PushOperationResult,
-  PushOptions,
-  PushProgressEvent,
-  PushResult,
-} from './types'
 
 /**
  * Push local rules to a remote Directus instance

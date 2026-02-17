@@ -499,7 +499,7 @@ export default defineNuxtModule<ModuleOptions>({
       loggerMessage.push(`${colors.dim(`  Directus Admin was not added to Nuxt DevTools`)}`)
     }
 
-    const typesEnabled = (typeof options.types === 'boolean' && options.types) || options.types && options.types.enabled === true
+    const typesEnabled = (typeof options.types === 'boolean' && options.types) || (options.types && options.types.enabled === true)
     const typesPrefix = typeof options.types === 'object' ? options.types.prefix ?? '' : ''
 
     if (typesEnabled) {

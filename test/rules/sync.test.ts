@@ -1,3 +1,8 @@
+import type {
+  DirectusRolePayload,
+  DirectusRulesPayload,
+  PushResult,
+} from '../../src/rules'
 import { describe, expect, it } from 'vitest'
 import {
   compareRulesPayloads,
@@ -5,13 +10,6 @@ import {
   formatPushResult,
   loadRulesFromPayload,
   serializeToDirectusApi,
-} from '../../src/rules'
-import type {
-  DirectusPermissionPayload,
-  DirectusPolicyPayload,
-  DirectusRolePayload,
-  DirectusRulesPayload,
-  PushResult,
 } from '../../src/rules'
 
 describe('sync: compareRulesPayloads', () => {

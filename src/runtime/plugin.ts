@@ -15,7 +15,8 @@ export default defineNuxtPlugin({
 
     const debug = import.meta.client && route.query.debug !== undefined
     const log = (...args: any[]) => {
-      if (debug) console.warn('[Directus Plugin]', ...args)
+      if (debug)
+        console.warn('[Directus Plugin]', ...args)
     }
 
     // Live Preview

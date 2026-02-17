@@ -67,6 +67,37 @@ export type {
 // Testing
 // ============================================================================
 
+export type {
+  ChangeType,
+  CompareOptions,
+  DiffChange,
+  DiffSummary,
+  PermissionDiffChange,
+  PolicyDiffChange,
+  PushOperationResult,
+  PushOptions,
+  PushProgressEvent,
+  PushResult,
+  RoleDiffChange,
+  RulesDiff,
+} from './sync'
+
+export {
+  compareRulesPayloads,
+  diffRemoteRules,
+  diffRules,
+  fetchRemoteRules,
+  fetchRemoteRulesAsJson,
+  formatDiff,
+  formatPushResult,
+  pullRules,
+  pushRules,
+} from './sync'
+
+// ============================================================================
+// Types
+// ============================================================================
+
 export {
   canAccessField,
   createRulesMatchers,
@@ -86,7 +117,7 @@ export type {
 } from './testing'
 
 // ============================================================================
-// Types
+// Utilities
 // ============================================================================
 
 export type {
@@ -141,13 +172,17 @@ export type {
 export { isPolicyReference, isStandardSchema } from './types'
 
 // ============================================================================
-// Utilities
+// Validation Helpers
 // ============================================================================
 
 export type {
   NormalizedRole,
   NormalizedRules,
 } from './utils'
+
+// ============================================================================
+// Sync / Diff / Push
+// ============================================================================
 
 export {
   addPolicyToRole,
@@ -162,10 +197,6 @@ export {
   serializeToJson,
 } from './utils'
 
-// ============================================================================
-// Validation Helpers
-// ============================================================================
-
 export {
   allOf,
   directusValidation,
@@ -178,34 +209,3 @@ export {
   required,
   toDirectusValidation,
 } from './validation'
-
-// ============================================================================
-// Sync / Diff / Push
-// ============================================================================
-
-export type {
-  ChangeType,
-  CompareOptions,
-  DiffChange,
-  DiffSummary,
-  PermissionDiffChange,
-  PolicyDiffChange,
-  PushOperationResult,
-  PushOptions,
-  PushProgressEvent,
-  PushResult,
-  RoleDiffChange,
-  RulesDiff,
-} from './sync'
-
-export {
-  compareRulesPayloads,
-  diffRemoteRules,
-  diffRules,
-  fetchRemoteRules,
-  fetchRemoteRulesAsJson,
-  formatDiff,
-  formatPushResult,
-  pullRules,
-  pushRules,
-} from './sync'
