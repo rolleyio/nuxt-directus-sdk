@@ -363,7 +363,11 @@ await directus.request(updateSingleton('settings', data))
 
 ### `useDirectusUrl(path?)`
 
-Generate full URLs to your Directus instance.
+Generate full URLs to your Directus instance. This composable is context-aware:
+
+- **Client**: returns the client URL (or proxy path if `devProxy` is enabled)
+- **Server (SSR)**: returns the server URL if configured (for Docker/K8s internal networking), otherwise the client URL
+- **Dev proxy**: returns `window.location.origin + proxyPath` on client, or host header-based URL on server
 
 **Parameters:**
 - `path?: string` - Optional path to append
@@ -372,16 +376,35 @@ Generate full URLs to your Directus instance.
 
 ```typescript
 const directusUrl = useDirectusUrl()
-// Returns: https://your-directus.com
+// Client: https://cms.example.com
+// Server (with split URL): http://directus:8055
 
 const apiUrl = useDirectusUrl('items/articles')
-// Returns: https://your-directus.com/items/articles
+// Client: https://cms.example.com/items/articles
 
 const assetsUrl = useDirectusUrl('assets')
-// Returns: https://your-directus.com/assets
+// Client: https://cms.example.com/assets
+```
 
-const adminUrl = useDirectusUrl('admin')
-// Returns: https://your-directus.com/admin
+---
+
+### `useDirectusOriginUrl(path?)`
+
+Generate URLs to the **public-facing** Directus instance. Unlike `useDirectusUrl`, this always returns the client URL — it ignores both `devProxy` and `serverDirectusUrl`.
+
+Use this when you need the real Directus URL for browser navigation (e.g. SSO redirects, admin links).
+
+**Parameters:**
+- `path?: string` - Optional path to append
+
+**Returns:** `string`
+
+```typescript
+const ssoUrl = useDirectusOriginUrl('/auth/login/google?redirect=...')
+// Always: https://cms.example.com/auth/login/google?redirect=...
+
+const adminUrl = useDirectusOriginUrl('admin')
+// Always: https://cms.example.com/admin
 ```
 
 ---

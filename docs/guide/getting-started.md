@@ -124,22 +124,24 @@ export default defineNuxtConfig({
 })
 ```
 
-### Configuring Dev Server Host and Port
+The proxy automatically detects the host and port from Nuxt's dev server, including dynamic port changes.
 
-The proxy automatically detects the host and port from Nuxt's dev server configuration. You can customize these using the `devServer` option:
+## Split URLs (Docker / Kubernetes)
+
+If your Nuxt server can reach Directus via an internal URL (e.g. Docker service name), you can configure separate client and server URLs:
 
 ```typescript
 export default defineNuxtConfig({
-  devServer: {
-    port: 3001,  // default: 3000
-    host: '0.0.0.0',  // default: 'localhost'
+  directus: {
+    url: {
+      client: 'https://cms.example.com',    // Used by the browser
+      server: 'http://directus:8055',        // Used during SSR
+    },
   },
 })
 ```
 
-::: warning
-If port 3000 is already in use, Nuxt will automatically find an available port. The proxy can't currently follow the which port Nuxt actually binds to, so you'll need to manually set the devServer.
-:::
+The `server` URL is only used during SSR and is never exposed to the browser. See the [Configuration Reference](/api/configuration#url) for more details.
 
 ## Type Generation
 

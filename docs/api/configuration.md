@@ -20,26 +20,42 @@ export default defineNuxtConfig({
 
 ### `url`
 
-- **Type:** `string`
+- **Type:** `string | { client: string, server: string }`
 - **Required:** Yes
 - **Default:** `process.env.DIRECTUS_URL`
 - **Environment Variable:** `DIRECTUS_URL`
 
-Your Directus instance URL.
+Your Directus instance URL. Can be a simple string, or an object with separate `client` and `server` URLs for environments where SSR needs to reach Directus via an internal hostname (e.g. Docker, Kubernetes).
 
 ```typescript
 export default defineNuxtConfig({
   directus: {
+    // Simple string — used everywhere
     url: 'https://your-directus-instance.com',
+
+    // Or split URLs for Docker/K8s
+    url: {
+      client: 'https://cms.example.com',    // Browser requests
+      server: 'http://directus:8055',        // SSR / server-side requests
+    },
   },
 })
 ```
 
-Or use environment variable:
+Or use environment variable (string form only):
 
 ```env
 DIRECTUS_URL=https://your-directus-instance.com
 ```
+
+::: tip When to use split URLs
+Use the object form when your Nuxt server can reach Directus via an internal network address that browsers can't access. Common scenarios:
+- **Docker Compose**: `server: 'http://directus:8055'` (container name)
+- **Kubernetes**: `server: 'http://directus-service.default.svc.cluster.local:8055'`
+- **Private network**: `server: 'http://10.0.0.5:8055'`
+
+The `client` URL is what browsers use and what SSO redirects point to. The `server` URL is only used during SSR and is never exposed to the browser.
+:::
 
 ### `adminToken`
 
@@ -485,8 +501,10 @@ export default defineNuxtConfig({
   modules: ['nuxt-directus-sdk'],
 
   directus: {
-    // Core configuration
+    // Core configuration — simple string
     url: process.env.DIRECTUS_URL,
+    // Or split URLs for Docker/K8s:
+    // url: { client: 'https://cms.example.com', server: 'http://directus:8055' },
     adminToken: process.env.DIRECTUS_ADMIN_TOKEN,
 
     // Development
@@ -559,6 +577,18 @@ DIRECTUS_ADMIN_TOKEN=your-token
 ENV DIRECTUS_URL=https://your-directus.com
 ENV DIRECTUS_ADMIN_TOKEN=your-token
 ```
+
+::: tip Docker with split URLs
+When using Docker Compose, you can use the object URL form in `nuxt.config.ts` to route SSR requests through the internal Docker network:
+```typescript
+directus: {
+  url: {
+    client: 'https://cms.example.com',
+    server: 'http://directus:8055', // Docker service name
+  },
+}
+```
+:::
 
 ## Runtime Config Access
 
