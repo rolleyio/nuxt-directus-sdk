@@ -11,13 +11,18 @@ import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
 import { useUrl } from './runtime/utils'
 
+export type DirectusUrl = string | { client: string, server: string }
+
 export interface ModuleOptions {
   /**
    * Directus API URL
+   * Can be a string for a single URL, or an object with `client` and `server` for split URLs.
+   * Use the object form in Docker/K8s where SSR needs an internal hostname.
    * @default process.env.DIRECTUS_URL
-   * @type string
+   * @example 'https://cms.example.com'
+   * @example { client: 'https://cms.example.com', server: 'http://cms_directus:8055' }
    */
-  url: string
+  url: DirectusUrl
 
   /**
    * Development proxy configuration
@@ -211,7 +216,11 @@ export default defineNuxtModule<ModuleOptions>({
     },
   },
   async setup(options, nuxtApp) {
-    if (!options.url) {
+    // Resolve client and server URLs from the url option
+    const clientUrl = typeof options.url === 'string' ? options.url : options.url?.client
+    const serverUrl = typeof options.url === 'string' ? options.url : options.url?.server
+
+    if (!clientUrl) {
       logger.error('nuxt-directus-sdk requires a url to your Directus instance, set it in the config options or .env file as DIRECTUS_URL')
       return
     }
@@ -233,8 +242,8 @@ export default defineNuxtModule<ModuleOptions>({
       ? { enabled: options.devProxy }
       : { ...options.devProxy }
 
-    // Default values
-    const directusUrl = options.url
+    // Server URL used for proxy target, type gen, devtools (all server-side operations)
+    const directusUrl = serverUrl || clientUrl
 
     const devProxyEnabled = devProxyConfig.enabled ?? nuxtApp.options.dev
     const devProxyPath = devProxyConfig.path ?? '/directus'
@@ -335,13 +344,15 @@ export default defineNuxtModule<ModuleOptions>({
       options.devProxy = false
     }
 
-    (options as any).directusUrl = directusUrl
+    (options as any).directusUrl = clientUrl
+    ;(options as any).serverDirectusUrl = serverUrl || clientUrl
 
     nuxtApp.options.runtimeConfig[configKey] = options as any
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
     nuxtApp.options.runtimeConfig.public[configKey] = defu(nuxtApp.options.runtimeConfig.public[configKey] as any, options)
 
     delete (nuxtApp.options.runtimeConfig.public[configKey] as any).adminToken
+    delete (nuxtApp.options.runtimeConfig.public[configKey] as any).serverDirectusUrl
 
     // Register @nuxt/image with Directus provider
     const imageConfig = typeof options.image === 'boolean' ? { enabled: options.image } : options.image
@@ -352,7 +363,7 @@ export default defineNuxtModule<ModuleOptions>({
 
       const imageBaseUrl = devProxyEnabled
         ? `${devProxyPath}/assets`
-        : useUrl(options.url, 'assets')
+        : useUrl(clientUrl, 'assets')
 
       await registerModule('@nuxt/image', 'image', {
         // Set default provider if requested
@@ -527,6 +538,7 @@ export default defineNuxtModule<ModuleOptions>({
 
 interface NuxtDirectusModuleOptions extends ModuleOptions {
   directusUrl: string
+  serverDirectusUrl: string
   wsProxyUrl?: string
 }
 

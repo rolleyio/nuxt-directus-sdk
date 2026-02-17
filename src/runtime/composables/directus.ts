@@ -13,11 +13,21 @@ export function useDirectusVisualEditor(): Ref<boolean> {
   return useState('directus.visualEditor', () => false)
 }
 
+function resolveClientUrl(): string {
+  const config = useRuntimeConfig()
+  return (config.public.directus as any).directusUrl || config.public.directus.url
+}
+
+function resolveServerUrl(): string {
+  const config = useRuntimeConfig()
+  return (config as any).directus?.serverDirectusUrl || resolveClientUrl()
+}
+
 export function useDirectusUrl(path = ''): string {
   const config = useRuntimeConfig()
 
   const devProxy = config.public.directus.devProxy
-  const devProxyEnabled = typeof devProxy === 'object' ? devProxy.enabled !== false : devProxy !== false
+  const devProxyEnabled = typeof devProxy === 'object' ? devProxy.enabled === true : devProxy === true
 
   // When devProxy is enabled, use current origin + proxy path
   if (devProxyEnabled) {
@@ -36,14 +46,17 @@ export function useDirectusUrl(path = ''): string {
     }
   }
 
-  // Fallback to configured URL
-  return useUrl(config.public.directus.url, path)
+  // On server without devProxy, prefer the server URL (for Docker/K8s internal networking)
+  if (import.meta.server) {
+    return useUrl(resolveServerUrl(), path)
+  }
+
+  // Fallback to client URL
+  return useUrl(resolveClientUrl(), path)
 }
 
 export function useDirectusOriginUrl(path = ''): string {
-  const config = useRuntimeConfig()
-  const directusUrl = (config.public.directus as any).directusUrl || config.public.directus.url
-  return useUrl(directusUrl, path)
+  return useUrl(resolveClientUrl(), path)
 }
 
 function createDirectusClient() {

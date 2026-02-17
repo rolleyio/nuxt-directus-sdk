@@ -1,7 +1,7 @@
 {
   "name": "nuxt-directus-sdk",
   "type": "module",
-  "version": "5.0.0-beta.4",
+  "version": "5.0.0-beta.5",
   "description": "A Directus nuxt module that uses the Directus SDK",
   "author": "Matthew Rollinson <matt@rolley.io>",
   "license": "MIT",
@@ -35,11 +35,21 @@
     "docs:build": "bun run dev:prepare && vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@directus/sdk": "^20.0.0",
     "@directus/types": "^13.0.0",
     "@directus/visual-editing": "^1.1.0",
-    "@nuxt/image": "^2.0.0",
+    "@nuxt/image": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@directus/visual-editing": {
+      "optional": true
+    },
+    "@nuxt/image": {
+      "optional": true
+    }
+  },
+  "dependencies": {
     "@nuxt/kit": "^4.0.0",
     "change-case": "^4.1.2",
     "defu": "^6.1.1",
@@ -49,7 +59,11 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.10.0",
+    "@directus/sdk": "^20.0.0",
+    "@directus/types": "^13.0.0",
+    "@directus/visual-editing": "^1.1.0",
     "@nuxt/devtools": "latest",
+    "@nuxt/image": "^2.0.0",
     "@nuxt/module-builder": "^1.0.2",
     "@nuxt/schema": "^4.1.2",
     "@nuxt/test-utils": "^3.19.2",

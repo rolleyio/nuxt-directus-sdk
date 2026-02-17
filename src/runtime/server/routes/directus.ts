@@ -4,7 +4,8 @@ import { joinURL } from 'ufo'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const directusUrl = config.public.directus.directusUrl
+  const serverUrl = (config as any).directus?.serverDirectusUrl
+  const directusUrl = serverUrl || config.public.directus.directusUrl
 
   // Get the full URL path with query string
   const url = getRequestURL(event)

@@ -11,7 +11,9 @@ export function getDirectusSessionToken(event: H3Event): string | undefined {
 
 export function useDirectusUrl(path = ''): string {
   const config = useRuntimeConfig()
-  return useUrl(config.public.directus.url, path)
+  const serverUrl = (config as any).directus?.serverDirectusUrl
+  const fallback = (config.public.directus as any).directusUrl || config.public.directus.url
+  return useUrl(serverUrl || fallback, path)
 }
 
 export function useTokenDirectus(token?: string) {
