@@ -21,7 +21,9 @@
     "directus-rules": "./dist/cli/index.mjs",
     "nuxt-directus-sdk": "./dist/cli/index.mjs"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "prepack": "nuxt-module-build build",
     "dev": "nuxi dev playground",
@@ -77,6 +79,8 @@
   },
   "unbuild": {
     "failOnWarn": false,
-    "externals": ["consola/utils"]
+    "externals": [
+      "consola/utils"
+    ]
   }
 }
