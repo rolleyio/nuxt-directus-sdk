@@ -1,22 +1,23 @@
 <script setup lang="ts">
-  import { reactive, useDirectusAuth } from '#imports'
+import { reactive, useDirectusAuth } from '#imports'
 
-  const { register } = useDirectusAuth()
-  const form = reactive({
-    email: 'new-user@example.com',
-    password: 'v3rys3cur!tyf0cu$ed',
-    first_name: 'Joe',
-    last_name: 'Smith',
+const { register } = useDirectusAuth()
+const form = reactive({
+  email: 'new-user@example.com',
+  password: 'v3rys3cur!tyf0cu$ed',
+  first_name: 'Joe',
+  last_name: 'Smith',
+})
+async function registerForm() {
+  await register({
+    email: form.email,
+    password: form.password,
+    first_name: form.first_name,
+    last_name: form.last_name,
   })
-  async function registerForm() {
-    const result = await register({
-      email: form.email,
-      password: form.password,
-      first_name: form.first_name,
-      last_name: form.last_name,
-    })
-  }
+}
 </script>
+
 <template>
   <form @submit.prevent="registerForm">
     <div>
@@ -25,7 +26,8 @@
         id="first_name-input"
         v-model="form.first_name"
         autocomplete="given-name"
-        required />
+        required
+      >
     </div>
     <div>
       <label for="last_name-input">Last Name</label>
@@ -33,7 +35,8 @@
         id="last_name-input"
         v-model="form.last_name"
         autocomplete="family-name"
-        required />
+        required
+      >
     </div>
     <div>
       <label for="email-input">Email</label>
@@ -42,7 +45,8 @@
         v-model="form.email"
         type="email"
         autocomplete="email"
-        required />
+        required
+      >
     </div>
 
     <div>
@@ -52,7 +56,8 @@
         v-model="form.password"
         type="password"
         autocomplete="current-password"
-        required />
+        required
+      >
     </div>
 
     <button>Register New User</button>
