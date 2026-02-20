@@ -42,6 +42,9 @@
     "@nuxt/image": "^2.0.0"
   },
   "peerDependenciesMeta": {
+    "@directus/types": {
+      "optional": true
+    },
     "@directus/visual-editing": {
       "optional": true
     },

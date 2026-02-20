@@ -3,7 +3,7 @@ import type { ImageModifiers, ImageProviders } from '@nuxt/image'
 
 import type { InlinePreset } from 'unimport'
 
-import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, hasNuxtModule, installModule, useLogger } from '@nuxt/kit'
+import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, hasNuxtModule, installModule, tryResolveModule, useLogger } from '@nuxt/kit'
 import { colors } from 'consola/utils'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
@@ -379,8 +379,12 @@ export default defineNuxtModule<ModuleOptions>({
     // Add plugin to load user before bootstrap
     addPlugin(resolver.resolve('./runtime/plugin'))
 
-    // Add visual editor plugin (client-only)
-    addPlugin(resolver.resolve('./runtime/plugins/visual-editor.client'))
+    // Add visual editor plugin and components only when enabled AND @directus/visual-editing is installed
+    const hasVisualEditing = options.visualEditor && await tryResolveModule('@directus/visual-editing', new URL(import.meta.url))
+
+    if (hasVisualEditing) {
+      addPlugin(resolver.resolve('./runtime/plugins/visual-editor.client'))
+    }
 
     // Add route middleware
     addRouteMiddleware({
@@ -396,12 +400,16 @@ export default defineNuxtModule<ModuleOptions>({
 
     // Add composables
     addImportsDir(resolver.resolve('./runtime/composables'))
-    addComponentsDir({
-      path: resolver.resolve('./runtime/components'),
-      pathPrefix: false,
-      prefix: '',
-      global: true,
-    })
+
+    // Only register visual editor components when enabled and @directus/visual-editing is installed
+    if (hasVisualEditing) {
+      addComponentsDir({
+        path: resolver.resolve('./runtime/components'),
+        pathPrefix: false,
+        prefix: '',
+        global: true,
+      })
+    }
 
     const directusSdkImports: InlinePreset = {
       from: '@directus/sdk',
