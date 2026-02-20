@@ -6,7 +6,7 @@ import type {
   RegisterUserInput,
 } from '@directus/types'
 import { navigateTo, useRouter, useRuntimeConfig } from '#app'
-import { computed, useState } from '#imports'
+import { computed, useRequestURL, useState } from '#imports'
 import {
   acceptUserInvite as directusAcceptUserInvite,
   createUser as directusCreateUser,
@@ -16,6 +16,7 @@ import {
   readMe as directusReadMe,
   updateMe as directusUpdateMe,
 } from '@directus/sdk'
+import { joinURL, withoutTrailingSlash } from 'ufo'
 import { useDirectus, useDirectusOriginUrl } from './directus'
 
 // Auto types don't seem to be generating correctly here, so we need to specify the return type
@@ -25,7 +26,7 @@ export interface DirectusAuth {
   readMe: () => Promise<Partial<DirectusUser> | DirectusError | null>
   updateMe: (data: Partial<DirectusUser>) => Promise<Partial<DirectusUser> | DirectusError | null>
   login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<DirectusUser | null>
-  loginWithProvider: (provider: string, redirectOnLogin?: string) => Promise<void>
+  loginWithProvider: (provider: string, redirectOnLogin?: boolean | string) => Promise<void>
   logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
   createUser: (data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>) => Promise<Omit<DirectusUser, 'last_access'>>
   register: (data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>) => Promise<Omit<DirectusUser, 'last_access'>>
@@ -102,24 +103,38 @@ export function useDirectusAuth(): DirectusAuth {
       const route = router.currentRoute.value
 
       if (typeof redirect !== 'boolean') {
-        navigateTo(redirect)
+        await navigateTo(redirect)
       }
       else if (route?.query?.redirect) {
-        navigateTo({ path: decodeURIComponent(route.query.redirect as string) })
+        await navigateTo({ path: decodeURIComponent(route.query.redirect as string) })
       }
       else {
-        navigateTo(config.public.directus.auth?.redirect?.home ?? '/')
+        await navigateTo(config.public.directus.auth?.redirect?.home ?? '/')
       }
     }
 
     return user.value
   }
 
-  async function loginWithProvider(provider: string, redirectOnLogin?: string) {
-    // Build redirect URL for after SSO authentication
-    const redirect = `${window.location.origin}${redirectOnLogin ?? router.currentRoute.value.fullPath}`
+  async function loginWithProvider(provider: string, redirectOnLogin: boolean | string = true) {
+    const { origin, href } = useRequestURL()
+
+    let redirectPath: string
+
+    if (typeof redirectOnLogin === 'boolean') {
+      redirectPath = redirectOnLogin ? config.public.directus.auth.redirect.login : href
+    }
+    else if (redirectOnLogin) {
+      redirectPath = redirectOnLogin
+    }
+    else {
+      redirectPath = href
+    }
+    const redirect = joinURL(origin, redirectPath)
+    const sanitizedRedirect = withoutTrailingSlash(redirect)
+
     // Use the real Directus URL — SSO requires direct browser navigation to Directus, not through the dev proxy
-    await navigateTo(useDirectusOriginUrl(`/auth/login/${provider}?redirect=${encodeURIComponent(redirect)}`), { external: true })
+    await navigateTo(useDirectusOriginUrl(`/auth/login/${provider}?redirect=${encodeURIComponent(sanitizedRedirect)}`), { external: true })
   }
 
   async function createUser(data: RegisterUserInput) {
@@ -157,7 +172,7 @@ export function useDirectusAuth(): DirectusAuth {
     }
 
     if (redirect) {
-      const defaultRedirect = config.public.directus.auth?.redirect?.logout ?? config.public.directus.auth?.redirect?.home ?? '/'
+      const defaultRedirect = config.public.directus.auth?.redirect?.logout ?? config.public.directus.auth?.redirect?.login ?? '/'
       const redirectTo = typeof redirect === 'boolean' ? defaultRedirect : redirect
 
       await navigateTo(redirectTo)

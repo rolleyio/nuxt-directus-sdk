@@ -15,7 +15,7 @@
       <li>useServerDirectus</li>
       <li>useAdminDirectus</li>
       <li>useTokenDirectus</li>
-      <li>liginWithProvider</li>
+      <li>loginWithProvider</li>
       <li>createUser / register (alias)</li>
       <li>inviteUser</li>
       <li>acceptUserInvite</li>
