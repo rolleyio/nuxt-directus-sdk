@@ -1,3 +1,7 @@
+---
+outline: deep
+---
+
 # Configuration Reference
 
 Complete reference for all nuxt-directus-sdk configuration options.

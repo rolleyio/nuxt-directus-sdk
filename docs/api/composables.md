@@ -1,3 +1,7 @@
+---
+outline: deep
+---
+
 # Composables Reference
 
 Complete API reference for all composables provided by nuxt-directus-sdk.
@@ -16,8 +20,8 @@ interface DirectusAuth {
   loggedIn: ComputedRef<boolean>
   readMe: () => Promise<DirectusUsers | null>
   updateMe: (data: Partial<DirectusUsers>) => Promise<DirectusUsers | null>
-  login: (email: string, password: string, options?) => Promise<DirectusUsers | null>
-  loginWithProvider: (provider: string, redirectOnLogin?: string) => Promise<void>
+  login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<DirectusUsers | null>
+  loginWithProvider: (provider: string, redirectOnLogin?: boolean | string) => Promise<void>
   logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
   createUser: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
   register: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>

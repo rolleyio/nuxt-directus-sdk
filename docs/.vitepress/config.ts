@@ -49,5 +49,14 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/rolleyio/nuxt-directus-sdk' },
     ],
+    editLink: {
+      pattern: 'https://github.com/rolleyio/nuxt-directus-sdk/edit/next/docs/:path',
+      text: 'Edit this page on GitHub'
+    },
+    lastUpdated: {
+      formatOptions: {
+        dateStyle: 'medium',
+      }
+    }
   },
 })

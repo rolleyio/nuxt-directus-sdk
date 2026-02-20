@@ -1,3 +1,7 @@
+---
+outline: deep
+---
+
 # Components Reference
 
 API reference for all components provided by nuxt-directus-sdk.
