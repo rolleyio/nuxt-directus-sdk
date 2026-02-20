@@ -117,6 +117,17 @@ await passwordRequest('user@example.com', 'https://yourapp.com/reset-password')
 await passwordReset('reset-token', 'new-password')
 ```
 
+::: warning Directus Configuration Required
+For password reset links to work with external domains, you must add them to the Directus redirect allow list:
+
+```env
+# Directus .env
+PASSWORD_RESET_URL_ALLOW_LIST=https://yourapp.com/auth/password-reset,http://localhost:3000/auth/password-reset
+```
+
+This is a security setting in Directus to prevent open redirect vulnerabilities when users accept invitations.
+:::
+
 ### User Invites
 
 ```typescript
@@ -200,8 +211,8 @@ export default defineNuxtConfig({
   directus: {
     auth: {
       redirect: {
-        login: '/auth/login',    // Where to go when not logged in
         home: '/',          // Where to go after login
+        login: '/auth/login',    // Where to go when not logged in
         logout: '/',                 // Where to go after logout
       },
     },
