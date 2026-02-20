@@ -145,11 +145,11 @@ await login('user@example.com', 'password', { otp: '123456' })
 
 ##### `loginWithProvider(provider, redirectOnLogin?)`
 
-Login with SSO/OAuth provider.
+Login with SSO/OAuth provider. Note that a redirect is required for SSO authentication, so if you are passing `false` to redirectOnLogin your browser will still redirect, but you will be redirected to the current page.
 
 **Parameters:**
 - `provider: string` - Provider name (google, github, microsoft, etc.)
-- `redirectOnLogin?: string` - URL to redirect to after login
+- `redirectOnLogin?: string | boolean` - URL to redirect to after login
 
 **Returns:** `Promise<void>`
 
@@ -161,6 +161,9 @@ await loginWithProvider('google')
 
 // Login with custom redirect
 await loginWithProvider('google', '/dashboard')
+
+// Login with redirect as boolean
+await loginWithProvider('google', false)
 ```
 
 ##### `logout(redirect?)`
