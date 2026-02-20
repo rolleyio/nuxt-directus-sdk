@@ -16,7 +16,7 @@
       <li>useAdminDirectus</li>
       <li>useTokenDirectus</li>
       <li>loginWithProvider</li>
-      <li>PreateUser / register (alias)</li>
+      <li>createUser / register (alias)</li>
       <li>inviteUser</li>
       <li>acceptUserInvite</li>
       <li>passwordRequest / passwordReset</li>
