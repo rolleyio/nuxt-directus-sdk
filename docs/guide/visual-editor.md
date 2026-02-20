@@ -520,7 +520,7 @@ The `apply()` function uses `postMessage` to handshake with the Directus parent 
 
 The visual editor connects to your Directus instance via `postMessage`. Ensure CORS is configured:
 
-```env
+```dotenv
 # Directus .env
 CORS_ENABLED=true
 CORS_ORIGIN=https://your-nuxt-app.com

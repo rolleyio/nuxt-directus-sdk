@@ -44,7 +44,7 @@ export default defineNuxtConfig({
 
 Or use environment variable (string form only):
 
-```env
+```dotenv
 DIRECTUS_URL=https://your-directus-instance.com
 ```
 
@@ -75,7 +75,7 @@ export default defineNuxtConfig({
 
 Or use environment variable:
 
-```env
+```dotenv
 DIRECTUS_ADMIN_TOKEN=your-admin-token-here
 ```
 
@@ -547,7 +547,7 @@ export default defineNuxtConfig({
 
 ### Development (.env)
 
-```env
+```dotenv
 # Required
 DIRECTUS_URL=http://localhost:8055
 
@@ -636,7 +636,7 @@ const articles = await directus.request(readItems('articles'))
 
 For the module to work correctly, configure your Directus instance:
 
-```env
+```dotenv
 # Directus .env
 
 # Authentication
@@ -661,7 +661,7 @@ WEBSOCKETS_REST_AUTH=strict
 
 If Nuxt and Directus are on the same domain:
 
-```env
+```dotenv
 # Directus .env
 SESSION_COOKIE_SECURE=false  # true in production
 SESSION_COOKIE_SAME_SITE=Lax
@@ -672,7 +672,7 @@ CORS_ORIGIN=http://localhost:3000
 
 If on different domains (e.g., app.example.com and api.example.com):
 
-```env
+```dotenv
 # Directus .env
 SESSION_COOKIE_DOMAIN=.example.com  # Shared parent domain
 SESSION_COOKIE_SECURE=true

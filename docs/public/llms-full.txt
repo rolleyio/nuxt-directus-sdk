@@ -177,7 +177,7 @@ export default defineNuxtConfig({
 
 Create a `.env` file in your project root:
 
-```env
+```dotenv
 DIRECTUS_URL=https://your-directus-instance.com
 DIRECTUS_ADMIN_TOKEN=your_admin_token_here
 ```
@@ -195,7 +195,7 @@ For the module to work properly, you need to configure your Directus instance:
 
 If your Nuxt app and Directus are on the same domain (e.g., `localhost` in development):
 
-```env
+```dotenv
 # Directus .env
 AUTH_LOCAL_MODE=session
 SESSION_COOKIE_SECURE=false  # true in production
@@ -214,7 +214,7 @@ WEBSOCKETS_REST_AUTH=strict
 
 If your frontend and backend are on different domains:
 
-```env
+```dotenv
 # Directus .env
 AUTH_LOCAL_MODE=session
 SESSION_COOKIE_DOMAIN=.yourdomain.com  # Shared parent domain
@@ -556,7 +556,7 @@ export default defineNuxtConfig({
 
 If your Nuxt app and Directus are on the same domain (e.g., localhost in dev):
 
-```env
+```dotenv
 # Directus .env
 AUTH_LOCAL_MODE=session
 SESSION_COOKIE_SECURE=false  # true in production
@@ -571,7 +571,7 @@ CORS_CREDENTIALS=true
 
 For production with separate domains (e.g., `app.example.com` and `api.example.com`):
 
-```env
+```dotenv
 # Directus .env
 AUTH_LOCAL_MODE=session
 SESSION_COOKIE_DOMAIN=.example.com    # Shared parent domain
@@ -794,7 +794,7 @@ onBeforeUnmount(() => {
 
 Enable WebSockets in your Directus instance:
 
-```env
+```dotenv
 # Directus .env
 WEBSOCKETS_ENABLED=true
 
@@ -2151,7 +2151,7 @@ const { data: page } = await useAsyncData('page', () =>
 
 The visual editor connects to your Directus instance. Ensure CORS is configured:
 
-```env
+```dotenv
 # Directus .env
 CORS_ENABLED=true
 CORS_ORIGIN=http://localhost:3000
@@ -2655,7 +2655,7 @@ export default defineEventHandler(async (event) => {
 
 Set your admin token in `.env`:
 
-```env
+```dotenv
 DIRECTUS_ADMIN_TOKEN=your_admin_token_here
 ```
 
@@ -2858,7 +2858,7 @@ export default defineNuxtConfig({
 
 Or use environment variable:
 
-```env
+```dotenv
 DIRECTUS_URL=https://your-directus-instance.com
 ```
 
@@ -2881,7 +2881,7 @@ export default defineNuxtConfig({
 
 Or use environment variable:
 
-```env
+```dotenv
 DIRECTUS_ADMIN_TOKEN=your-admin-token-here
 ```
 
@@ -3229,7 +3229,7 @@ export default defineNuxtConfig({
 
 ### Development (.env)
 
-```env
+```dotenv
 # Required
 DIRECTUS_URL=http://localhost:8055
 
@@ -3306,7 +3306,7 @@ const articles = await directus.request(readItems('articles'))
 
 For the module to work correctly, configure your Directus instance:
 
-```env
+```dotenv
 # Directus .env
 
 # Authentication
@@ -3331,7 +3331,7 @@ WEBSOCKETS_REST_AUTH=strict
 
 If Nuxt and Directus are on the same domain:
 
-```env
+```dotenv
 # Directus .env
 SESSION_COOKIE_SECURE=false  # true in production
 SESSION_COOKIE_SAME_SITE=Lax
@@ -3342,7 +3342,7 @@ CORS_ORIGIN=http://localhost:3000
 
 If on different domains (e.g., app.example.com and api.example.com):
 
-```env
+```dotenv
 # Directus .env
 SESSION_COOKIE_DOMAIN=.example.com  # Shared parent domain
 SESSION_COOKIE_SECURE=true
@@ -3374,7 +3374,7 @@ export default defineNuxtConfig({
 
 ### Environment Variable Changes
 
-```env
+```dotenv
 # v1
 DIRECTUS_TOKEN=xxx  # ❌ Deprecated
 

@@ -22,7 +22,7 @@ export default defineNuxtConfig({
 })
 ```
 
-```env
+```dotenv
 # .env
 DIRECTUS_URL=https://your-directus.com
 DIRECTUS_ADMIN_TOKEN=your-admin-token
@@ -160,7 +160,7 @@ export default defineNuxtConfig({
 
 ## Directus Configuration
 
-```env
+```dotenv
 # Session authentication
 AUTH_LOCAL_MODE=session
 SESSION_COOKIE_SECURE=true

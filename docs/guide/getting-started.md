@@ -38,7 +38,7 @@ View all module options in the [API Reference > Configuration](../api/configurat
 
 3. Add the following variables to the `.env` file in your nuxt project root:
 
-```env
+```dotenv
 DIRECTUS_URL=https://url-to.directus.app
 DIRECTUS_ADMIN_TOKEN=admin_token_required_for_typegen
 ```
@@ -52,17 +52,17 @@ DIRECTUS_ADMIN_TOKEN=admin_token_required_for_typegen
 For the module to work properly, you need to configure your Directus instance with the following environment variables depending on your environment:
 
 ::: code-group
-```env [development]
+```dotenv [development]
 CORS_ENABLED=true
 CORS_ORIGIN=*
 SESSION_COOKIE_DOMAIN=localhost
 ```
-```env [same-domain]
+```dotenv [same-domain]
 SESSION_COOKIE_DOMAIN=http://url-to.nuxt.app
 SESSION_COOKIE_SECURE=true
 SESSION_COOKIE_SAME_SITE=None
 ```
-```env [cross-domain]
+```dotenv [cross-domain]
 CORS_ENABLED=true
 CORS_ORIGIN=http://url-to.nuxt.app
 AUTH_LOCAL_MODE=session
@@ -78,7 +78,7 @@ These configuration examples assume that you do not modify the default environme
 
 ### Optional Configuration
 
-```env
+```dotenv
 WEBSOCKETS_ENABLED=true
 ```
 
