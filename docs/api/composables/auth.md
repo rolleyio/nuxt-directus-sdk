@@ -27,7 +27,6 @@ interface DirectusAuth {
   passwordReset: (token: string, password: string) => Promise<void>
 }
 ```
-<!-- @matt-rolley I'm thinking about removing this example since each of the individual methods have an example of their own and this clutters the view. Thoughts? -->
 **Example:**
 
 ```typescript
