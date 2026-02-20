@@ -40,9 +40,37 @@ export default defineConfig({
       {
         text: 'API Reference',
         items: [
-          { text: 'Configuration', link: '/api/configuration' },
-          { text: 'Composables', link: '/api/composables' },
-          { text: 'Components', link: '/api/components' },
+          {
+            text: 'Configuration', link: 'index',
+            collapsed: true,
+            base: '/api/configuration/',
+            items: [
+              { text: 'Module Options', link: 'module' },
+              { text: 'Environment Variables', link: 'env' },
+              { text: 'Directus Server Configuration', link: 'server' },
+            ]
+          },
+          {
+            text: 'Composables', link: 'index',
+            collapsed: true,
+            base: '/api/composables/',
+            items: [
+              { text: 'Authentication', link: 'auth' },
+              { text: 'Client', link: 'client' },
+              { text: 'File', link: 'file' },
+              { text: 'Storage', link: 'storage' },
+            ]
+          },
+          {
+            text: 'Components', link: 'index',
+            collapsed: true,
+            base: '/api/components/',
+            items: [
+              { text: 'Visual Editor', link: 'visual-editor' },
+              { text: 'Edit Button', link: 'edit-button' },
+              { text: 'Add Button', link: 'add-button' },
+            ]
+          },
         ],
       },
     ],
@@ -57,6 +85,7 @@ export default defineConfig({
       formatOptions: {
         dateStyle: 'medium',
       }
-    }
+    },
+    externalLinkIcon: true
   },
 })
