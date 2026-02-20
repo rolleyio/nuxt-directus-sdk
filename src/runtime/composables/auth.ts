@@ -103,13 +103,13 @@ export function useDirectusAuth(): DirectusAuth {
       const route = router.currentRoute.value
 
       if (typeof redirect !== 'boolean') {
-        navigateTo(redirect)
+        await navigateTo(redirect)
       }
       else if (route?.query?.redirect) {
-        navigateTo({ path: decodeURIComponent(route.query.redirect as string) })
+        await navigateTo({ path: decodeURIComponent(route.query.redirect as string) })
       }
       else {
-        navigateTo(config.public.directus.auth?.redirect?.home ?? '/')
+        await navigateTo(config.public.directus.auth?.redirect?.home ?? '/')
       }
     }
 
