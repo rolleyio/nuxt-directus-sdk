@@ -57,7 +57,7 @@ export default defineNuxtConfig({
 
 3. Create a `.env` file:
 
-```env
+```dotenv
 DIRECTUS_URL=https://your-directus-url.com
 DIRECTUS_ADMIN_TOKEN=your_admin_token # Optional: for type generation
 ```

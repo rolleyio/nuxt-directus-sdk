@@ -435,7 +435,7 @@ export default defineEventHandler(async (event) => {
 
 Set your admin token in `.env`:
 
-```env
+```dotenv
 DIRECTUS_ADMIN_TOKEN=your_admin_token_here
 ```
 

@@ -89,7 +89,7 @@ onBeforeUnmount(() => {
 
 Enable WebSockets in your Directus instance:
 
-```env
+```dotenv
 # Directus .env
 WEBSOCKETS_ENABLED=true
 
