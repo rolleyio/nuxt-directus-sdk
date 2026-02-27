@@ -114,9 +114,9 @@ export interface PushResult {
 
   /** Summary counts */
   summary: {
-    roles: { created: number, updated: number, deleted: number, errors: number }
-    policies: { created: number, updated: number, deleted: number, errors: number }
-    permissions: { created: number, updated: number, deleted: number, errors: number }
+    roles: { created: number; updated: number; deleted: number; errors: number }
+    policies: { created: number; updated: number; deleted: number; errors: number }
+    permissions: { created: number; updated: number; deleted: number; errors: number }
   }
 
   /** Any errors that occurred */

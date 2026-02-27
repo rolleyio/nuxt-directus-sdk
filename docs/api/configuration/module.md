@@ -16,20 +16,18 @@ export default defineNuxtConfig({
 })
 ```
 
->[!NOTE]
->::: details Module options automatically loaded into runtime config. `adminToken` is automatically excluded from public runtime config for security.
+> [!NOTE]
+> ::: details Module options automatically loaded into runtime config. `adminToken` is automatically excluded from public runtime config for security.
 >
+> ```typescript
+> // Client-side and server-side
+> const config = useRuntimeConfig()
+> console.log(config.public.directus.url)
 >
->```typescript
->// Client-side and server-side
->const config = useRuntimeConfig()
->console.log(config.public.directus.url)
->
->// Server-side only (includes adminToken)
->const config = useRuntimeConfig()
->console.log(config.directus.adminToken)
->```
-
+> // Server-side only (includes adminToken)
+> const config = useRuntimeConfig()
+> console.log(config.directus.adminToken)
+> ```
 
 ::: details All Configuration Options
 
@@ -37,7 +35,8 @@ export default defineNuxtConfig({
 export default defineNuxtConfig({
   modules: ['nuxt-directus-sdk'],
 
-  directus: { // [!code focus:40]
+  directus: {
+    // [!code focus:40]
     // Core configuration — simple string
     url: process.env.DIRECTUS_URL,
     // Or split URLs for Docker/K8s:
@@ -101,8 +100,8 @@ export default defineNuxtConfig({
 
     // Or split URLs for Docker/K8s
     url: {
-      client: 'https://cms.example.com',    // Browser requests
-      server: 'http://directus:8055',        // SSR / server-side requests
+      client: 'https://cms.example.com', // Browser requests
+      server: 'http://directus:8055', // SSR / server-side requests
     },
   },
 })
@@ -116,6 +115,7 @@ DIRECTUS_URL=https://your-directus-instance.com
 
 ::: tip When to use split URLs
 Use the object form when your Nuxt server can reach Directus via an internal network address that browsers can't access. Common scenarios:
+
 - **Docker Compose**: `server: 'http://directus:8055'` (container name)
 - **Kubernetes**: `server: 'http://directus-service.default.svc.cluster.local:8055'`
 - **Private network**: `server: 'http://10.0.0.5:8055'`
@@ -134,8 +134,7 @@ Admin token for privileged operations and type generation.
 
 ```typescript
 export default defineNuxtConfig({
-  directus: {
-  },
+  directus: {},
 })
 ```
 
@@ -166,7 +165,7 @@ export default defineNuxtConfig({
     // Or detailed configuration
     devProxy: {
       enabled: true,
-      path: '/directus',      // HTTP proxy mount path
+      path: '/directus', // HTTP proxy mount path
       wsPath: '/directus-ws', // WebSocket proxy path (optional)
     },
   },
@@ -174,12 +173,14 @@ export default defineNuxtConfig({
 ```
 
 **How it works:**
+
 - In development: Requests automatically route through the proxy using the current port
 - Supports Nuxt's dynamic port changes (e.g., port 3000 → 3001)
 - In production: Direct connection to Directus URL
 - WebSocket proxy available at `wsPath` for realtime features
 
 **Disable proxy:**
+
 ```typescript
 export default defineNuxtConfig({
   directus: {
@@ -260,6 +261,7 @@ export default defineNuxtConfig({
 - **`setDefaultProvider`** (`boolean`, default: `false`) - Set Directus as the default provider for `<NuxtImg>` components (no need to specify `provider="directus"`)
 
 When enabled, the module automatically:
+
 - Installs and configures `@nuxt/image`
 - Sets up the Directus provider with your instance's assets endpoint
 
@@ -268,23 +270,14 @@ When enabled, the module automatically:
 With `setDefaultProvider: false` (default):
 
 ```vue
-<NuxtImg
-  provider="directus"
-  src="your-file-id"
-  width="800"
-  height="600"
-/>
+<NuxtImg provider="directus" src="your-file-id" width="800" height="600" />
 ```
 
 With `setDefaultProvider: true`:
 
 ```vue
 <!-- No need to specify provider -->
-<NuxtImg
-  src="your-file-id"
-  width="800"
-  height="600"
-/>
+<NuxtImg src="your-file-id" width="800" height="600" />
 ```
 
 See the [File Management Guide](/guide/files#using-with-nuxt-image) for more details.
@@ -323,6 +316,7 @@ const articles = await directus.request(readItems('articles'))
 ```
 
 **Disable type generation:**
+
 ```typescript
 export default defineNuxtConfig({
   directus: {
@@ -375,6 +369,7 @@ interface DirectusUsers {
 ```
 
 **How it works:**
+
 - Custom collection interface names get prefixed (e.g., `Blog` → `AppBlog`)
 - DirectusSchema keys stay unchanged (e.g., `blogs`, `authors`) to match API endpoints
 - Directus system collections (e.g., `DirectusUsers`, `DirectusFiles`) are NOT prefixed
@@ -435,7 +430,7 @@ When enabled, all routes are protected. Allow public routes with:
 ```vue
 <script setup>
 definePageMeta({
-  middleware: [] // Override global middleware
+  middleware: [], // Override global middleware
 })
 </script>
 ```
@@ -475,6 +470,7 @@ export default defineNuxtConfig({
 ```
 
 **Options:**
+
 - `'include'` - Always send cookies (required for cross-domain)
 - `'same-origin'` - Only send cookies for same-origin requests
 - `'omit'` - Never send cookies
@@ -497,6 +493,7 @@ export default defineNuxtConfig({
 ```
 
 **Modes:**
+
 - `'public'` - No authentication required
 - `'handshake'` - Authenticate during connection
 - `'strict'` - Full authentication required
@@ -529,9 +526,9 @@ export default defineNuxtConfig({
   directus: {
     auth: {
       redirect: {
-        home: '/',                  // After login
-        login: '/auth/login',    // When not authenticated
-        logout: '/',                // After logout
+        home: '/', // After login
+        login: '/auth/login', // When not authenticated
+        logout: '/', // After logout
       },
     },
   },

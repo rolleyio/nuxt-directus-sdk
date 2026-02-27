@@ -1,8 +1,7 @@
-import type { DirectusUsers } from 'nuxt/app'
-
 declare module '#app' {
   interface RuntimeNuxtHooks {
-    'directus:loggedIn': (user: DirectusUsers | null) => void
+    // eslint-disable-next-line typescript/no-redundant-type-constituents
+    'directus:loggedIn': (user: import('@directus/sdk').DirectusUser<DirectusSchema> | null) => void
   }
 
   interface NuxtApp {

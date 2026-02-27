@@ -16,11 +16,7 @@ export type {
  * Dynamic filter variables supported by Directus
  * These are evaluated at runtime based on the current user/context
  */
-export type DynamicVariable
-  = | '$CURRENT_USER'
-    | '$CURRENT_ROLE'
-    | '$CURRENT_ROLES'
-    | '$NOW'
+export type DynamicVariable = '$CURRENT_USER' | '$CURRENT_ROLE' | '$CURRENT_ROLES' | '$NOW'
 
 /**
  * Type helper for filters that use dynamic variables

@@ -7,24 +7,10 @@ const { user, loggedIn } = useDirectusAuth()
 <template>
   <div>
     <header>
-      <NuxtLink href="/">
-        Home
-      </NuxtLink>
-      <NuxtLink href="/blog">
-        Blog
-      </NuxtLink>
-      <NuxtLink
-        v-if="!loggedIn"
-        href="/auth/login"
-      >
-        Login
-      </NuxtLink>
-      <NuxtLink
-        v-else
-        href="/auth/logout"
-      >
-        Logout of {{ user }}
-      </NuxtLink>
+      <NuxtLink href="/"> Home </NuxtLink>
+      <NuxtLink href="/blog"> Blog </NuxtLink>
+      <NuxtLink v-if="!loggedIn" href="/auth/login"> Login </NuxtLink>
+      <NuxtLink v-else href="/auth/logout"> Logout of {{ user }} </NuxtLink>
     </header>
     <NuxtPage />
   </div>

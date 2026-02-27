@@ -41,17 +41,15 @@ bun install --save-dev nuxt-directus-sdk
 
 ```js
 export default defineNuxtConfig({
-  modules: [
-    'nuxt-directus-sdk'
-  ],
+  modules: ['nuxt-directus-sdk'],
   directus: {
     // Optional: customize authentication (defaults shown)
     auth: {
       autoRefresh: true,
       credentials: 'include', // Required for cross-domain
       realtimeAuthMode: 'public',
-    }
-  }
+    },
+  },
 })
 ```
 
@@ -95,14 +93,12 @@ bun run release
 ```
 
 <!-- Badges -->
+
 [npm-version-src]: https://img.shields.io/npm/v/nuxt-directus-sdk/latest.svg?style=flat&colorA=18181B&colorB=28CF8D
 [npm-version-href]: https://npmjs.com/package/nuxt-directus-sdk
-
 [npm-downloads-src]: https://img.shields.io/npm/dm/nuxt-directus-sdk.svg?style=flat&colorA=18181B&colorB=28CF8D
 [npm-downloads-href]: https://npmjs.com/package/nuxt-directus-sdk
-
 [license-src]: https://img.shields.io/npm/l/nuxt-directus-sdk.svg?style=flat&colorA=18181B&colorB=28CF8D
 [license-href]: https://npmjs.com/package/nuxt-directus-sdk
-
 [nuxt-src]: https://img.shields.io/badge/Nuxt-18181B?logo=nuxt.js
 [nuxt-href]: https://nuxt.com

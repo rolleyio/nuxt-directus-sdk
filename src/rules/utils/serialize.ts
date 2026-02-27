@@ -24,8 +24,8 @@ import { toDirectusValidation } from '../validation'
  */
 function generateUuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = Math.random() * 16 | 0
-    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
     return v.toString(16)
   })
 }
@@ -70,9 +70,7 @@ export interface NormalizedRole {
  * // normalized.roles - roles with policyIds array
  * ```
  */
-export function normalizeRules<Schema>(
-  rules: RulesConfig<Schema>,
-): NormalizedRules<Schema> {
+export function normalizeRules<Schema>(rules: RulesConfig<Schema>): NormalizedRules<Schema> {
   // Track policies by object reference to deduplicate
   const policyMap = new Map<PolicyConfig<Schema>, string>()
   const allPolicies: PolicyConfig<Schema>[] = []
@@ -104,15 +102,18 @@ export function normalizeRules<Schema>(
   // Process roles, extracting and registering inline policies
   const normalizedRoles: NormalizedRole[] = rules.roles.map((role) => {
     // Get policy IDs from resolved policies
-    const resolvedPolicyIds = role.policies.map(policy => registerPolicy(policy))
+    const resolvedPolicyIds = role.policies.map((policy) => registerPolicy(policy))
 
     // If role has no resolved policies but has original IDs, use those
     // This preserves references that couldn't be resolved during loading
     let policyIds: string[]
-    if (resolvedPolicyIds.length === 0 && role._originalPolicyIds && role._originalPolicyIds.length > 0) {
+    if (
+      resolvedPolicyIds.length === 0 &&
+      role._originalPolicyIds &&
+      role._originalPolicyIds.length > 0
+    ) {
       policyIds = role._originalPolicyIds
-    }
-    else {
+    } else {
       policyIds = resolvedPolicyIds
     }
 
@@ -147,14 +148,12 @@ export function normalizeRules<Schema>(
  * // payload.permissions - all permissions linked to policies
  * ```
  */
-export function serializeToDirectusApi<Schema>(
-  rules: RulesConfig<Schema>,
-): DirectusRulesPayload {
+export function serializeToDirectusApi<Schema>(rules: RulesConfig<Schema>): DirectusRulesPayload {
   // Normalize first to extract and deduplicate policies
   const normalized = normalizeRules(rules)
 
   // Serialize roles
-  const roles: DirectusRolePayload[] = normalized.roles.map(role => ({
+  const roles: DirectusRolePayload[] = normalized.roles.map((role) => ({
     id: role.id,
     name: role.name,
     icon: role.icon ?? 'supervised_user_circle',
@@ -204,15 +203,9 @@ function serializePolicyPermissions<Schema>(
 
     for (const action of actions) {
       const perm = collectionPerms[action]
-      if (perm === undefined || perm === false)
-        continue
+      if (perm === undefined || perm === false) continue
 
-      const permPayload = serializePermission(
-        String(collection),
-        action,
-        perm,
-        policy.id,
-      )
+      const permPayload = serializePermission(String(collection), action, perm, policy.id)
       if (permPayload) {
         permissions.push(permPayload)
       }
@@ -248,7 +241,7 @@ function serializePermission<Schema, Collection extends keyof Schema>(
   }
 
   // It's a PermissionConfig object
-  const permConfig = config as PermissionConfig<Schema, Collection>
+  const permConfig = config
 
   // Handle validation - convert Standard Schema if needed
   let validation: DirectusValidation | null = null
@@ -256,13 +249,11 @@ function serializePermission<Schema, Collection extends keyof Schema>(
     if (isStandardSchema(permConfig.validation)) {
       try {
         validation = toDirectusValidation(permConfig.validation as StandardSchemaV1)
+      } catch (error) {
+        console.warn(`Could not convert validation schema: ${String(error)}`)
       }
-      catch (error) {
-        console.warn(`Could not convert validation schema: ${error}`)
-      }
-    }
-    else {
-      validation = permConfig.validation as DirectusValidation
+    } else {
+      validation = permConfig.validation
     }
   }
 
@@ -270,10 +261,10 @@ function serializePermission<Schema, Collection extends keyof Schema>(
     policy: policyId ?? null,
     collection,
     action,
-    permissions: permConfig.filter as Record<string, unknown> ?? null,
+    permissions: (permConfig.filter ?? null) as Record<string, unknown> | null, // eslint-disable-line typescript/no-unsafe-type-assertion -- generic Schema filter to API format
     validation,
-    presets: permConfig.presets as Record<string, unknown> ?? null,
-    fields: permConfig.fields === '*' ? ['*'] : (permConfig.fields as string[] ?? null),
+    presets: (permConfig.presets ?? null) as Record<string, unknown> | null, // eslint-disable-line typescript/no-unsafe-type-assertion -- generic Schema presets to API format
+    fields: permConfig.fields === '*' ? ['*'] : ((permConfig.fields ?? null) as string[] | null), // eslint-disable-line typescript/no-unsafe-type-assertion -- generic keyof to string[]
   }
 }
 
@@ -300,7 +291,7 @@ export function serializeToJson<Schema>(
 
   // Build JSON-friendly structure with policy references
   const output = {
-    policies: normalized.policies.map(policy => ({
+    policies: normalized.policies.map((policy) => ({
       id: policy.id,
       name: policy.name,
       icon: policy.icon,
@@ -311,17 +302,21 @@ export function serializeToJson<Schema>(
       appAccess: policy.appAccess,
       permissions: Object.fromEntries(policy.permissions),
     })),
-    roles: normalized.roles.map(role => ({
+    roles: normalized.roles.map((role) => ({
       id: role.id,
       name: role.name,
       icon: role.icon,
       description: role.description,
       parent: role.parent,
       // Reference policies by ID only
-      policies: role.policyIds.map(id => ({ id })),
+      policies: role.policyIds.map((id) => ({ id })),
     })),
   }
 
   // Remove undefined values during serialization
-  return JSON.stringify(output, (_, value) => value === undefined ? undefined : value, pretty ? 2 : undefined)
+  return JSON.stringify(
+    output,
+    (_, value) => (value === undefined ? undefined : value),
+    pretty ? 2 : undefined,
+  )
 }

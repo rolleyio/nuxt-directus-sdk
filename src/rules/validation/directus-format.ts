@@ -20,9 +20,7 @@ import type { DirectusFieldValidation, DirectusValidation } from '../types'
  * })
  * ```
  */
-export function directusValidation(
-  validation: DirectusValidation,
-): DirectusValidation {
+export function directusValidation(validation: DirectusValidation): DirectusValidation {
   return validation
 }
 
@@ -37,10 +35,7 @@ export function directusValidation(
  * )
  * ```
  */
-export function field(
-  fieldName: string,
-  rules: DirectusFieldValidation,
-): DirectusValidation {
+export function field(fieldName: string, rules: DirectusFieldValidation): DirectusValidation {
   return { [fieldName]: rules }
 }
 
@@ -96,7 +91,7 @@ export function pattern(fieldName: string, regex: string | RegExp): DirectusVali
  */
 export function length(
   fieldName: string,
-  options: { min?: number, max?: number },
+  options: { min?: number; max?: number },
 ): DirectusValidation {
   const min = options.min ?? 0
   const max = options.max ?? ''

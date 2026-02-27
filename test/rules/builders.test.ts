@@ -297,7 +297,7 @@ describe('permission configuration', () => {
                 posts: {
                   create: {
                     fields: ['title', 'content'],
-                    presets: { status: 'draft', author: '$CURRENT_USER' as any },
+                    presets: { status: 'draft', author: '$CURRENT_USER' as any }, // eslint-disable-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- Directus dynamic variable
                   },
                 },
               },
@@ -390,7 +390,7 @@ describe('complex rules', () => {
               appAccess: true,
               permissions: {
                 posts: {
-                  create: { presets: { status: 'draft', author: '$CURRENT_USER' as any } },
+                  create: { presets: { status: 'draft', author: '$CURRENT_USER' as any } }, // eslint-disable-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- Directus dynamic variable
                   read: '*',
                   update: { filter: { author: { _eq: '$CURRENT_USER' } } },
                   delete: { filter: { status: { _eq: 'draft' } } },
@@ -442,15 +442,19 @@ describe('complex rules', () => {
 describe('policy references', () => {
   it('resolves policy reference by ID', () => {
     const rules = defineDirectusRules<TestSchema>({
-      policies: [{
-        id: 'shared-policy',
-        name: 'Shared',
-        permissions: { posts: { read: true } },
-      }],
-      roles: [{
-        name: 'Editor',
-        policies: [{ id: 'shared-policy' }],
-      }],
+      policies: [
+        {
+          id: 'shared-policy',
+          name: 'Shared',
+          permissions: { posts: { read: true } },
+        },
+      ],
+      roles: [
+        {
+          name: 'Editor',
+          policies: [{ id: 'shared-policy' }],
+        },
+      ],
     })
 
     expect(rules.roles[0]!.policies[0]!.name).toBe('Shared')
@@ -458,24 +462,27 @@ describe('policy references', () => {
   })
 
   it('throws error for unknown policy ID', () => {
-    expect(() => defineDirectusRules<TestSchema>({
-      roles: [{
-        name: 'Editor',
-        policies: [{ id: 'non-existent' }],
-      }],
-    })).toThrow('Policy with id "non-existent" not found')
+    expect(() =>
+      defineDirectusRules<TestSchema>({
+        roles: [
+          {
+            name: 'Editor',
+            policies: [{ id: 'non-existent' }],
+          },
+        ],
+      }),
+    ).toThrow('Policy with id "non-existent" not found')
   })
 
   it('allows mixing inline and referenced policies', () => {
     const rules = defineDirectusRules<TestSchema>({
       policies: [{ id: 'shared', name: 'Shared', permissions: {} }],
-      roles: [{
-        name: 'Editor',
-        policies: [
-          { id: 'shared' },
-          { name: 'Inline', permissions: { posts: { read: true } } },
-        ],
-      }],
+      roles: [
+        {
+          name: 'Editor',
+          policies: [{ id: 'shared' }, { name: 'Inline', permissions: { posts: { read: true } } }],
+        },
+      ],
     })
 
     expect(rules.roles[0]!.policies).toHaveLength(2)
@@ -485,11 +492,13 @@ describe('policy references', () => {
 
   it('allows same policy to be referenced by multiple roles', () => {
     const rules = defineDirectusRules<TestSchema>({
-      policies: [{
-        id: 'read-posts',
-        name: 'Read Posts',
-        permissions: { posts: { read: '*' } },
-      }],
+      policies: [
+        {
+          id: 'read-posts',
+          name: 'Read Posts',
+          permissions: { posts: { read: '*' } },
+        },
+      ],
       roles: [
         { name: 'Editor', policies: [{ id: 'read-posts' }] },
         { name: 'Viewer', policies: [{ id: 'read-posts' }] },
@@ -507,18 +516,22 @@ describe('policy references', () => {
     // A policy reference has only 'id', no 'name'
     // An inline policy with id has both 'id' and 'name'
     const rules = defineDirectusRules<TestSchema>({
-      policies: [{
-        id: 'standalone',
-        name: 'Standalone',
-        permissions: { posts: { read: true } },
-      }],
-      roles: [{
-        name: 'Editor',
-        policies: [
-          { id: 'standalone' }, // Reference
-          { id: 'inline-id', name: 'Inline With ID', permissions: {} }, // Inline with ID
-        ],
-      }],
+      policies: [
+        {
+          id: 'standalone',
+          name: 'Standalone',
+          permissions: { posts: { read: true } },
+        },
+      ],
+      roles: [
+        {
+          name: 'Editor',
+          policies: [
+            { id: 'standalone' }, // Reference
+            { id: 'inline-id', name: 'Inline With ID', permissions: {} }, // Inline with ID
+          ],
+        },
+      ],
     })
 
     expect(rules.roles[0]!.policies[0]!.name).toBe('Standalone')

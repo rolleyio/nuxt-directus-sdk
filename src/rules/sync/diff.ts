@@ -9,7 +9,7 @@ import type {
   DirectusRolePayload,
   DirectusRulesPayload,
 } from '../types/directus-api'
-import type { PermissionAction, RulesConfig } from '../types/schema'
+import type { RulesConfig } from '../types/schema'
 import type {
   DiffChange,
   DiffSummary,
@@ -101,8 +101,9 @@ export async function fetchRemoteRules<Schema>(
     client.request(readPermissions({ fields: ['*'] })),
   ])
 
+  /* eslint-disable typescript/no-unsafe-type-assertion -- SDK readRoles/readPolicies/readPermissions return generic types */
   return {
-    roles: (roles as any[]).map(r => ({
+    roles: (roles as DirectusRolePayload[]).map((r) => ({
       id: r.id,
       name: r.name,
       icon: r.icon,
@@ -110,7 +111,7 @@ export async function fetchRemoteRules<Schema>(
       parent: r.parent,
       policies: r.policies,
     })),
-    policies: (policies as any[]).map(p => ({
+    policies: (policies as DirectusPolicyPayload[]).map((p) => ({
       id: p.id,
       name: p.name,
       icon: p.icon,
@@ -120,7 +121,7 @@ export async function fetchRemoteRules<Schema>(
       admin_access: p.admin_access,
       app_access: p.app_access,
     })),
-    permissions: (permissions as any[]).map(p => ({
+    permissions: (permissions as DirectusPermissionPayload[]).map((p) => ({
       id: p.id,
       policy: p.policy,
       collection: p.collection,
@@ -131,6 +132,7 @@ export async function fetchRemoteRules<Schema>(
       fields: p.fields,
     })),
   }
+  /* eslint-enable typescript/no-unsafe-type-assertion */
 }
 
 /**
@@ -274,17 +276,13 @@ export function compareRulesPayloads(
   // - Always exclude permissions with policy: null (these are Directus "app access" permissions
   //   that aren't managed through the rules DSL)
   const localPerms = local.permissions.filter((p) => {
-    if (p.policy === null)
-      return false
-    if (excludeSystemCollections && isInternalSystemCollection(p.collection))
-      return false
+    if (p.policy === null) return false
+    if (excludeSystemCollections && isInternalSystemCollection(p.collection)) return false
     return true
   })
   const remotePerms = remote.permissions.filter((p) => {
-    if (p.policy === null)
-      return false
-    if (excludeSystemCollections && isInternalSystemCollection(p.collection))
-      return false
+    if (p.policy === null) return false
+    if (excludeSystemCollections && isInternalSystemCollection(p.collection)) return false
     return true
   })
 
@@ -296,9 +294,10 @@ export function compareRulesPayloads(
     permissions: countChanges(permissions),
   }
 
-  const hasChanges = roles.some(r => r.type !== 'unchanged')
-    || policies.some(p => p.type !== 'unchanged')
-    || permissions.some(p => p.type !== 'unchanged')
+  const hasChanges =
+    roles.some((r) => r.type !== 'unchanged') ||
+    policies.some((p) => p.type !== 'unchanged') ||
+    permissions.some((p) => p.type !== 'unchanged')
 
   return {
     roles,
@@ -320,8 +319,8 @@ function compareRoles(
   remoteRoles: DirectusRolePayload[],
 ): RoleDiffChange[] {
   const changes: RoleDiffChange[] = []
-  const localMap = new Map(localRoles.map(r => [r.name, r]))
-  const remoteMap = new Map(remoteRoles.map(r => [r.name, r]))
+  const localMap = new Map(localRoles.map((r) => [r.name, r]))
+  const remoteMap = new Map(remoteRoles.map((r) => [r.name, r]))
 
   // Find added and modified
   for (const [name, localRole] of localMap) {
@@ -333,8 +332,7 @@ function compareRoles(
         id: localRole.id,
         local: localRole,
       })
-    }
-    else if (!deepEqualRole(localRole, remoteRole)) {
+    } else if (!deepEqualRole(localRole, remoteRole)) {
       changes.push({
         type: 'modified',
         name: localRole.name,
@@ -342,8 +340,7 @@ function compareRoles(
         local: localRole,
         remote: remoteRole,
       })
-    }
-    else {
+    } else {
       changes.push({
         type: 'unchanged',
         name: localRole.name,
@@ -377,8 +374,8 @@ function comparePolicies(
   remotePolicies: DirectusPolicyPayload[],
 ): PolicyDiffChange[] {
   const changes: PolicyDiffChange[] = []
-  const localMap = new Map(localPolicies.map(p => [p.name, p]))
-  const remoteMap = new Map(remotePolicies.map(p => [p.name, p]))
+  const localMap = new Map(localPolicies.map((p) => [p.name, p]))
+  const remoteMap = new Map(remotePolicies.map((p) => [p.name, p]))
 
   // Find added and modified
   for (const [name, localPolicy] of localMap) {
@@ -390,8 +387,7 @@ function comparePolicies(
         id: localPolicy.id,
         local: localPolicy,
       })
-    }
-    else if (!deepEqualPolicy(localPolicy, remotePolicy)) {
+    } else if (!deepEqualPolicy(localPolicy, remotePolicy)) {
       changes.push({
         type: 'modified',
         name: localPolicy.name,
@@ -399,8 +395,7 @@ function comparePolicies(
         local: localPolicy,
         remote: remotePolicy,
       })
-    }
-    else {
+    } else {
       changes.push({
         type: 'unchanged',
         name: localPolicy.name,
@@ -429,20 +424,22 @@ function comparePolicies(
 /**
  * Compare permissions by composite key (policy + collection + action)
  */
+function permissionKey(p: DirectusPermissionPayload): string {
+  return `${p.policy ?? 'null'}:${p.collection}:${p.action}`
+}
+
+function permissionName(p: DirectusPermissionPayload): string {
+  return `${p.collection}.${p.action}`
+}
+
 function comparePermissions(
   localPerms: DirectusPermissionPayload[],
   remotePerms: DirectusPermissionPayload[],
 ): PermissionDiffChange[] {
   const changes: PermissionDiffChange[] = []
 
-  const makeKey = (p: DirectusPermissionPayload) =>
-    `${p.policy ?? 'null'}:${p.collection}:${p.action}`
-
-  const makeName = (p: DirectusPermissionPayload) =>
-    `${p.collection}.${p.action}`
-
-  const localMap = new Map(localPerms.map(p => [makeKey(p), p]))
-  const remoteMap = new Map(remotePerms.map(p => [makeKey(p), p]))
+  const localMap = new Map(localPerms.map((p) => [permissionKey(p), p]))
+  const remoteMap = new Map(remotePerms.map((p) => [permissionKey(p), p]))
 
   // Find added and modified
   for (const [key, localPerm] of localMap) {
@@ -450,30 +447,28 @@ function comparePermissions(
     if (!remotePerm) {
       changes.push({
         type: 'added',
-        name: makeName(localPerm),
+        name: permissionName(localPerm),
         collection: localPerm.collection,
-        action: localPerm.action as PermissionAction,
+        action: localPerm.action,
         policyId: localPerm.policy ?? undefined,
         local: localPerm,
       })
-    }
-    else if (!deepEqualPermission(localPerm, remotePerm)) {
+    } else if (!deepEqualPermission(localPerm, remotePerm)) {
       changes.push({
         type: 'modified',
-        name: makeName(localPerm),
+        name: permissionName(localPerm),
         collection: localPerm.collection,
-        action: localPerm.action as PermissionAction,
+        action: localPerm.action,
         policyId: localPerm.policy ?? undefined,
         local: localPerm,
         remote: remotePerm,
       })
-    }
-    else {
+    } else {
       changes.push({
         type: 'unchanged',
-        name: makeName(localPerm),
+        name: permissionName(localPerm),
         collection: localPerm.collection,
-        action: localPerm.action as PermissionAction,
+        action: localPerm.action,
         policyId: localPerm.policy ?? undefined,
         local: localPerm,
         remote: remotePerm,
@@ -486,9 +481,9 @@ function comparePermissions(
     if (!localMap.has(key)) {
       changes.push({
         type: 'removed',
-        name: makeName(remotePerm),
+        name: permissionName(remotePerm),
         collection: remotePerm.collection,
-        action: remotePerm.action as PermissionAction,
+        action: remotePerm.action,
         policyId: remotePerm.policy ?? undefined,
         remote: remotePerm,
       })
@@ -502,37 +497,43 @@ function comparePermissions(
  * Deep equality check for roles (ignoring id differences)
  */
 function deepEqualRole(a: DirectusRolePayload, b: DirectusRolePayload): boolean {
-  return a.name === b.name
-    && a.icon === b.icon
-    && a.description === b.description
-    && a.parent === b.parent
-    && deepEqualArray(a.policies, b.policies)
+  return (
+    a.name === b.name &&
+    a.icon === b.icon &&
+    a.description === b.description &&
+    a.parent === b.parent &&
+    deepEqualArray(a.policies, b.policies)
+  )
 }
 
 /**
  * Deep equality check for policies (ignoring id differences)
  */
 function deepEqualPolicy(a: DirectusPolicyPayload, b: DirectusPolicyPayload): boolean {
-  return a.name === b.name
-    && a.icon === b.icon
-    && a.description === b.description
-    && a.ip_access === b.ip_access
-    && a.enforce_tfa === b.enforce_tfa
-    && a.admin_access === b.admin_access
-    && a.app_access === b.app_access
+  return (
+    a.name === b.name &&
+    a.icon === b.icon &&
+    a.description === b.description &&
+    a.ip_access === b.ip_access &&
+    a.enforce_tfa === b.enforce_tfa &&
+    a.admin_access === b.admin_access &&
+    a.app_access === b.app_access
+  )
 }
 
 /**
  * Deep equality check for permissions (ignoring id differences)
  */
 function deepEqualPermission(a: DirectusPermissionPayload, b: DirectusPermissionPayload): boolean {
-  return a.collection === b.collection
-    && a.action === b.action
-    && a.policy === b.policy
-    && deepEqualJson(a.permissions, b.permissions)
-    && deepEqualJson(a.validation, b.validation)
-    && deepEqualJson(a.presets, b.presets)
-    && deepEqualArray(a.fields, b.fields)
+  return (
+    a.collection === b.collection &&
+    a.action === b.action &&
+    a.policy === b.policy &&
+    deepEqualJson(a.permissions, b.permissions) &&
+    deepEqualJson(a.validation, b.validation) &&
+    deepEqualJson(a.presets, b.presets) &&
+    deepEqualArray(a.fields, b.fields)
+  )
 }
 
 /**
@@ -554,14 +555,18 @@ function deepEqualArray(a: unknown[] | null | undefined, b: unknown[] | null | u
   const normalizedA = a ?? undefined
   const normalizedB = b ?? undefined
 
-  if (normalizedA === undefined && normalizedB === undefined)
-    return true
-  if (normalizedA === undefined || normalizedB === undefined)
-    return false
-  if (normalizedA.length !== normalizedB.length)
-    return false
+  if (normalizedA === undefined && normalizedB === undefined) return true
+  if (normalizedA === undefined || normalizedB === undefined) return false
+  if (normalizedA.length !== normalizedB.length) return false
 
-  return JSON.stringify([...normalizedA].sort()) === JSON.stringify([...normalizedB].sort())
+  return (
+    JSON.stringify(
+      [...normalizedA].toSorted((x, y) => JSON.stringify(x).localeCompare(JSON.stringify(y))),
+    ) ===
+    JSON.stringify(
+      [...normalizedB].toSorted((x, y) => JSON.stringify(x).localeCompare(JSON.stringify(y))),
+    )
+  )
 }
 
 /**
@@ -569,12 +574,13 @@ function deepEqualArray(a: unknown[] | null | undefined, b: unknown[] | null | u
  */
 function sortKeys(_key: string, value: unknown): unknown {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
-    return Object.keys(value as object)
-      .sort()
-      .reduce((sorted, key) => {
-        (sorted as Record<string, unknown>)[key] = (value as Record<string, unknown>)[key]
+    const obj = value as Record<string, unknown> // eslint-disable-line typescript/no-unsafe-type-assertion -- narrowed via typeof/Array check
+    return Object.keys(obj)
+      .toSorted()
+      .reduce<Record<string, unknown>>((sorted, key) => {
+        sorted[key] = obj[key]
         return sorted
-      }, {} as Record<string, unknown>)
+      }, {})
   }
   return value
 }
@@ -584,8 +590,8 @@ function sortKeys(_key: string, value: unknown): unknown {
  */
 function countChanges<T>(changes: DiffChange<T>[]): DiffSummary {
   return {
-    added: changes.filter(c => c.type === 'added').length,
-    modified: changes.filter(c => c.type === 'modified').length,
-    removed: changes.filter(c => c.type === 'removed').length,
+    added: changes.filter((c) => c.type === 'added').length,
+    modified: changes.filter((c) => c.type === 'modified').length,
+    removed: changes.filter((c) => c.type === 'removed').length,
   }
 }

@@ -2,9 +2,9 @@
 layout: home
 
 hero:
-  name: "Nuxt Directus SDK"
-  text: "Seamlessly connect Nuxt with Directus"
-  tagline: "Featuring authentication, realtime, file management, visual editing and more"
+  name: 'Nuxt Directus SDK'
+  text: 'Seamlessly connect Nuxt with Directus'
+  tagline: 'Featuring authentication, realtime, file management, visual editing and more'
   actions:
     - theme: brand
       text: Get Started
@@ -75,6 +75,7 @@ DIRECTUS_ADMIN_TOKEN=your_admin_token
 ```
 
 That's it! The module handles:
+
 - ✅ Auto-generated TypeScript types
 - ✅ Auto-imports for all functions
 - ✅ Development proxy (no CORS issues)
@@ -94,10 +95,13 @@ const directus = useDirectus()
 
 // Fetch data with type safety
 const { data: posts } = await useAsyncData('posts', () =>
-  directus.request(readItems('posts', {
-    fields: ['*'],
-    limit: 10
-  })))
+  directus.request(
+    readItems('posts', {
+      fields: ['*'],
+      limit: 10,
+    }),
+  ),
+)
 
 // Subscribe to realtime updates
 await directus.connect()
@@ -109,9 +113,7 @@ const { subscription } = await directus.subscribe('posts')
     <!-- Authentication state -->
     <div v-if="loggedIn">
       <p>Welcome, {{ user.email }}</p>
-      <button @click="logout()">
-        Logout
-      </button>
+      <button @click="logout()">Logout</button>
     </div>
 
     <!-- Visual editing in preview mode -->
@@ -128,6 +130,7 @@ const { subscription } = await directus.subscribe('posts')
 ## Why Choose This Module?
 
 ### Key Advantages
+
 - **Session-based auth** (more secure) - httpOnly cookies vs. exposed tokens
 - **Full WebSocket support** - Dev proxy with cookie forwarding
 - **Visual editor** - Integrated live preview mode

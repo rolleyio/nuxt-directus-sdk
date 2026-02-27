@@ -2,12 +2,7 @@
  * Field access checker for testing permissions
  */
 
-import type {
-  PermissionAction,
-  PermissionConfig,
-  PolicyConfig,
-  RulesConfig,
-} from '../types'
+import type { PermissionAction, PolicyConfig, RulesConfig } from '../types'
 
 /**
  * Check if a role/policy grants access to specific fields
@@ -41,24 +36,20 @@ export function getAccessibleFields<Schema>(
     }
 
     const collectionPerms = policy.permissions.get(collection)
-    if (!collectionPerms)
-      continue
+    if (!collectionPerms) continue
 
     const perm = collectionPerms[action]
     if (perm === true) {
       hasWildcard = true
-    }
-    else if (perm && typeof perm === 'object') {
-      const permConfig = perm as PermissionConfig<Schema, typeof collection>
+    } else if (perm && typeof perm === 'object') {
+      const permConfig = perm
       if (permConfig.fields === '*') {
         hasWildcard = true
-      }
-      else if (Array.isArray(permConfig.fields)) {
+      } else if (Array.isArray(permConfig.fields)) {
         for (const field of permConfig.fields) {
           allFields.add(field)
         }
-      }
-      else {
+      } else {
         // No fields specified = all fields
         hasWildcard = true
       }
@@ -117,12 +108,11 @@ export function getPresets<Schema>(
 
   for (const policy of policies) {
     const collectionPerms = policy.permissions.get(collection)
-    if (!collectionPerms)
-      continue
+    if (!collectionPerms) continue
 
     const perm = collectionPerms[action]
     if (perm && typeof perm === 'object') {
-      const permConfig = perm as PermissionConfig<Schema, typeof collection>
+      const permConfig = perm
       if (permConfig.presets) {
         return permConfig.presets
       }
@@ -140,20 +130,20 @@ function getPoliciesFor<Schema>(
   roleOrPolicy: string,
 ): PolicyConfig<Schema>[] {
   // Check if it's a role
-  const role = rules.roles.find(r => r.name === roleOrPolicy)
+  const role = rules.roles.find((r) => r.name === roleOrPolicy)
   if (role) {
     return role.policies
   }
 
   // Check standalone policies
-  const standalonePolicy = rules.policies.find(p => p.name === roleOrPolicy)
+  const standalonePolicy = rules.policies.find((p) => p.name === roleOrPolicy)
   if (standalonePolicy) {
     return [standalonePolicy]
   }
 
   // Check policies within roles
   for (const r of rules.roles) {
-    const policy = r.policies.find(p => p.name === roleOrPolicy)
+    const policy = r.policies.find((p) => p.name === roleOrPolicy)
     if (policy) {
       return [policy]
     }

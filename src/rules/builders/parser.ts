@@ -36,9 +36,7 @@ export function parseRulesInput<Schema>(input: RulesInput<Schema>): RulesConfig<
   })
 
   // Phase 2: Parse roles, resolving policy references
-  const roles = (input.roles ?? []).map(r =>
-    parseRoleInput<Schema>(r, policyRegistry),
-  )
+  const roles = (input.roles ?? []).map((r) => parseRoleInput<Schema>(r, policyRegistry))
 
   return { roles, policies }
 }
@@ -101,7 +99,11 @@ export function parsePermissionsInput<Schema>(
 ): Map<keyof Schema, CollectionPermissions<Schema, keyof Schema>> {
   const permissions = new Map<keyof Schema, CollectionPermissions<Schema, keyof Schema>>()
 
-  for (const [collection, perms] of Object.entries(input) as [keyof Schema, CollectionPermissionsInput<Schema, keyof Schema>][]) {
+  for (const [collection, perms] of Object.entries(input) as [
+    // eslint-disable-line typescript/no-unsafe-type-assertion -- Object.entries loses generic key type
+    keyof Schema,
+    CollectionPermissionsInput<Schema, keyof Schema>,
+  ][]) {
     if (perms) {
       permissions.set(collection, parseCollectionPermissionsInput<Schema, keyof Schema>(perms))
     }

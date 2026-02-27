@@ -175,10 +175,7 @@ export { isPolicyReference, isStandardSchema } from './types'
 // Validation Helpers
 // ============================================================================
 
-export type {
-  NormalizedRole,
-  NormalizedRules,
-} from './utils'
+export type { NormalizedRole, NormalizedRules } from './utils'
 
 // ============================================================================
 // Sync / Diff / Push

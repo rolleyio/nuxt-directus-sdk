@@ -1,10 +1,7 @@
 import type { ComputedRef, Ref } from '#imports'
 import type { RouteLocationRaw } from '#vue-router'
 import type { DirectusUser, LoginOptions } from '@directus/sdk'
-import type {
-  DirectusError,
-  RegisterUserInput,
-} from '@directus/types'
+import type { DirectusError, RegisterUserInput } from '@directus/types'
 import { navigateTo, useRouter, useRuntimeConfig } from '#app'
 import { computed, useRequestURL, useState } from '#imports'
 import {
@@ -25,14 +22,22 @@ export interface DirectusAuth {
   loggedIn: ComputedRef<boolean>
   readMe: () => Promise<Partial<DirectusUser> | DirectusError | null>
   updateMe: (data: Partial<DirectusUser>) => Promise<Partial<DirectusUser> | DirectusError | null>
-  login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<DirectusUser | null>
+  login: (
+    email: string,
+    password: string,
+    options?: LoginOptions & { redirect?: boolean | RouteLocationRaw },
+  ) => Promise<DirectusUser | null>
   loginWithProvider: (provider: string, redirectOnLogin?: boolean | string) => Promise<void>
   logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
-  createUser: (data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>) => Promise<Omit<DirectusUser, 'last_access'>>
-  register: (data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>) => Promise<Omit<DirectusUser, 'last_access'>>
-  inviteUser: (email: string, role: string, inviteUrl?: string | undefined) => Promise<void>
+  createUser: (
+    data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>,
+  ) => Promise<Omit<DirectusUser, 'last_access'>>
+  register: (
+    data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>,
+  ) => Promise<Omit<DirectusUser, 'last_access'>>
+  inviteUser: (email: string, role: string, inviteUrl?: string) => Promise<void>
   acceptUserInvite: (token: string, password: string) => Promise<void>
-  passwordRequest: (email: string, resetUrl?: string | undefined) => Promise<void>
+  passwordRequest: (email: string, resetUrl?: string) => Promise<void>
   passwordReset: (token: string, password: string) => Promise<void>
 }
 
@@ -63,17 +68,18 @@ export function useDirectusAuth(): DirectusAuth {
 
     try {
       // Types are generated with Admin Token but User Tokens may not have access to all fields, including required fields.
-      const response: Partial<DirectusUser> = await directus.request(directusReadMe({ fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
+      const response: Partial<DirectusUser> = await directus.request(
+        // eslint-disable-next-line typescript/no-explicit-any
+        directusReadMe({ fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }),
+      )
       if (!response.id) {
-        console.warn('Directus is not configured to return the \'id\' field for DirectusUsers.')
+        console.warn("Directus is not configured to return the 'id' field for DirectusUsers.")
       }
-      user.value = response as DirectusUser
-    }
-    catch (error) {
+      user.value = response as DirectusUser // eslint-disable-line typescript/no-unsafe-type-assertion -- SDK returns Partial, ref expects full type
+    } catch (error) {
       console.error('[Auth] Failed to fetch user:', error)
       user.value = null
-    }
-    finally {
+    } finally {
       loading.value = false
     }
 
@@ -84,15 +90,23 @@ export function useDirectusAuth(): DirectusAuth {
   async function updateMe(data: Partial<Omit<DirectusUser, 'avatar' | 'role' | 'policies'>>) {
     const currentUser = user.value
 
-    if (!currentUser?.id)
-      throw new Error('No user available')
+    if (!currentUser?.id) throw new Error('No user available')
     // INVESTIGATE: Does this cause issues with creative inputs in the config? Config won't have typesafety so probably a heavy lift for a low return.
-    const response: Partial<DirectusUser> = await directus.request(directusUpdateMe(data, { fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
-    user.value = response as DirectusUser
+    const response: Partial<DirectusUser> = await directus.request(
+      directusUpdateMe(data, {
+        // eslint-disable-next-line typescript/no-explicit-any
+        fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any,
+      }),
+    )
+    user.value = response as DirectusUser // eslint-disable-line typescript/no-unsafe-type-assertion -- SDK returns Partial, ref expects full type
     return user.value
   }
 
-  async function login(email: string, password: string, options?: Omit<LoginOptions, 'mode'> & { redirect?: boolean | RouteLocationRaw }) {
+  async function login(
+    email: string,
+    password: string,
+    options?: Omit<LoginOptions, 'mode'> & { redirect?: boolean | RouteLocationRaw },
+  ) {
     await directus.login({ email, password }, { ...options, mode: 'session' })
 
     await readMe()
@@ -104,11 +118,12 @@ export function useDirectusAuth(): DirectusAuth {
 
       if (typeof redirect !== 'boolean') {
         await navigateTo(redirect)
-      }
-      else if (route?.query?.redirect) {
-        await navigateTo({ path: decodeURIComponent(route.query.redirect as string) })
-      }
-      else {
+      } else if (route?.query?.redirect) {
+        const redirectParam = Array.isArray(route.query.redirect)
+          ? route.query.redirect[0]
+          : route.query.redirect
+        await navigateTo({ path: decodeURIComponent(redirectParam ?? '/') })
+      } else {
         await navigateTo(config.public.directus.auth?.redirect?.home ?? '/')
       }
     }
@@ -123,31 +138,34 @@ export function useDirectusAuth(): DirectusAuth {
 
     if (typeof redirectOnLogin === 'boolean') {
       redirectPath = redirectOnLogin ? config.public.directus.auth.redirect.login : href
-    }
-    else if (redirectOnLogin) {
+    } else if (redirectOnLogin) {
       redirectPath = redirectOnLogin
-    }
-    else {
+    } else {
       redirectPath = href
     }
     const redirect = joinURL(origin, redirectPath)
     const sanitizedRedirect = withoutTrailingSlash(redirect)
 
     // Use the real Directus URL — SSO requires direct browser navigation to Directus, not through the dev proxy
-    await navigateTo(useDirectusOriginUrl(`/auth/login/${provider}?redirect=${encodeURIComponent(sanitizedRedirect)}`), { external: true })
+    await navigateTo(
+      useDirectusOriginUrl(
+        `/auth/login/${provider}?redirect=${encodeURIComponent(sanitizedRedirect)}`,
+      ),
+      { external: true },
+    )
   }
 
   async function createUser(data: RegisterUserInput) {
     const response = await directus.request(directusCreateUser(data))
-    return response as DirectusUser
+    return response as DirectusUser // eslint-disable-line typescript/no-unsafe-type-assertion -- SDK generic return type
   }
 
   // Alias for createUser
   async function register(data: RegisterUserInput) {
-    return createUser(data as RegisterUserInput)
+    return createUser(data)
   }
 
-  async function inviteUser(email: string, role: string, inviteUrl?: string | undefined) {
+  async function inviteUser(email: string, role: string, inviteUrl?: string) {
     return directus.request(directusInviteUser(email, role, inviteUrl))
   }
 
@@ -166,13 +184,15 @@ export function useDirectusAuth(): DirectusAuth {
   async function logout(redirect: boolean | RouteLocationRaw = true) {
     try {
       await directus.logout()
-    }
-    finally {
+    } finally {
       user.value = null
     }
 
     if (redirect) {
-      const defaultRedirect = config.public.directus.auth?.redirect?.logout ?? config.public.directus.auth?.redirect?.login ?? '/'
+      const defaultRedirect =
+        config.public.directus.auth?.redirect?.logout ??
+        config.public.directus.auth?.redirect?.login ??
+        '/'
       const redirectTo = typeof redirect === 'boolean' ? defaultRedirect : redirect
 
       await navigateTo(redirectTo)

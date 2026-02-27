@@ -203,9 +203,19 @@ describe('loadRulesFromJson', () => {
     expect(tester.can('Editor', 'create', 'posts').allowed).toBe(true)
     expect(tester.can('Editor', 'delete', 'posts').allowed).toBe(false)
 
-    const item = { id: 1, title: 'Test', content: 'Content', status: 'draft' as const, author: 'user-123' }
-    expect(tester.itemMatchesFilter('Editor', 'update', 'posts', item, { currentUser: 'user-123' })).toBe(true)
-    expect(tester.itemMatchesFilter('Editor', 'update', 'posts', item, { currentUser: 'user-456' })).toBe(false)
+    const item = {
+      id: 1,
+      title: 'Test',
+      content: 'Content',
+      status: 'draft' as const,
+      author: 'user-123',
+    }
+    expect(
+      tester.itemMatchesFilter('Editor', 'update', 'posts', item, { currentUser: 'user-123' }),
+    ).toBe(true)
+    expect(
+      tester.itemMatchesFilter('Editor', 'update', 'posts', item, { currentUser: 'user-456' }),
+    ).toBe(false)
   })
 })
 

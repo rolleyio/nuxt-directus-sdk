@@ -16,7 +16,11 @@ interface DirectusAuth {
   loggedIn: ComputedRef<boolean>
   readMe: () => Promise<DirectusUsers | null>
   updateMe: (data: Partial<DirectusUsers>) => Promise<DirectusUsers | null>
-  login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<DirectusUsers | null>
+  login: (
+    email: string,
+    password: string,
+    options?: LoginOptions & { redirect?: boolean | RouteLocationRaw },
+  ) => Promise<DirectusUsers | null>
   loginWithProvider: (provider: string, redirectOnLogin?: boolean | string) => Promise<void>
   logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
   createUser: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
@@ -27,17 +31,11 @@ interface DirectusAuth {
   passwordReset: (token: string, password: string) => Promise<void>
 }
 ```
+
 **Example:**
 
 ```typescript
-const {
-  user,
-  loggedIn,
-  login,
-  logout,
-  readMe,
-  updateMe,
-} = useDirectusAuth()
+const { user, loggedIn, login, logout, readMe, updateMe } = useDirectusAuth()
 
 // Login
 await login('user@example.com', 'password')
@@ -101,6 +99,7 @@ const user = await readMe()
 Update the current user's profile.
 
 **Parameters:**
+
 - `data: Partial<DirectusUsers>` - Fields to update
 
 **Returns:** `Promise<DirectusUsers | null>`
@@ -120,6 +119,7 @@ await updateMe({
 Login with email and password.
 
 **Parameters:**
+
 - `email: string` - User email
 - `password: string` - User password
 - `options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }` - Login options
@@ -147,6 +147,7 @@ await login('user@example.com', 'password', { otp: '123456' })
 Login with SSO/OAuth provider. Note that a redirect is required for SSO authentication, so if you are passing `false` to redirectOnLogin your browser will still redirect, but you will be redirected to the current page.
 
 **Parameters:**
+
 - `provider: string` - Provider name (google, github, microsoft, etc.)
 - `redirectOnLogin?: string | boolean` - URL to redirect to after login
 
@@ -170,6 +171,7 @@ await loginWithProvider('google', false)
 Logout the current user.
 
 **Parameters:**
+
 - `redirect?: boolean | RouteLocationRaw` - Where to redirect after logout
 
 **Returns:** `Promise<void>`
@@ -192,6 +194,7 @@ await logout('/login')
 Create a new user account. `register()` is an alias for `createUser()`.
 
 **Parameters:**
+
 - `data: Partial<DirectusUsers>` - User data
 
 **Returns:** `Promise<DirectusUsers>`
@@ -212,6 +215,7 @@ const newUser = await register({
 Invite a new user.
 
 **Parameters:**
+
 - `email: string` - User email
 - `role: string` - Role ID or UUID
 - `inviteUrl?: string` - Custom invite URL
@@ -221,11 +225,7 @@ Invite a new user.
 ```typescript
 const { inviteUser } = useDirectusAuth()
 
-await inviteUser(
-  'newuser@example.com',
-  'role-uuid',
-  'https://yourapp.com/accept-invite'
-)
+await inviteUser('newuser@example.com', 'role-uuid', 'https://yourapp.com/accept-invite')
 ```
 
 ##### `acceptUserInvite(token, password)`
@@ -233,6 +233,7 @@ await inviteUser(
 Accept a user invitation.
 
 **Parameters:**
+
 - `token: string` - Invite token
 - `password: string` - New password
 
@@ -249,6 +250,7 @@ await acceptUserInvite('invite-token', 'new-password')
 Request a password reset.
 
 **Parameters:**
+
 - `email: string` - User email
 - `resetUrl?: string` - Custom reset URL
 
@@ -257,10 +259,7 @@ Request a password reset.
 ```typescript
 const { passwordRequest } = useDirectusAuth()
 
-await passwordRequest(
-  'user@example.com',
-  'https://yourapp.com/reset-password'
-)
+await passwordRequest('user@example.com', 'https://yourapp.com/reset-password')
 ```
 
 ##### `passwordReset(token, password)`
@@ -268,6 +267,7 @@ await passwordRequest(
 Reset password with token.
 
 **Parameters:**
+
 - `token: string` - Reset token
 - `password: string` - New password
 

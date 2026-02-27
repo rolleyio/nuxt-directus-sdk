@@ -40,32 +40,20 @@ describe('directusValidation helpers', () => {
 
   describe('allOf()', () => {
     it('combines validations with AND logic', () => {
-      const validation = allOf(
-        field('title', { _nnull: true }),
-        field('content', { _nnull: true }),
-      )
+      const validation = allOf(field('title', { _nnull: true }), field('content', { _nnull: true }))
 
       expect(validation).toEqual({
-        _and: [
-          { title: { _nnull: true } },
-          { content: { _nnull: true } },
-        ],
+        _and: [{ title: { _nnull: true } }, { content: { _nnull: true } }],
       })
     })
   })
 
   describe('oneOf()', () => {
     it('combines validations with OR logic', () => {
-      const validation = oneOf(
-        field('email', { _nnull: true }),
-        field('phone', { _nnull: true }),
-      )
+      const validation = oneOf(field('email', { _nnull: true }), field('phone', { _nnull: true }))
 
       expect(validation).toEqual({
-        _or: [
-          { email: { _nnull: true } },
-          { phone: { _nnull: true } },
-        ],
+        _or: [{ email: { _nnull: true } }, { phone: { _nnull: true } }],
       })
     })
   })
@@ -133,22 +121,13 @@ describe('directusValidation helpers', () => {
     })
 
     it('can nest logical operators', () => {
-      const validation = allOf(
-        required('name'),
-        oneOf(
-          required('email'),
-          required('phone'),
-        ),
-      )
+      const validation = allOf(required('name'), oneOf(required('email'), required('phone')))
 
       expect(validation).toEqual({
         _and: [
           { name: { _nnull: true } },
           {
-            _or: [
-              { email: { _nnull: true } },
-              { phone: { _nnull: true } },
-            ],
+            _or: [{ email: { _nnull: true } }, { phone: { _nnull: true } }],
           },
         ],
       })

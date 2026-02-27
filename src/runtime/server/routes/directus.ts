@@ -4,7 +4,8 @@ import { joinURL } from 'ufo'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const serverUrl = (config as any).directus?.serverDirectusUrl
+  // eslint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime-injected config key not in static types
+  const serverUrl = (config as any).directus?.serverDirectusUrl as string | undefined
   const directusUrl = serverUrl || config.public.directus.directusUrl
 
   // Get the full URL path with query string
@@ -35,8 +36,7 @@ export default defineEventHandler(async (event) => {
             rewrittenCookie = rewrittenCookie
               .replace(/;\s*SameSite=None/gi, '; SameSite=Lax')
               .replace(/;\s*Secure\s*(?=;|$)/gi, '') // Remove Secure flag for localhost HTTP
-          }
-          else {
+          } else {
             // Remove Secure flag for localhost HTTP
             rewrittenCookie = rewrittenCookie.replace(/;\s*Secure\s*(?=;|$)/gi, '')
 

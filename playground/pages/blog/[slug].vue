@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import {
-  computed,
-  readItems,
-  useAsyncData,
-  useDirectus,
-  useRoute,
-} from '#imports'
+import { computed, readItems, useAsyncData, useDirectus, useRoute } from '#imports'
 
 const route = useRoute()
 const directus = useDirectus()
@@ -31,7 +25,7 @@ const { data: blog } = await useAsyncData(
       }),
     )
   },
-  { transform: data => data[0] },
+  { transform: (data) => data[0] },
 )
 </script>
 

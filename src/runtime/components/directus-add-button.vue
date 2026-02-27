@@ -16,7 +16,9 @@ const config = useRuntimeConfig()
 const directusVisualEditing = useDirectusVisualEditor()
 
 // Only show when inside Directus visual editor iframe
-const showButton = computed(() => config.public.directus.visualEditor && directusVisualEditing.value)
+const showButton = computed(
+  () => config.public.directus.visualEditor && directusVisualEditing.value,
+)
 
 // Open Directus admin to edit the parent item (which contains the repeater)
 // This allows adding new items to the repeater field
@@ -33,16 +35,18 @@ function triggerAdd() {
   }
 
   try {
-    window.parent.postMessage({
-      action: 'edit',
-      data: {
-        key: crypto.randomUUID(),
-        editConfig,
-        rect: { top: 0, left: 0, width: 0, height: 0 },
+    window.parent.postMessage(
+      {
+        action: 'edit',
+        data: {
+          key: crypto.randomUUID(),
+          editConfig,
+          rect: { top: 0, left: 0, width: 0, height: 0 },
+        },
       },
-    }, directusUrl)
-  }
-  catch (error) {
+      directusUrl,
+    )
+  } catch (error) {
     console.error('[DirectusAddButton] Error triggering add:', error)
   }
 }
@@ -88,7 +92,9 @@ function triggerAdd() {
   border: 2px dashed #6644ff;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   opacity: 0.6;
 }
 

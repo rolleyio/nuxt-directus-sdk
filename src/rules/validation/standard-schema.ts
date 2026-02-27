@@ -1,3 +1,5 @@
+/* eslint-disable typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- accessing untyped vendor schema internals (Zod, ArkType, Valibot) */
+
 /**
  * Standard Schema to Directus validation converter
  *
@@ -26,9 +28,7 @@ import { isStandardSchema } from '../types'
  * // { title: { _regex: '^.{5,}$' } }
  * ```
  */
-export function toDirectusValidation<T>(
-  schema: StandardSchemaV1<T, T>,
-): DirectusValidation {
+export function toDirectusValidation<T>(schema: StandardSchemaV1<T, T>): DirectusValidation {
   const vendor = schema['~standard'].vendor
 
   switch (vendor) {
@@ -40,8 +40,8 @@ export function toDirectusValidation<T>(
       return convertValibotSchema(schema)
     default:
       throw new Error(
-        `Cannot auto-convert schema from vendor "${vendor}". `
-        + `Use directusValidation() helper to define validation in Directus format directly.`,
+        `Cannot auto-convert schema from vendor "${vendor}". ` +
+          `Use directusValidation() helper to define validation in Directus format directly.`,
       )
   }
 }
@@ -49,9 +49,7 @@ export function toDirectusValidation<T>(
 /**
  * Check if a validation value is a Standard Schema
  */
-export function isValidationStandardSchema(
-  validation: unknown,
-): validation is StandardSchemaV1 {
+export function isValidationStandardSchema(validation: unknown): validation is StandardSchemaV1 {
   return isStandardSchema(validation)
 }
 
@@ -80,8 +78,8 @@ function convertArkTypeSchema(schema: StandardSchemaV1): DirectusValidation {
 
   // Fallback: return empty validation (all values pass)
   console.warn(
-    'Could not fully convert ArkType schema to Directus validation. '
-    + 'Consider using directusValidation() for complex schemas.',
+    'Could not fully convert ArkType schema to Directus validation. ' +
+      'Consider using directusValidation() for complex schemas.',
   )
   return {}
 }
@@ -127,8 +125,7 @@ function convertZodSchema(schema: StandardSchemaV1): DirectusValidation {
  * Convert a single Zod field schema to Directus field validation
  */
 function convertZodFieldSchema(schema: any): Record<string, unknown> | null {
-  if (!schema?._def)
-    return null
+  if (!schema?._def) return null
 
   const def = schema._def
   const validation: Record<string, unknown> = {}
@@ -223,8 +220,8 @@ function convertValibotSchema(schema: StandardSchemaV1): DirectusValidation {
   }
 
   console.warn(
-    'Could not fully convert Valibot schema to Directus validation. '
-    + 'Consider using directusValidation() for complex schemas.',
+    'Could not fully convert Valibot schema to Directus validation. ' +
+      'Consider using directusValidation() for complex schemas.',
   )
   return {}
 }
@@ -233,8 +230,7 @@ function convertValibotSchema(schema: StandardSchemaV1): DirectusValidation {
  * Convert a single Valibot field schema to Directus field validation
  */
 function convertValibotFieldSchema(schema: any): Record<string, unknown> | null {
-  if (!schema)
-    return null
+  if (!schema) return null
 
   const validation: Record<string, unknown> = {}
 
@@ -296,10 +292,7 @@ function convertValibotFieldSchema(schema: any): Record<string, unknown> | null 
 /**
  * Convert object properties to validation (generic helper)
  */
-function convertObjectProps(
-  props: Record<string, any>,
-  _vendor: string,
-): DirectusValidation {
+function convertObjectProps(props: Record<string, any>, _vendor: string): DirectusValidation {
   const validation: DirectusValidation = {}
 
   for (const [field, prop] of Object.entries(props)) {
@@ -316,8 +309,7 @@ function convertObjectProps(
  * Convert a property constraint to validation
  */
 function convertPropToValidation(prop: any): Record<string, unknown> | null {
-  if (!prop)
-    return null
+  if (!prop) return null
 
   const validation: Record<string, unknown> = {}
 
@@ -339,10 +331,8 @@ function convertPropToValidation(prop: any): Record<string, unknown> | null {
 
   if (prop.kind === 'number' || prop.domain === 'number') {
     validation._nnull = true
-    if (prop.min !== undefined)
-      validation._gte = prop.min
-    if (prop.max !== undefined)
-      validation._lte = prop.max
+    if (prop.min !== undefined) validation._gte = prop.min
+    if (prop.max !== undefined) validation._lte = prop.max
   }
 
   if (prop.kind === 'enum' || prop.values) {
@@ -375,7 +365,7 @@ function convertExpressionToValidation(expr: string): DirectusValidation {
   // Check for enum/union of literals
   const literalMatch = expr.match(/'([^']+)'/g)
   if (literalMatch) {
-    validation._in = literalMatch.map(l => l.replace(/'/g, ''))
+    validation._in = literalMatch.map((l) => l.replace(/'/g, ''))
   }
 
   return validation

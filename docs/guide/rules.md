@@ -41,12 +41,12 @@ const rules = defineDirectusRules<DirectusSchema>({
 
 Each collection action accepts several formats:
 
-| Value | Meaning |
-|-------|---------|
-| `true` | Full access to all fields |
-| `false` | Deny access |
-| `'*'` | Same as `true` |
-| `{ fields, filter, presets, validation }` | Conditional access |
+| Value                                     | Meaning                   |
+| ----------------------------------------- | ------------------------- |
+| `true`                                    | Full access to all fields |
+| `false`                                   | Deny access               |
+| `'*'`                                     | Same as `true`            |
+| `{ fields, filter, presets, validation }` | Conditional access        |
 
 ```typescript
 permissions: {
@@ -108,11 +108,7 @@ const rules = defineDirectusRules<DirectusSchema>({
 Load existing rules from a Directus instance (or JSON file) and extend them with local additions:
 
 ```typescript
-import {
-  extendRules,
-  loadRulesFromPayload,
-  createAdminPolicy,
-} from 'nuxt-directus-sdk/rules'
+import { extendRules, loadRulesFromPayload, createAdminPolicy } from 'nuxt-directus-sdk/rules'
 
 // Load remote rules (e.g. pulled from Directus)
 const payload = JSON.parse(readFileSync('rules.json', 'utf-8'))

@@ -1,5 +1,5 @@
 ---
-outline: [2,3]
+outline: [2, 3]
 ---
 
 # Configuration Reference
@@ -7,13 +7,15 @@ outline: [2,3]
 Complete reference for all nuxt-directus-sdk configuration options.
 
 ## Module Options
+
 <!--@include: ./module.md{7,}-->
 
-
 ## Environment Variables
+
 <!--@include: ./env.md{7,}-->
 
 ## Directus Server Configuration
+
 <!--@include: ./server.md{7,}-->
 
 ## TypeScript Configuration

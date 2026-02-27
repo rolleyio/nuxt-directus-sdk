@@ -1,6 +1,11 @@
 import { defineNuxtPlugin, refreshNuxtData, useCookie, useRoute, useRuntimeConfig } from '#app'
 import { useDirectusAuth } from './composables/auth'
-import { useDirectus, useDirectusOriginUrl, useDirectusPreview, useDirectusVisualEditor } from './composables/directus'
+import {
+  useDirectus,
+  useDirectusOriginUrl,
+  useDirectusPreview,
+  useDirectusVisualEditor,
+} from './composables/directus'
 import { isQueryParamEnabled } from './utils'
 
 export default defineNuxtPlugin({
@@ -14,9 +19,8 @@ export default defineNuxtPlugin({
     const directusVisualEditor = useDirectusVisualEditor()
 
     const debug = import.meta.client && route.query.debug !== undefined
-    const log = (...args: any[]) => {
-      if (debug)
-        console.warn('[Directus Plugin]', ...args)
+    const log = (...args: unknown[]) => {
+      if (debug) console.warn('[Directus Plugin]', ...args)
     }
 
     // Live Preview
@@ -32,14 +36,14 @@ export default defineNuxtPlugin({
 
     if (directusPreview.value) {
       // If we are in preview mode, we need to use the token from the query string
-      const token = route.query.token as string | undefined
+      const token = route.query.token as string | undefined // eslint-disable-line typescript/no-unsafe-type-assertion -- route query param narrowing
 
       if (token) {
-        directus.setToken(token)
+        void directus.setToken(token)
         log('Preview token set')
 
         nuxtApp.hook('page:finish', () => {
-          refreshNuxtData()
+          void refreshNuxtData()
         })
       }
     }
@@ -66,8 +70,7 @@ export default defineNuxtPlugin({
       if (directusAuth.user.value === null && sessionCookie.value) {
         const user = await directusAuth.readMe()
         await nuxtApp.callHook('directus:loggedIn', user)
-      }
-      else {
+      } else {
         await nuxtApp.callHook('directus:loggedIn', null)
       }
     }

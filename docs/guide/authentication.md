@@ -22,6 +22,7 @@ await logout()
 ```
 
 The module automatically:
+
 - Sets the session cookie
 - Fetches the user data
 - Redirects after login/logout
@@ -44,6 +45,7 @@ await loginWithProvider('facebook')
 ```
 
 The flow:
+
 1. Redirects to Directus SSO endpoint
 2. User authenticates with provider
 3. Directus sets session cookie
@@ -59,6 +61,7 @@ AUTH_<PROVIDER>_REDIRECT_ALLOW_LIST=https://yourapp.com,http://localhost:3000
 ```
 
 For example:
+
 ```dotenv
 AUTH_GOOGLE_REDIRECT_ALLOW_LIST=https://yourapp.com,http://localhost:3000
 AUTH_GITHUB_REDIRECT_ALLOW_LIST=https://yourapp.com,http://localhost:3000
@@ -160,7 +163,7 @@ Protect individual pages with the `auth` middleware:
 ```vue
 <script setup>
 definePageMeta({
-  middleware: 'auth'
+  middleware: 'auth',
 })
 </script>
 
@@ -191,7 +194,7 @@ Then allow public pages using the `guest` middleware:
 ```vue
 <script setup>
 definePageMeta({
-  middleware: 'guest'
+  middleware: 'guest',
 })
 </script>
 
@@ -211,9 +214,9 @@ export default defineNuxtConfig({
   directus: {
     auth: {
       redirect: {
-        home: '/',          // Where to go after login
-        login: '/auth/login',    // Where to go when not logged in
-        logout: '/',                 // Where to go after logout
+        home: '/', // Where to go after login
+        login: '/auth/login', // Where to go when not logged in
+        logout: '/', // Where to go after logout
       },
     },
   },
@@ -258,14 +261,13 @@ export default defineEventHandler(async () => {
 // nuxt.config.ts
 export default defineNuxtConfig({
   directus: {
-
     auth: {
-      enabled: true,                    // default
-      autoRefresh: true,                // auto-refresh tokens
-      credentials: 'include',           // required for cross-domain
-      realtimeAuthMode: 'public',      // 'public', 'handshake', or 'strict'
+      enabled: true, // default
+      autoRefresh: true, // auto-refresh tokens
+      credentials: 'include', // required for cross-domain
+      realtimeAuthMode: 'public', // 'public', 'handshake', or 'strict'
       enableGlobalAuthMiddleware: false, // protect all routes
-      readMeFields: ['*'],              // fields to fetch for current user
+      readMeFields: ['*'], // fields to fetch for current user
       redirect: {
         home: '/',
         login: '/auth/login',
@@ -317,19 +319,19 @@ Returns an object with auth methods and state:
 
 ```typescript
 const {
-  user,                  // Ref<DirectusUser | null>
-  loggedIn,             // ComputedRef<boolean>
-  readMe,               // () => Promise<DirectusUser>
-  updateMe,             // (data) => Promise<DirectusUser>
-  login,                // (email, password, options?) => Promise<DirectusUser>
-  loginWithProvider,    // (provider, redirect?) => Promise<void>
-  logout,               // (redirect?) => Promise<void>
-  register,             // (data) => Promise<DirectusUser>
-  createUser,           // (data) => Promise<DirectusUser>
-  inviteUser,           // (email, role, inviteUrl?) => Promise<void>
-  acceptUserInvite,     // (token, password) => Promise<void>
-  passwordRequest,      // (email, resetUrl?) => Promise<void>
-  passwordReset,        // (token, password) => Promise<void>
+  user, // Ref<DirectusUser | null>
+  loggedIn, // ComputedRef<boolean>
+  readMe, // () => Promise<DirectusUser>
+  updateMe, // (data) => Promise<DirectusUser>
+  login, // (email, password, options?) => Promise<DirectusUser>
+  loginWithProvider, // (provider, redirect?) => Promise<void>
+  logout, // (redirect?) => Promise<void>
+  register, // (data) => Promise<DirectusUser>
+  createUser, // (data) => Promise<DirectusUser>
+  inviteUser, // (email, role, inviteUrl?) => Promise<void>
+  acceptUserInvite, // (token, password) => Promise<void>
+  passwordRequest, // (email, resetUrl?) => Promise<void>
+  passwordReset, // (token, password) => Promise<void>
 } = useDirectusAuth()
 ```
 
@@ -351,17 +353,17 @@ const { login } = useDirectusAuth()
 
 // Login without redirect
 await login('user@example.com', 'password', {
-  redirect: false
+  redirect: false,
 })
 
 // Login with custom redirect
 await login('user@example.com', 'password', {
-  redirect: '/custom-page'
+  redirect: '/custom-page',
 })
 
 // Login and handle manually
 const user = await login('user@example.com', 'password', {
-  redirect: false
+  redirect: false,
 })
 
 if (user.role === 'admin') {

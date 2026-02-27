@@ -16,6 +16,7 @@ beforeEach(() => {
   vi.doMock('#imports', () => ({
     useRuntimeConfig: mockRuntimeConfig,
     useRequestHeaders: vi.fn(() => ({})),
+    // eslint-disable-next-line typescript/no-explicit-any
     useState: vi.fn((_key: string, init: () => any) => ({ value: init() })),
   }))
 
@@ -24,9 +25,10 @@ beforeEach(() => {
 })
 
 function setConfig(overrides: {
-  url?: string | { client: string, server: string }
+  url?: string | { client: string; server: string }
   directusUrl?: string
   serverDirectusUrl?: string
+  // eslint-disable-next-line typescript/no-explicit-any
   devProxy?: any
 }) {
   mockRuntimeConfig.mockReturnValue({
@@ -289,7 +291,8 @@ describe('simple string URL (client-side)', () => {
       devProxy: false,
     })
 
-    const { useDirectusUrl, useDirectusOriginUrl } = await import('../src/runtime/composables/directus')
+    const { useDirectusUrl, useDirectusOriginUrl } =
+      await import('../src/runtime/composables/directus')
     expect(useDirectusUrl()).toBe(useDirectusOriginUrl())
   })
 

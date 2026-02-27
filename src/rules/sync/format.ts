@@ -69,7 +69,7 @@ export function formatDiff(diff: RulesDiff): string {
 
   // Permission changes (grouped by collection)
   const permsByCollection = groupPermissionsByCollection(
-    diff.permissions.filter(p => p.type !== 'unchanged'),
+    diff.permissions.filter((p) => p.type !== 'unchanged'),
   )
 
   for (const [collection, perms] of permsByCollection) {
@@ -88,7 +88,7 @@ export function formatDiff(diff: RulesDiff): string {
  */
 function formatSummaryLine(
   label: string,
-  counts: { added: number, modified: number, removed: number },
+  counts: { added: number; modified: number; removed: number },
 ): string {
   const padded = label.padEnd(12)
   return `${padded} +${counts.added}  ~${counts.modified}  -${counts.removed}`
@@ -97,14 +97,13 @@ function formatSummaryLine(
 /**
  * Format a role change
  */
-function formatRoleChange(lines: string[], change: DiffChange<any>): void {
+function formatRoleChange(lines: string[], change: DiffChange<Record<string, unknown>>): void {
   const prefix = changePrefix(change.type)
   lines.push(`${prefix} Role: ${change.name}`)
 
   if (change.type === 'added' && change.local) {
     formatAddedFields(lines, change.local, ['name'])
-  }
-  else if (change.type === 'modified' && change.local && change.remote) {
+  } else if (change.type === 'modified' && change.local && change.remote) {
     formatModifiedFields(lines, change.local, change.remote, ['name'])
   }
 
@@ -114,14 +113,13 @@ function formatRoleChange(lines: string[], change: DiffChange<any>): void {
 /**
  * Format a policy change
  */
-function formatPolicyChange(lines: string[], change: DiffChange<any>): void {
+function formatPolicyChange(lines: string[], change: DiffChange<Record<string, unknown>>): void {
   const prefix = changePrefix(change.type)
   lines.push(`${prefix} Policy: ${change.name}`)
 
   if (change.type === 'added' && change.local) {
     formatAddedFields(lines, change.local, ['name'])
-  }
-  else if (change.type === 'modified' && change.local && change.remote) {
+  } else if (change.type === 'modified' && change.local && change.remote) {
     formatModifiedFields(lines, change.local, change.remote, ['name'])
   }
 
@@ -137,7 +135,12 @@ function formatPermissionChange(lines: string[], change: PermissionDiffChange): 
   lines.push(`${prefix} ${change.collection}.${change.action}${policyInfo}`)
 
   if (change.type === 'modified' && change.local && change.remote) {
-    formatModifiedFields(lines, change.local, change.remote, ['collection', 'action', 'policy', 'id'])
+    formatModifiedFields(lines, change.local, change.remote, [
+      'collection',
+      'action',
+      'policy',
+      'id',
+    ])
   }
 }
 
@@ -166,10 +169,8 @@ function formatAddedFields(
   excludeKeys: string[],
 ): void {
   for (const [key, value] of Object.entries(item)) {
-    if (excludeKeys.includes(key))
-      continue
-    if (value === null || value === undefined)
-      continue
+    if (excludeKeys.includes(key)) continue
+    if (value === null || value === undefined) continue
 
     lines.push(`  ${key}: ${formatValue(value)}`)
   }
@@ -187,8 +188,7 @@ function formatModifiedFields(
   const allKeys = new Set([...Object.keys(local), ...Object.keys(remote)])
 
   for (const key of allKeys) {
-    if (excludeKeys.includes(key))
-      continue
+    if (excludeKeys.includes(key)) continue
 
     const localVal = local[key]
     const remoteVal = remote[key]

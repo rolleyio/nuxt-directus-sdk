@@ -11,8 +11,11 @@ export function getDirectusSessionToken(event: H3Event): string | undefined {
 
 export function useDirectusUrl(path = ''): string {
   const config = useRuntimeConfig()
-  const serverUrl = (config as any).directus?.serverDirectusUrl
-  const fallback = (config.public.directus as any).directusUrl || config.public.directus.url
+  // eslint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime-injected config keys not in static types
+  const serverUrl = (config as any).directus?.serverDirectusUrl as string | undefined
+  const fallback =
+    // eslint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime-injected config keys not in static types
+    ((config.public.directus as any).directusUrl as string) || config.public.directus.url
   return useUrl(serverUrl || fallback, path)
 }
 
@@ -21,8 +24,7 @@ export function useTokenDirectus(token?: string) {
     .with(authentication('json', { autoRefresh: false }))
     .with(rest())
 
-  if (token)
-    directus.setToken(token)
+  if (token) void directus.setToken(token)
 
   return directus
 }

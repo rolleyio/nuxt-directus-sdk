@@ -15,14 +15,16 @@ beforeEach(() => {
   vi.doMock('#imports', () => ({
     useRuntimeConfig: mockRuntimeConfig,
     useRequestHeaders: mockRequestHeaders,
+    // eslint-disable-next-line typescript/no-explicit-any
     useState: vi.fn((_key: string, init: () => any) => ({ value: init() })),
   }))
 })
 
 function setConfig(overrides: {
-  url?: string | { client: string, server: string }
+  url?: string | { client: string; server: string }
   directusUrl?: string
   serverDirectusUrl?: string
+  // eslint-disable-next-line typescript/no-explicit-any
   devProxy?: any
 }) {
   mockRuntimeConfig.mockReturnValue({
@@ -327,7 +329,8 @@ describe('simple string URL (server-side)', () => {
       serverDirectusUrl: 'https://cms.example.com',
     })
 
-    const { useDirectusUrl, useDirectusOriginUrl } = await import('../src/runtime/composables/directus')
+    const { useDirectusUrl, useDirectusOriginUrl } =
+      await import('../src/runtime/composables/directus')
     expect(useDirectusUrl()).toBe(useDirectusOriginUrl())
   })
 })
@@ -365,7 +368,8 @@ describe('url as object { client, server } (server-side)', () => {
       serverDirectusUrl: 'https://single-url.example.com',
     })
 
-    const { useDirectusUrl, useDirectusOriginUrl } = await import('../src/runtime/composables/directus')
+    const { useDirectusUrl, useDirectusOriginUrl } =
+      await import('../src/runtime/composables/directus')
 
     expect(useDirectusUrl()).toContain('single-url.example.com')
     expect(useDirectusOriginUrl()).toContain('single-url.example.com')

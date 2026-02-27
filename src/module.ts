@@ -1,9 +1,24 @@
+/* eslint-disable typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- Nuxt module API, http-proxy callbacks, and runtime config manipulation require loose types */
 import type { Query } from '@directus/sdk'
 import type { ImageModifiers, ImageProviders } from '@nuxt/image'
 
 import type { InlinePreset } from 'unimport'
 
-import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, hasNuxtModule, installModule, tryResolveModule, useLogger } from '@nuxt/kit'
+import {
+  addComponentsDir,
+  addImportsDir,
+  addImportsSources,
+  addPlugin,
+  addRouteMiddleware,
+  addServerHandler,
+  addTypeTemplate,
+  createResolver,
+  defineNuxtModule,
+  hasNuxtModule,
+  installModule,
+  tryResolveModule,
+  useLogger,
+} from '@nuxt/kit'
 import { colors } from 'consola/utils'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
@@ -11,7 +26,7 @@ import { name, version } from '../package.json'
 import { generateTypes } from './runtime/types'
 import { useUrl } from './runtime/utils'
 
-export type DirectusUrl = string | { client: string, server: string }
+export type DirectusUrl = string | { client: string; server: string }
 
 export interface ModuleOptions {
   /**
@@ -31,23 +46,25 @@ export interface ModuleOptions {
    * @default { enabled: true, path: '/directus', wsPath: '/directus-ws' } in dev mode
    * @type boolean | { enabled?: boolean, path?: string, wsPath?: string }
    */
-  devProxy?: boolean | {
-    /**
-     * Enable the development proxy
-     * @default true in dev mode, false in production
-     */
-    enabled?: boolean
-    /**
-     * Proxy path (where the proxy will be mounted)
-     * @default '/directus'
-     */
-    path?: string
-    /**
-     * WebSocket proxy path (for realtime connections)
-     * @default '/directus-ws'
-     */
-    wsPath?: string
-  }
+  devProxy?:
+    | boolean
+    | {
+        /**
+         * Enable the development proxy
+         * @default true in dev mode, false in production
+         */
+        enabled?: boolean
+        /**
+         * Proxy path (where the proxy will be mounted)
+         * @default '/directus'
+         */
+        path?: string
+        /**
+         * WebSocket proxy path (for realtime connections)
+         * @default '/directus-ws'
+         */
+        wsPath?: string
+      }
 
   /**
    * Admin Auth Token used for generating types and server functions
@@ -72,29 +89,31 @@ export interface ModuleOptions {
    * @nuxt/image integration
    * @default true
    */
-  image?: boolean | {
-    /**
-     * Enable @nuxt/image integration
-     * @default true
-     */
-    enabled?: boolean
+  image?:
+    | boolean
+    | {
+        /**
+         * Enable @nuxt/image integration
+         * @default true
+         */
+        enabled?: boolean
 
-    /**
-     * Set Directus as the default provider for NuxtImg
-     * @default false
-     */
-    setDefaultProvider?: boolean
+        /**
+         * Set Directus as the default provider for NuxtImg
+         * @default false
+         */
+        setDefaultProvider?: boolean
 
-    /**
-     * Custom Directus provider configuration
-     */
-    directus?: ImageProviders['directus']
+        /**
+         * Custom Directus provider configuration
+         */
+        directus?: ImageProviders['directus']
 
-    /**
-     * Default modifiers for Directus provider
-     */
-    modifiers?: ImageModifiers
-  }
+        /**
+         * Default modifiers for Directus provider
+         */
+        modifiers?: ImageModifiers
+      }
 
   /**
    * Auth options
@@ -162,20 +181,22 @@ export interface ModuleOptions {
     }
   }
 
-  types?: boolean | {
-    /**
-     * Enable type generation
-     * @type boolean
-     * @default true
-     */
-    enabled?: boolean
-    /**
-     * Prefix for custom collection types (does not affect DirectusSchema keys)
-     * @type string
-     * @default ''
-     */
-    prefix?: string
-  }
+  types?:
+    | boolean
+    | {
+        /**
+         * Enable type generation
+         * @type boolean
+         * @default true
+         */
+        enabled?: boolean
+        /**
+         * Prefix for custom collection types (does not affect DirectusSchema keys)
+         * @type string
+         * @default ''
+         */
+        prefix?: string
+      }
 }
 
 const configKey = 'directus'
@@ -221,26 +242,32 @@ export default defineNuxtModule<ModuleOptions>({
     const serverUrl = typeof options.url === 'string' ? options.url : options.url?.server
 
     if (!clientUrl) {
-      logger.error('nuxt-directus-sdk requires a url to your Directus instance, set it in the config options or .env file as DIRECTUS_URL')
+      logger.error(
+        'nuxt-directus-sdk requires a url to your Directus instance, set it in the config options or .env file as DIRECTUS_URL',
+      )
       return
     }
 
     const resolver = createResolver(import.meta.url)
 
     // Helper function to register modules
-    async function registerModule(name: string, key: string, moduleOptions: Record<string, any>) {
-      if (!hasNuxtModule(name)) {
-        await installModule(name, defu((nuxtApp.options as any)[key], moduleOptions))
-      }
-      else {
-        (nuxtApp.options as any)[key] = defu((nuxtApp.options as any)[key], moduleOptions)
+    async function registerModule(
+      moduleName: string,
+      key: string,
+      moduleOptions: Record<string, any>,
+    ) {
+      if (!hasNuxtModule(moduleName)) {
+        await installModule(moduleName, defu((nuxtApp.options as any)[key], moduleOptions))
+      } else {
+        ;(nuxtApp.options as any)[key] = defu((nuxtApp.options as any)[key], moduleOptions)
       }
     }
 
     // Normalize devProxy options
-    const devProxyConfig = typeof options.devProxy === 'boolean'
-      ? { enabled: options.devProxy }
-      : { ...options.devProxy }
+    const devProxyConfig =
+      typeof options.devProxy === 'boolean'
+        ? { enabled: options.devProxy }
+        : { ...options.devProxy }
 
     // Server URL used for proxy target, type gen, devtools (all server-side operations)
     const directusUrl = serverUrl || clientUrl
@@ -257,8 +284,12 @@ export default defineNuxtModule<ModuleOptions>({
     // Set up development proxy if enabled and in dev mode
     if (devProxyEnabled && nuxtApp.options.dev) {
       loggerMessage.push(`🌐 Development mode:`)
-      loggerMessage.push(`URL${colors.dim(` ${devProxyPath}`)} proxies ${colors.underline(colors.green(`${directusUrl}`))}`)
-      loggerMessage.push(`WS URL${colors.dim(` ${wsProxyPath}`)} proxies ${colors.underline(colors.green(`${wsTarget}`))}`)
+      loggerMessage.push(
+        `URL${colors.dim(` ${devProxyPath}`)} proxies ${colors.underline(colors.green(directusUrl))}`,
+      )
+      loggerMessage.push(
+        `WS URL${colors.dim(` ${wsProxyPath}`)} proxies ${colors.underline(colors.green(wsTarget))}`,
+      )
 
       // Configure WebSocket proxy for realtime support (WebSocket only)
       nuxtApp.options.nitro = nuxtApp.options.nitro || {}
@@ -308,18 +339,15 @@ export default defineNuxtModule<ModuleOptions>({
             if (req.url?.startsWith(wsProxyPath)) {
               try {
                 proxy.ws(req, socket, head)
-              }
-              catch (err: any) {
+              } catch (err: any) {
                 logger.error('WebSocket proxy error:', err.message)
                 if (!socket.destroyed) {
                   socket.destroy()
                 }
               }
-            }
-            else if (originalUpgrade) {
+            } else if (originalUpgrade) {
               return originalUpgrade(req, socket, head)
-            }
-            else if (!socket.destroyed) {
+            } else if (!socket.destroyed) {
               socket.destroy()
             }
           }
@@ -338,32 +366,36 @@ export default defineNuxtModule<ModuleOptions>({
         path: devProxyPath,
         wsPath: wsProxyPath,
       }
-    }
-    else if (!nuxtApp.options.dev) {
-      loggerMessage.push(`🌐 Production mode:`, ` SDK connects directly to ${colors.dim(`${directusUrl}`)}`)
+    } else if (!nuxtApp.options.dev) {
+      loggerMessage.push(
+        `🌐 Production mode:`,
+        ` SDK connects directly to ${colors.dim(directusUrl)}`,
+      )
       options.devProxy = false
     }
 
-    (options as any).directusUrl = clientUrl
+    ;(options as any).directusUrl = clientUrl
     ;(options as any).serverDirectusUrl = serverUrl || clientUrl
 
     nuxtApp.options.runtimeConfig[configKey] = options as any
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
-    nuxtApp.options.runtimeConfig.public[configKey] = defu(nuxtApp.options.runtimeConfig.public[configKey] as any, options)
+    nuxtApp.options.runtimeConfig.public[configKey] = defu(
+      nuxtApp.options.runtimeConfig.public[configKey] as any,
+      options,
+    )
 
     delete (nuxtApp.options.runtimeConfig.public[configKey] as any).adminToken
     delete (nuxtApp.options.runtimeConfig.public[configKey] as any).serverDirectusUrl
 
     // Register @nuxt/image with Directus provider
-    const imageConfig = typeof options.image === 'boolean' ? { enabled: options.image } : options.image
+    const imageConfig =
+      typeof options.image === 'boolean' ? { enabled: options.image } : options.image
     const imageEnabled = imageConfig?.enabled ?? true
 
     if (imageEnabled) {
       const { setDefaultProvider, modifiers } = imageConfig || {}
 
-      const imageBaseUrl = devProxyEnabled
-        ? `${devProxyPath}/assets`
-        : useUrl(clientUrl, 'assets')
+      const imageBaseUrl = devProxyEnabled ? `${devProxyPath}/assets` : useUrl(clientUrl, 'assets')
 
       await registerModule('@nuxt/image', 'image', {
         // Set default provider if requested
@@ -380,7 +412,9 @@ export default defineNuxtModule<ModuleOptions>({
     addPlugin(resolver.resolve('./runtime/plugin'))
 
     // Add visual editor plugin and components only when enabled AND @directus/visual-editing is installed
-    const hasVisualEditing = options.visualEditor && await tryResolveModule('@directus/visual-editing', new URL(import.meta.url))
+    const hasVisualEditing =
+      options.visualEditor &&
+      (await tryResolveModule('@directus/visual-editing', new URL(import.meta.url)))
 
     if (hasVisualEditing) {
       addPlugin(resolver.resolve('./runtime/plugins/visual-editor.client'))
@@ -491,7 +525,7 @@ export default defineNuxtModule<ModuleOptions>({
     loggerMessage.push(``)
     if (options.devtools) {
       loggerMessage.push(`Directus Admin added to Nuxt DevTools`)
-      nuxtApp.hook('devtools:customTabs' as any, (iframeTabs: any) => {
+      nuxtApp.hook('devtools:customTabs', (iframeTabs) => {
         iframeTabs.push({
           name: 'directus',
           title: 'Directus',
@@ -502,45 +536,57 @@ export default defineNuxtModule<ModuleOptions>({
           },
         })
       })
-    }
-    else {
-      loggerMessage.push(`${colors.dim(`  Directus Admin was not added to Nuxt DevTools`)}`)
+    } else {
+      loggerMessage.push(colors.dim(`  Directus Admin was not added to Nuxt DevTools`))
     }
 
-    const typesEnabled = (typeof options.types === 'boolean' && options.types) || (options.types && options.types.enabled === true)
-    const typesPrefix = typeof options.types === 'object' ? options.types.prefix ?? '' : ''
+    const typesEnabled =
+      (typeof options.types === 'boolean' && options.types) ||
+      (options.types && options.types.enabled === true)
+    const typesPrefix = typeof options.types === 'object' ? (options.types.prefix ?? '') : ''
 
     if (typesEnabled) {
       if (!options.adminToken) {
-        loggerMessage.push(``, `${colors.bgRedBright(`${colors.red('⚑ ERROR:')} Unable to generate Types`)}`, `  Fix: Set adminToken in config or DIRECTUS_ADMIN_TOKEN in .env`)
-      }
-      else {
+        loggerMessage.push(
+          ``,
+          colors.bgRedBright(`${colors.red('⚑ ERROR:')} Unable to generate Types`),
+          `  Fix: Set adminToken in config or DIRECTUS_ADMIN_TOKEN in .env`,
+        )
+      } else {
         try {
           // Generate types once and cache the result
           let cachedTypes: string | null = null
 
-          addTypeTemplate({
-            filename: `types/${configKey}.d.ts`,
-            async getContents() {
-              if (!cachedTypes) {
-                // Use the original URL for type generation (not the proxy URL)
-                cachedTypes = await generateTypes({
-                  url: directusUrl,
-                  token: options.adminToken!,
-                  prefix: typesPrefix,
-                })
-              }
-              return cachedTypes
+          addTypeTemplate(
+            {
+              filename: `types/${configKey}.d.ts`,
+              async getContents() {
+                if (!cachedTypes) {
+                  // Use the original URL for type generation (not the proxy URL)
+                  cachedTypes = await generateTypes({
+                    url: directusUrl,
+                    token: options.adminToken!,
+                    prefix: typesPrefix,
+                  })
+                }
+                return cachedTypes
+              },
             },
-          }, { nitro: true, nuxt: true })
-          loggerMessage.push(`${colors.dim(`  Directus Types saved successfully to #build/types/${configKey}.d.ts`)}`)
-        }
-        catch (error) {
+            { nitro: true, nuxt: true },
+          )
+          loggerMessage.push(
+            colors.dim(`  Directus Types saved successfully to #build/types/${configKey}.d.ts`),
+          )
+        } catch (error) {
           logger.error((error as Error).message)
         }
       }
     }
-    logger.box({ message: loggerMessage.join('\n'), title: `${colors.magenta(`Nuxt Directus SDK Version: ${colors.magentaBright(`${version}`)}`)}`, style: { padding: 3, borderColor: 'magenta', borderStyle: 'double-single-rounded' } })
+    logger.box({
+      message: loggerMessage.join('\n'),
+      title: colors.magenta(`Nuxt Directus SDK Version: ${colors.magentaBright(version)}`),
+      style: { padding: 3, borderColor: 'magenta', borderStyle: 'double-single-rounded' },
+    })
   },
 })
 

@@ -1,8 +1,4 @@
-import type {
-  DirectusRolePayload,
-  DirectusRulesPayload,
-  PushResult,
-} from '../../src/rules'
+import type { DirectusRolePayload, DirectusRulesPayload, PushResult } from '../../src/rules'
 import { describe, expect, it } from 'vitest'
 import {
   compareRulesPayloads,
@@ -81,7 +77,12 @@ describe('sync: compareRulesPayloads', () => {
     })
 
     it('detects unchanged roles', () => {
-      const role: DirectusRolePayload = { name: 'Editor', icon: 'edit', description: null, parent: null }
+      const role: DirectusRolePayload = {
+        name: 'Editor',
+        icon: 'edit',
+        description: null,
+        parent: null,
+      }
       const local: DirectusRulesPayload = {
         roles: [role],
         policies: [],
@@ -104,15 +105,17 @@ describe('sync: compareRulesPayloads', () => {
     it('detects added policies', () => {
       const local: DirectusRulesPayload = {
         roles: [],
-        policies: [{
-          name: 'Content',
-          icon: 'article',
-          description: null,
-          ip_access: null,
-          enforce_tfa: false,
-          admin_access: false,
-          app_access: true,
-        }],
+        policies: [
+          {
+            name: 'Content',
+            icon: 'article',
+            description: null,
+            ip_access: null,
+            enforce_tfa: false,
+            admin_access: false,
+            app_access: true,
+          },
+        ],
         permissions: [],
       }
       const remote: DirectusRulesPayload = {
@@ -132,29 +135,33 @@ describe('sync: compareRulesPayloads', () => {
     it('detects modified policies', () => {
       const local: DirectusRulesPayload = {
         roles: [],
-        policies: [{
-          name: 'Content',
-          icon: 'article',
-          description: null,
-          ip_access: null,
-          enforce_tfa: true, // Changed
-          admin_access: false,
-          app_access: true,
-        }],
+        policies: [
+          {
+            name: 'Content',
+            icon: 'article',
+            description: null,
+            ip_access: null,
+            enforce_tfa: true, // Changed
+            admin_access: false,
+            app_access: true,
+          },
+        ],
         permissions: [],
       }
       const remote: DirectusRulesPayload = {
         roles: [],
-        policies: [{
-          id: 'policy-1',
-          name: 'Content',
-          icon: 'article',
-          description: null,
-          ip_access: null,
-          enforce_tfa: false, // Original
-          admin_access: false,
-          app_access: true,
-        }],
+        policies: [
+          {
+            id: 'policy-1',
+            name: 'Content',
+            icon: 'article',
+            description: null,
+            ip_access: null,
+            enforce_tfa: false, // Original
+            admin_access: false,
+            app_access: true,
+          },
+        ],
         permissions: [],
       }
 
@@ -173,15 +180,17 @@ describe('sync: compareRulesPayloads', () => {
       const local: DirectusRulesPayload = {
         roles: [],
         policies: [],
-        permissions: [{
-          policy: 'policy-1',
-          collection: 'posts',
-          action: 'read',
-          permissions: null,
-          validation: null,
-          presets: null,
-          fields: null,
-        }],
+        permissions: [
+          {
+            policy: 'policy-1',
+            collection: 'posts',
+            action: 'read',
+            permissions: null,
+            validation: null,
+            presets: null,
+            fields: null,
+          },
+        ],
       }
       const remote: DirectusRulesPayload = {
         roles: [],
@@ -202,29 +211,33 @@ describe('sync: compareRulesPayloads', () => {
       const local: DirectusRulesPayload = {
         roles: [],
         policies: [],
-        permissions: [{
-          policy: 'policy-1',
-          collection: 'posts',
-          action: 'read',
-          permissions: { status: { _eq: 'published' } },
-          validation: null,
-          presets: null,
-          fields: ['title', 'content'],
-        }],
+        permissions: [
+          {
+            policy: 'policy-1',
+            collection: 'posts',
+            action: 'read',
+            permissions: { status: { _eq: 'published' } },
+            validation: null,
+            presets: null,
+            fields: ['title', 'content'],
+          },
+        ],
       }
       const remote: DirectusRulesPayload = {
         roles: [],
         policies: [],
-        permissions: [{
-          id: 1,
-          policy: 'policy-1',
-          collection: 'posts',
-          action: 'read',
-          permissions: null, // No filter originally
-          validation: null,
-          presets: null,
-          fields: ['title'], // Fewer fields
-        }],
+        permissions: [
+          {
+            id: 1,
+            policy: 'policy-1',
+            collection: 'posts',
+            action: 'read',
+            permissions: null, // No filter originally
+            validation: null,
+            presets: null,
+            fields: ['title'], // Fewer fields
+          },
+        ],
       }
 
       const diff = compareRulesPayloads(local, remote)
@@ -239,16 +252,49 @@ describe('sync: compareRulesPayloads', () => {
         roles: [],
         policies: [],
         permissions: [
-          { policy: 'p1', collection: 'posts', action: 'read', permissions: null, validation: null, presets: null, fields: null },
-          { policy: 'p1', collection: 'posts', action: 'create', permissions: null, validation: null, presets: null, fields: null },
-          { policy: 'p2', collection: 'posts', action: 'read', permissions: null, validation: null, presets: null, fields: null },
+          {
+            policy: 'p1',
+            collection: 'posts',
+            action: 'read',
+            permissions: null,
+            validation: null,
+            presets: null,
+            fields: null,
+          },
+          {
+            policy: 'p1',
+            collection: 'posts',
+            action: 'create',
+            permissions: null,
+            validation: null,
+            presets: null,
+            fields: null,
+          },
+          {
+            policy: 'p2',
+            collection: 'posts',
+            action: 'read',
+            permissions: null,
+            validation: null,
+            presets: null,
+            fields: null,
+          },
         ],
       }
       const remote: DirectusRulesPayload = {
         roles: [],
         policies: [],
         permissions: [
-          { id: 1, policy: 'p1', collection: 'posts', action: 'read', permissions: null, validation: null, presets: null, fields: null },
+          {
+            id: 1,
+            policy: 'p1',
+            collection: 'posts',
+            action: 'read',
+            permissions: null,
+            validation: null,
+            presets: null,
+            fields: null,
+          },
         ],
       }
 
@@ -256,8 +302,8 @@ describe('sync: compareRulesPayloads', () => {
 
       expect(diff.summary.permissions.added).toBe(2)
       expect(diff.summary.permissions.unchanged).toBe(undefined) // not in summary
-      expect(diff.permissions.filter(p => p.type === 'unchanged')).toHaveLength(1)
-      expect(diff.permissions.filter(p => p.type === 'added')).toHaveLength(2)
+      expect(diff.permissions.filter((p) => p.type === 'unchanged')).toHaveLength(1)
+      expect(diff.permissions.filter((p) => p.type === 'added')).toHaveLength(2)
     })
   })
 
@@ -280,10 +326,26 @@ describe('sync: compareRulesPayloads', () => {
           { name: 'NewRole', icon: 'new', description: null, parent: null },
         ],
         policies: [
-          { name: 'Content', icon: 'article', description: null, ip_access: null, enforce_tfa: false, admin_access: false, app_access: true },
+          {
+            name: 'Content',
+            icon: 'article',
+            description: null,
+            ip_access: null,
+            enforce_tfa: false,
+            admin_access: false,
+            app_access: true,
+          },
         ],
         permissions: [
-          { policy: 'p1', collection: 'posts', action: 'read', permissions: null, validation: null, presets: null, fields: null },
+          {
+            policy: 'p1',
+            collection: 'posts',
+            action: 'read',
+            permissions: null,
+            validation: null,
+            presets: null,
+            fields: null,
+          },
         ],
       }
       const remote: DirectusRulesPayload = {
@@ -292,8 +354,26 @@ describe('sync: compareRulesPayloads', () => {
           { id: 'r2', name: 'OldRole', icon: 'old', description: null, parent: null }, // removed
         ],
         policies: [
-          { id: 'p1', name: 'Content', icon: 'article', description: null, ip_access: null, enforce_tfa: false, admin_access: false, app_access: true },
-          { id: 'p2', name: 'Legacy', icon: 'legacy', description: null, ip_access: null, enforce_tfa: false, admin_access: false, app_access: true }, // removed
+          {
+            id: 'p1',
+            name: 'Content',
+            icon: 'article',
+            description: null,
+            ip_access: null,
+            enforce_tfa: false,
+            admin_access: false,
+            app_access: true,
+          },
+          {
+            id: 'p2',
+            name: 'Legacy',
+            icon: 'legacy',
+            description: null,
+            ip_access: null,
+            enforce_tfa: false,
+            admin_access: false,
+            app_access: true,
+          }, // removed
         ],
         permissions: [],
       }
@@ -356,29 +436,33 @@ describe('sync: formatDiff', () => {
   it('formats modified items with ~ prefix and field changes', () => {
     const local: DirectusRulesPayload = {
       roles: [],
-      policies: [{
-        name: 'Content',
-        icon: 'new_icon',
-        description: 'Updated',
-        ip_access: null,
-        enforce_tfa: true,
-        admin_access: false,
-        app_access: true,
-      }],
+      policies: [
+        {
+          name: 'Content',
+          icon: 'new_icon',
+          description: 'Updated',
+          ip_access: null,
+          enforce_tfa: true,
+          admin_access: false,
+          app_access: true,
+        },
+      ],
       permissions: [],
     }
     const remote: DirectusRulesPayload = {
       roles: [],
-      policies: [{
-        id: 'p1',
-        name: 'Content',
-        icon: 'old_icon',
-        description: 'Original',
-        ip_access: null,
-        enforce_tfa: false,
-        admin_access: false,
-        app_access: true,
-      }],
+      policies: [
+        {
+          id: 'p1',
+          name: 'Content',
+          icon: 'old_icon',
+          description: 'Original',
+          ip_access: null,
+          enforce_tfa: false,
+          admin_access: false,
+          app_access: true,
+        },
+      ],
       permissions: [],
     }
 
@@ -414,9 +498,33 @@ describe('sync: formatDiff', () => {
       roles: [],
       policies: [],
       permissions: [
-        { policy: 'p1', collection: 'posts', action: 'read', permissions: null, validation: null, presets: null, fields: null },
-        { policy: 'p1', collection: 'posts', action: 'create', permissions: null, validation: null, presets: null, fields: null },
-        { policy: 'p1', collection: 'users', action: 'read', permissions: null, validation: null, presets: null, fields: null },
+        {
+          policy: 'p1',
+          collection: 'posts',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
+        {
+          policy: 'p1',
+          collection: 'posts',
+          action: 'create',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
+        {
+          policy: 'p1',
+          collection: 'users',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
       ],
     }
     const remote: DirectusRulesPayload = { roles: [], policies: [], permissions: [] }
@@ -438,17 +546,61 @@ describe('sync: system collection filtering', () => {
       roles: [],
       policies: [],
       permissions: [
-        { policy: 'p1', collection: 'posts', action: 'read', permissions: null, validation: null, presets: null, fields: null },
+        {
+          policy: 'p1',
+          collection: 'posts',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
       ],
     }
     const remote: DirectusRulesPayload = {
       roles: [],
       policies: [],
       permissions: [
-        { id: 1, policy: 'p1', collection: 'posts', action: 'read', permissions: null, validation: null, presets: null, fields: null },
-        { id: 2, policy: 'p1', collection: 'directus_activity', action: 'read', permissions: null, validation: null, presets: null, fields: null },
-        { id: 3, policy: 'p1', collection: 'directus_settings', action: 'read', permissions: null, validation: null, presets: null, fields: null },
-        { id: 4, policy: 'p1', collection: 'directus_collections', action: 'read', permissions: null, validation: null, presets: null, fields: null },
+        {
+          id: 1,
+          policy: 'p1',
+          collection: 'posts',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
+        {
+          id: 2,
+          policy: 'p1',
+          collection: 'directus_activity',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
+        {
+          id: 3,
+          policy: 'p1',
+          collection: 'directus_settings',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
+        {
+          id: 4,
+          policy: 'p1',
+          collection: 'directus_collections',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
       ],
     }
 
@@ -456,7 +608,7 @@ describe('sync: system collection filtering', () => {
 
     // Should not show directus_* as removed
     expect(diff.summary.permissions.removed).toBe(0)
-    expect(diff.permissions.filter(p => p.type === 'removed')).toHaveLength(0)
+    expect(diff.permissions.filter((p) => p.type === 'removed')).toHaveLength(0)
   })
 
   it('includes directus_users and directus_files (commonly extended)', () => {
@@ -464,8 +616,24 @@ describe('sync: system collection filtering', () => {
       roles: [],
       policies: [],
       permissions: [
-        { policy: 'p1', collection: 'directus_users', action: 'read', permissions: null, validation: null, presets: null, fields: ['*'] },
-        { policy: 'p1', collection: 'directus_files', action: 'read', permissions: null, validation: null, presets: null, fields: ['*'] },
+        {
+          policy: 'p1',
+          collection: 'directus_users',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: ['*'],
+        },
+        {
+          policy: 'p1',
+          collection: 'directus_files',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: ['*'],
+        },
       ],
     }
     const remote: DirectusRulesPayload = {
@@ -478,8 +646,8 @@ describe('sync: system collection filtering', () => {
 
     // directus_users and directus_files should be included
     expect(diff.summary.permissions.added).toBe(2)
-    expect(diff.permissions.filter(p => p.collection === 'directus_users')).toHaveLength(1)
-    expect(diff.permissions.filter(p => p.collection === 'directus_files')).toHaveLength(1)
+    expect(diff.permissions.filter((p) => p.collection === 'directus_users')).toHaveLength(1)
+    expect(diff.permissions.filter((p) => p.collection === 'directus_files')).toHaveLength(1)
   })
 
   it('can include system collections with option', () => {
@@ -492,7 +660,16 @@ describe('sync: system collection filtering', () => {
       roles: [],
       policies: [],
       permissions: [
-        { id: 1, policy: 'p1', collection: 'directus_settings', action: 'read', permissions: null, validation: null, presets: null, fields: null },
+        {
+          id: 1,
+          policy: 'p1',
+          collection: 'directus_settings',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
       ],
     }
 
@@ -500,7 +677,7 @@ describe('sync: system collection filtering', () => {
 
     // With option disabled, should show directus_settings as removed
     expect(diff.summary.permissions.removed).toBe(1)
-    const removedPerm = diff.permissions.find(p => p.type === 'removed')
+    const removedPerm = diff.permissions.find((p) => p.type === 'removed')
     expect(removedPerm?.collection).toBe('directus_settings')
   })
 })
@@ -511,17 +688,52 @@ describe('sync: null-policy permission filtering', () => {
       roles: [],
       policies: [],
       permissions: [
-        { policy: 'p1', collection: 'posts', action: 'read', permissions: null, validation: null, presets: null, fields: null },
+        {
+          policy: 'p1',
+          collection: 'posts',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
       ],
     }
     const remote: DirectusRulesPayload = {
       roles: [],
       policies: [],
       permissions: [
-        { id: 1, policy: 'p1', collection: 'posts', action: 'read', permissions: null, validation: null, presets: null, fields: null },
+        {
+          id: 1,
+          policy: 'p1',
+          collection: 'posts',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
         // App access permissions with null policy should be ignored
-        { id: 2, policy: null, collection: 'directus_users', action: 'read', permissions: null, validation: null, presets: null, fields: null },
-        { id: 3, policy: null, collection: 'directus_collections', action: 'read', permissions: null, validation: null, presets: null, fields: null },
+        {
+          id: 2,
+          policy: null,
+          collection: 'directus_users',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
+        {
+          id: 3,
+          policy: null,
+          collection: 'directus_collections',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
       ],
     }
 
@@ -529,7 +741,9 @@ describe('sync: null-policy permission filtering', () => {
 
     // Null-policy permissions should not show as removed
     expect(diff.summary.permissions.removed).toBe(0)
-    expect(diff.permissions.filter(p => p.policyId === undefined && p.type === 'removed')).toHaveLength(0)
+    expect(
+      diff.permissions.filter((p) => p.policyId === undefined && p.type === 'removed'),
+    ).toHaveLength(0)
   })
 
   it('handles local permissions with null policy correctly', () => {
@@ -537,7 +751,15 @@ describe('sync: null-policy permission filtering', () => {
       roles: [],
       policies: [],
       permissions: [
-        { policy: null, collection: 'posts', action: 'read', permissions: null, validation: null, presets: null, fields: null },
+        {
+          policy: null,
+          collection: 'posts',
+          action: 'read',
+          permissions: null,
+          validation: null,
+          presets: null,
+          fields: null,
+        },
       ],
     }
     const remote: DirectusRulesPayload = {
@@ -561,9 +783,7 @@ describe('sync: formatPushResult', () => {
         { type: 'created', name: 'Editor', id: 'role-1' },
         { type: 'updated', name: 'Admin', id: 'role-2' },
       ],
-      policies: [
-        { type: 'created', name: 'Content Policy', id: 'policy-1' },
-      ],
+      policies: [{ type: 'created', name: 'Content Policy', id: 'policy-1' }],
       permissions: [
         { type: 'created', name: 'posts.read' },
         { type: 'created', name: 'posts.create' },
@@ -592,9 +812,7 @@ describe('sync: formatPushResult', () => {
   it('formats failed push result with errors', () => {
     const result: PushResult = {
       success: false,
-      roles: [
-        { type: 'skipped', name: 'Editor', error: 'Permission denied' },
-      ],
+      roles: [{ type: 'skipped', name: 'Editor', error: 'Permission denied' }],
       policies: [],
       permissions: [],
       summary: {
@@ -641,14 +859,16 @@ describe('sync: loadRulesFromPayload preserves original policy IDs', () => {
   it('preserves _originalPolicyIds when policies cannot be resolved', () => {
     // Payload with a role that references policies by ID that don't exist in the payload
     const payload: DirectusRulesPayload = {
-      roles: [{
-        id: 'role-1',
-        name: 'Editor',
-        icon: 'edit',
-        description: null,
-        parent: null,
-        policies: ['policy-uuid-1', 'policy-uuid-2'], // IDs that won't resolve
-      }],
+      roles: [
+        {
+          id: 'role-1',
+          name: 'Editor',
+          icon: 'edit',
+          description: null,
+          parent: null,
+          policies: ['policy-uuid-1', 'policy-uuid-2'], // IDs that won't resolve
+        },
+      ],
       policies: [], // No policies to resolve to
       permissions: [],
     }
@@ -664,14 +884,16 @@ describe('sync: loadRulesFromPayload preserves original policy IDs', () => {
 
   it('uses _originalPolicyIds during serialization when policies not resolved', () => {
     const payload: DirectusRulesPayload = {
-      roles: [{
-        id: 'role-1',
-        name: 'Editor',
-        icon: 'edit',
-        description: null,
-        parent: null,
-        policies: ['policy-uuid-1'],
-      }],
+      roles: [
+        {
+          id: 'role-1',
+          name: 'Editor',
+          icon: 'edit',
+          description: null,
+          parent: null,
+          policies: ['policy-uuid-1'],
+        },
+      ],
       policies: [],
       permissions: [],
     }
@@ -688,24 +910,28 @@ describe('sync: loadRulesFromPayload preserves original policy IDs', () => {
   it('does not show role as modified when policy IDs are preserved', () => {
     // Simulates the "Server role appearing as modified" bug fix
     const remotePayload: DirectusRulesPayload = {
-      roles: [{
-        id: 'server-role-id',
-        name: 'Server',
-        icon: 'dns',
-        description: 'For server-side operations',
-        parent: null,
-        policies: ['admin-policy-id'],
-      }],
-      policies: [{
-        id: 'admin-policy-id',
-        name: '$t:admin_policy',
-        icon: 'verified',
-        description: '$t:admin_policy_description',
-        ip_access: null,
-        enforce_tfa: false,
-        admin_access: true,
-        app_access: true,
-      }],
+      roles: [
+        {
+          id: 'server-role-id',
+          name: 'Server',
+          icon: 'dns',
+          description: 'For server-side operations',
+          parent: null,
+          policies: ['admin-policy-id'],
+        },
+      ],
+      policies: [
+        {
+          id: 'admin-policy-id',
+          name: '$t:admin_policy',
+          icon: 'verified',
+          description: '$t:admin_policy_description',
+          ip_access: null,
+          enforce_tfa: false,
+          admin_access: true,
+          app_access: true,
+        },
+      ],
       permissions: [],
     }
 
@@ -717,7 +943,7 @@ describe('sync: loadRulesFromPayload preserves original policy IDs', () => {
     const diff = compareRulesPayloads(serialized, remotePayload)
 
     // Server role should NOT appear as modified
-    const serverRole = diff.roles.find(r => r.name === 'Server')
+    const serverRole = diff.roles.find((r) => r.name === 'Server')
     expect(serverRole?.type).toBe('unchanged')
   })
 })
@@ -725,34 +951,40 @@ describe('sync: loadRulesFromPayload preserves original policy IDs', () => {
 describe('sync: round-trip payload consistency', () => {
   it('load and serialize produces equivalent payload', () => {
     const original: DirectusRulesPayload = {
-      roles: [{
-        id: 'role-1',
-        name: 'Editor',
-        icon: 'edit',
-        description: 'Content editor',
-        parent: null,
-        policies: ['policy-1'],
-      }],
-      policies: [{
-        id: 'policy-1',
-        name: 'Content Policy',
-        icon: 'article',
-        description: 'Manage content',
-        ip_access: null,
-        enforce_tfa: false,
-        admin_access: false,
-        app_access: true,
-      }],
-      permissions: [{
-        id: 1,
-        policy: 'policy-1',
-        collection: 'posts',
-        action: 'read',
-        permissions: { status: { _eq: 'published' } },
-        validation: null,
-        presets: null,
-        fields: ['title', 'content'],
-      }],
+      roles: [
+        {
+          id: 'role-1',
+          name: 'Editor',
+          icon: 'edit',
+          description: 'Content editor',
+          parent: null,
+          policies: ['policy-1'],
+        },
+      ],
+      policies: [
+        {
+          id: 'policy-1',
+          name: 'Content Policy',
+          icon: 'article',
+          description: 'Manage content',
+          ip_access: null,
+          enforce_tfa: false,
+          admin_access: false,
+          app_access: true,
+        },
+      ],
+      permissions: [
+        {
+          id: 1,
+          policy: 'policy-1',
+          collection: 'posts',
+          action: 'read',
+          permissions: { status: { _eq: 'published' } },
+          validation: null,
+          presets: null,
+          fields: ['title', 'content'],
+        },
+      ],
     }
 
     const rules = loadRulesFromPayload(original)

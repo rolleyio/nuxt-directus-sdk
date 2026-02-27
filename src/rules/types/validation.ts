@@ -44,7 +44,7 @@ export function isStandardSchema(value: unknown): value is StandardSchemaV1 {
     return false
   }
 
-  const standard = (value as StandardSchemaV1)['~standard']
+  const standard = (value as StandardSchemaV1)['~standard'] // eslint-disable-line typescript/no-unsafe-type-assertion -- type guard: checked 'in' above
 
   if (typeof standard !== 'object' || standard === null) {
     return false
@@ -66,7 +66,9 @@ export interface DirectusValidation {
 /**
  * A single validation rule (can be field-level or logical group)
  */
-export type DirectusValidationRule = DirectusValidation | { [field: string]: DirectusFieldValidation }
+export type DirectusValidationRule =
+  | DirectusValidation
+  | { [field: string]: DirectusFieldValidation }
 
 /**
  * Field-level validation operators

@@ -4,10 +4,7 @@
 
 import type { DirectusClient, RestClient } from '@directus/sdk'
 import type { RulesConfig } from '../types'
-import type {
-  PushOptions,
-  PushResult,
-} from './types'
+import type { PushOptions, PushResult } from './types'
 import {
   createPermission,
   createPolicy,
@@ -88,7 +85,7 @@ export async function pushRules<Schema>(
     const policyIdMap = new Map<string, string>() // local ID -> remote ID
 
     // Create new policies
-    const policiesToCreate = diff.policies.filter(p => p.type === 'added')
+    const policiesToCreate = diff.policies.filter((p) => p.type === 'added')
     for (let i = 0; i < policiesToCreate.length; i++) {
       const change = policiesToCreate[i]
       onProgress?.({
@@ -111,15 +108,14 @@ export async function pushRules<Schema>(
             app_access: change.local!.app_access,
           }),
         )
-        const newId = (created as any).id
+        const newId = (created as Record<string, string>).id // eslint-disable-line typescript/no-unsafe-type-assertion -- SDK createPolicy returns generic
         if (change.local!.id) {
           policyIdMap.set(change.local!.id, newId)
         }
         result.policies.push({ type: 'created', name: change.name, id: newId })
         result.summary.policies.created++
-      }
-      catch (error) {
-        const message = `Failed to create policy "${change.name}": ${error}`
+      } catch (error) {
+        const message = `Failed to create policy "${change.name}": ${String(error)}`
         result.errors.push(message)
         result.policies.push({ type: 'skipped', name: change.name, error: message })
         result.summary.policies.errors++
@@ -129,7 +125,7 @@ export async function pushRules<Schema>(
 
     // Update modified policies
     if (!addOnly) {
-      const policiesToUpdate = diff.policies.filter(p => p.type === 'modified')
+      const policiesToUpdate = diff.policies.filter((p) => p.type === 'modified')
       for (let i = 0; i < policiesToUpdate.length; i++) {
         const change = policiesToUpdate[i]
         onProgress?.({
@@ -158,9 +154,8 @@ export async function pushRules<Schema>(
           }
           result.policies.push({ type: 'updated', name: change.name, id: remoteId })
           result.summary.policies.updated++
-        }
-        catch (error) {
-          const message = `Failed to update policy "${change.name}": ${error}`
+        } catch (error) {
+          const message = `Failed to update policy "${change.name}": ${String(error)}`
           result.errors.push(message)
           result.policies.push({ type: 'skipped', name: change.name, error: message })
           result.summary.policies.errors++
@@ -170,7 +165,7 @@ export async function pushRules<Schema>(
     }
 
     // Map unchanged policies too
-    for (const change of diff.policies.filter(p => p.type === 'unchanged')) {
+    for (const change of diff.policies.filter((p) => p.type === 'unchanged')) {
       if (change.local!.id && change.remote!.id) {
         policyIdMap.set(change.local!.id, change.remote!.id)
       }
@@ -178,7 +173,7 @@ export async function pushRules<Schema>(
 
     // 4. Push roles (now that policies exist)
     // Create new roles
-    const rolesToCreate = diff.roles.filter(r => r.type === 'added')
+    const rolesToCreate = diff.roles.filter((r) => r.type === 'added')
     for (let i = 0; i < rolesToCreate.length; i++) {
       const change = rolesToCreate[i]
       onProgress?.({
@@ -206,9 +201,8 @@ export async function pushRules<Schema>(
         )
         result.roles.push({ type: 'created', name: change.name })
         result.summary.roles.created++
-      }
-      catch (error) {
-        const message = `Failed to create role "${change.name}": ${error}`
+      } catch (error) {
+        const message = `Failed to create role "${change.name}": ${String(error)}`
         result.errors.push(message)
         result.roles.push({ type: 'skipped', name: change.name, error: message })
         result.summary.roles.errors++
@@ -218,7 +212,7 @@ export async function pushRules<Schema>(
 
     // Update modified roles
     if (!addOnly) {
-      const rolesToUpdate = diff.roles.filter(r => r.type === 'modified')
+      const rolesToUpdate = diff.roles.filter((r) => r.type === 'modified')
       for (let i = 0; i < rolesToUpdate.length; i++) {
         const change = rolesToUpdate[i]
         onProgress?.({
@@ -247,9 +241,8 @@ export async function pushRules<Schema>(
           )
           result.roles.push({ type: 'updated', name: change.name, id: remoteId })
           result.summary.roles.updated++
-        }
-        catch (error) {
-          const message = `Failed to update role "${change.name}": ${error}`
+        } catch (error) {
+          const message = `Failed to update role "${change.name}": ${String(error)}`
           result.errors.push(message)
           result.roles.push({ type: 'skipped', name: change.name, error: message })
           result.summary.roles.errors++
@@ -260,7 +253,7 @@ export async function pushRules<Schema>(
 
     // 5. Push permissions (after policies exist)
     // Create new permissions
-    const permsToCreate = diff.permissions.filter(p => p.type === 'added')
+    const permsToCreate = diff.permissions.filter((p) => p.type === 'added')
     for (let i = 0; i < permsToCreate.length; i++) {
       const change = permsToCreate[i]
       onProgress?.({
@@ -274,7 +267,9 @@ export async function pushRules<Schema>(
       try {
         // Map local policy ID to remote ID
         const localPolicyId = change.local!.policy
-        const remotePolicyId = localPolicyId ? (policyIdMap.get(localPolicyId) || localPolicyId) : null
+        const remotePolicyId = localPolicyId
+          ? policyIdMap.get(localPolicyId) || localPolicyId
+          : null
 
         await client.request(
           createPermission({
@@ -289,9 +284,8 @@ export async function pushRules<Schema>(
         )
         result.permissions.push({ type: 'created', name: change.name })
         result.summary.permissions.created++
-      }
-      catch (error) {
-        const message = `Failed to create permission "${change.name}": ${error}`
+      } catch (error) {
+        const message = `Failed to create permission "${change.name}": ${String(error)}`
         result.errors.push(message)
         result.permissions.push({ type: 'skipped', name: change.name, error: message })
         result.summary.permissions.errors++
@@ -301,7 +295,7 @@ export async function pushRules<Schema>(
 
     // Update modified permissions
     if (!addOnly) {
-      const permsToUpdate = diff.permissions.filter(p => p.type === 'modified')
+      const permsToUpdate = diff.permissions.filter((p) => p.type === 'modified')
       for (let i = 0; i < permsToUpdate.length; i++) {
         const change = permsToUpdate[i]
         onProgress?.({
@@ -324,9 +318,8 @@ export async function pushRules<Schema>(
           )
           result.permissions.push({ type: 'updated', name: change.name, id: String(remoteId) })
           result.summary.permissions.updated++
-        }
-        catch (error) {
-          const message = `Failed to update permission "${change.name}": ${error}`
+        } catch (error) {
+          const message = `Failed to update permission "${change.name}": ${String(error)}`
           result.errors.push(message)
           result.permissions.push({ type: 'skipped', name: change.name, error: message })
           result.summary.permissions.errors++
@@ -338,7 +331,7 @@ export async function pushRules<Schema>(
     // 6. Delete in reverse order (if not skipped)
     if (!skipDeletes && !addOnly) {
       // Delete permissions first
-      const permsToDelete = diff.permissions.filter(p => p.type === 'removed')
+      const permsToDelete = diff.permissions.filter((p) => p.type === 'removed')
       for (let i = 0; i < permsToDelete.length; i++) {
         const change = permsToDelete[i]
         onProgress?.({
@@ -351,11 +344,14 @@ export async function pushRules<Schema>(
 
         try {
           await client.request(deletePermission(change.remote!.id!))
-          result.permissions.push({ type: 'deleted', name: change.name, id: String(change.remote!.id) })
+          result.permissions.push({
+            type: 'deleted',
+            name: change.name,
+            id: String(change.remote!.id),
+          })
           result.summary.permissions.deleted++
-        }
-        catch (error) {
-          const message = `Failed to delete permission "${change.name}": ${error}`
+        } catch (error) {
+          const message = `Failed to delete permission "${change.name}": ${String(error)}`
           result.errors.push(message)
           result.permissions.push({ type: 'skipped', name: change.name, error: message })
           result.summary.permissions.errors++
@@ -364,7 +360,7 @@ export async function pushRules<Schema>(
       }
 
       // Delete roles
-      const rolesToDelete = diff.roles.filter(r => r.type === 'removed')
+      const rolesToDelete = diff.roles.filter((r) => r.type === 'removed')
       for (let i = 0; i < rolesToDelete.length; i++) {
         const change = rolesToDelete[i]
         onProgress?.({
@@ -379,9 +375,8 @@ export async function pushRules<Schema>(
           await client.request(deleteRole(change.remote!.id!))
           result.roles.push({ type: 'deleted', name: change.name, id: change.remote!.id })
           result.summary.roles.deleted++
-        }
-        catch (error) {
-          const message = `Failed to delete role "${change.name}": ${error}`
+        } catch (error) {
+          const message = `Failed to delete role "${change.name}": ${String(error)}`
           result.errors.push(message)
           result.roles.push({ type: 'skipped', name: change.name, error: message })
           result.summary.roles.errors++
@@ -390,7 +385,7 @@ export async function pushRules<Schema>(
       }
 
       // Delete policies last
-      const policiesToDelete = diff.policies.filter(p => p.type === 'removed')
+      const policiesToDelete = diff.policies.filter((p) => p.type === 'removed')
       for (let i = 0; i < policiesToDelete.length; i++) {
         const change = policiesToDelete[i]
         onProgress?.({
@@ -405,9 +400,8 @@ export async function pushRules<Schema>(
           await client.request(deletePolicy(change.remote!.id!))
           result.policies.push({ type: 'deleted', name: change.name, id: change.remote!.id })
           result.summary.policies.deleted++
-        }
-        catch (error) {
-          const message = `Failed to delete policy "${change.name}": ${error}`
+        } catch (error) {
+          const message = `Failed to delete policy "${change.name}": ${String(error)}`
           result.errors.push(message)
           result.policies.push({ type: 'skipped', name: change.name, error: message })
           result.summary.policies.errors++
@@ -415,10 +409,9 @@ export async function pushRules<Schema>(
         }
       }
     }
-  }
-  catch (error) {
+  } catch (error) {
     result.success = false
-    result.errors.push(`Push failed: ${error}`)
+    result.errors.push(`Push failed: ${String(error)}`)
   }
 
   return result
@@ -438,9 +431,15 @@ export function formatPushResult(result: PushResult): string {
   const { summary } = result
 
   lines.push('Summary:')
-  lines.push(`  Policies: +${summary.policies.created} ~${summary.policies.updated} -${summary.policies.deleted}${summary.policies.errors ? ` (${summary.policies.errors} errors)` : ''}`)
-  lines.push(`  Roles:    +${summary.roles.created} ~${summary.roles.updated} -${summary.roles.deleted}${summary.roles.errors ? ` (${summary.roles.errors} errors)` : ''}`)
-  lines.push(`  Perms:    +${summary.permissions.created} ~${summary.permissions.updated} -${summary.permissions.deleted}${summary.permissions.errors ? ` (${summary.permissions.errors} errors)` : ''}`)
+  lines.push(
+    `  Policies: +${summary.policies.created} ~${summary.policies.updated} -${summary.policies.deleted}${summary.policies.errors ? ` (${summary.policies.errors} errors)` : ''}`,
+  )
+  lines.push(
+    `  Roles:    +${summary.roles.created} ~${summary.roles.updated} -${summary.roles.deleted}${summary.roles.errors ? ` (${summary.roles.errors} errors)` : ''}`,
+  )
+  lines.push(
+    `  Perms:    +${summary.permissions.created} ~${summary.permissions.updated} -${summary.permissions.deleted}${summary.permissions.errors ? ` (${summary.permissions.errors} errors)` : ''}`,
+  )
 
   if (result.errors.length > 0) {
     lines.push('')

@@ -8,13 +8,19 @@ interface DirectusFileUpload {
   data?: Record<keyof DirectusFile, string>
 }
 
-export async function uploadDirectusFile(file: DirectusFileUpload, query?: Query<DirectusSchema, DirectusSchema['directus_files']>) {
+export async function uploadDirectusFile(
+  file: DirectusFileUpload,
+  query?: Query<DirectusSchema, DirectusSchema['directus_files']>,
+) {
   const result = await uploadDirectusFiles([file], query)
 
-  return (Array.isArray(result) ? result[0] : result)
+  return Array.isArray(result) ? result[0] : result
 }
 
-export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Query<DirectusSchema, DirectusSchema['directus_files']>) {
+export async function uploadDirectusFiles(
+  files: DirectusFileUpload[],
+  query?: Query<DirectusSchema, DirectusSchema['directus_files']>,
+) {
   const directus = useDirectus()
   const formData = new FormData()
 
@@ -28,7 +34,11 @@ export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Q
     formData.set('file', file)
   })
 
-  return directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFile[] | DirectusFile
+  /* eslint-disable typescript/no-explicit-any, typescript/no-redundant-type-constituents, typescript/no-unsafe-type-assertion -- SDK uploadFiles has complex generics */
+  return directus.request(uploadFiles(formData, query as any)) as unknown as
+    | DirectusFile[]
+    | DirectusFile
+  /* eslint-enable typescript/no-explicit-any, typescript/no-redundant-type-constituents, typescript/no-unsafe-type-assertion */
 }
 
 export type DirectusThumbnailFormat = 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'
@@ -46,9 +56,15 @@ export interface DirectusFileOptions {
   key?: string
 }
 
-export function getDirectusFileUrl(file: string | DirectusFile, options?: DirectusFileOptions): string {
+export function getDirectusFileUrl(
+  // eslint-disable-next-line typescript/no-redundant-type-constituents
+  file: string | DirectusFile,
+  options?: DirectusFileOptions,
+): string {
   const fileId = typeof file === 'string' ? file : file.id
-  const url = new URL(useDirectusUrl(`assets/${fileId}${options?.filename ? `/${options.filename}` : ''}`))
+  const url = new URL(
+    useDirectusUrl(`assets/${fileId}${options?.filename ? `/${options.filename}` : ''}`),
+  )
 
   if (options?.download) {
     url.searchParams.append('download', 'true')

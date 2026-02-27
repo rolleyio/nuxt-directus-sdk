@@ -41,25 +41,17 @@ export default defineNuxtConfig({
 const directus = useDirectus()
 
 const { data: article } = await useAsyncData('article', () =>
-  directus.request(readItem('articles', route.params.id))
+  directus.request(readItem('articles', route.params.id)),
 )
 </script>
 
 <template>
   <article>
-    <DirectusVisualEditor
-      collection="articles"
-      :item="article.id"
-      fields="title"
-    >
+    <DirectusVisualEditor collection="articles" :item="article.id" fields="title">
       <h1>{{ article.title }}</h1>
     </DirectusVisualEditor>
 
-    <DirectusVisualEditor
-      collection="articles"
-      :item="article.id"
-      fields="content"
-    >
+    <DirectusVisualEditor collection="articles" :item="article.id" fields="content">
       <div v-html="article.content" />
     </DirectusVisualEditor>
   </article>
@@ -100,20 +92,12 @@ Specify which field(s) to edit. Can be a string or array:
 
 ```vue
 <!-- Single field -->
-<DirectusVisualEditor
-  collection="articles"
-  :item="article.id"
-  fields="title"
->
+<DirectusVisualEditor collection="articles" :item="article.id" fields="title">
   <h1>{{ article.title }}</h1>
 </DirectusVisualEditor>
 
 <!-- Multiple fields -->
-<DirectusVisualEditor
-  collection="articles"
-  :item="article.id"
-  :fields="['title', 'subtitle']"
->
+<DirectusVisualEditor collection="articles" :item="article.id" :fields="['title', 'subtitle']">
   <h1>{{ article.title }}</h1>
   <h2>{{ article.subtitle }}</h2>
 </DirectusVisualEditor>
@@ -153,21 +137,18 @@ The `DirectusEditButton` component renders a floating button that opens the Dire
     <div v-html="article.content" />
 
     <!-- Floating edit button - appears only inside Directus -->
-    <DirectusEditButton
-      collection="articles"
-      :item="article.id"
-    />
+    <DirectusEditButton collection="articles" :item="article.id" />
   </article>
 </template>
 ```
 
 ### Edit Button Props
 
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| `collection` | `string` | Yes | — | The Directus collection name |
-| `item` | `string \| number` | Yes | — | The item ID (primary key) |
-| `mode` | `'drawer' \| 'modal' \| 'popover'` | No | `'drawer'` | How the editor opens |
+| Prop         | Type                               | Required | Default    | Description                  |
+| ------------ | ---------------------------------- | -------- | ---------- | ---------------------------- |
+| `collection` | `string`                           | Yes      | —          | The Directus collection name |
+| `item`       | `string \| number`                 | Yes      | —          | The item ID (primary key)    |
+| `mode`       | `'drawer' \| 'modal' \| 'popover'` | No       | `'drawer'` | How the editor opens         |
 
 The button renders with default styling (purple, fixed bottom-right) and a pencil icon. You can customize it via the default slot:
 
@@ -189,22 +170,18 @@ The `DirectusAddButton` component renders an inline button for adding items to a
     </div>
 
     <!-- Add button for the blocks repeater field -->
-    <DirectusAddButton
-      collection="pages"
-      :item="page.id"
-      field="blocks"
-    />
+    <DirectusAddButton collection="pages" :item="page.id" field="blocks" />
   </div>
 </template>
 ```
 
 ### Add Button Props
 
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| `collection` | `string` | Yes | — | The parent collection containing the repeater field |
-| `item` | `string \| number` | Yes | — | The parent item ID |
-| `field` | `string` | Yes | — | The field name of the repeater (e.g., `'blocks'`) |
+| Prop         | Type               | Required | Default | Description                                         |
+| ------------ | ------------------ | -------- | ------- | --------------------------------------------------- |
+| `collection` | `string`           | Yes      | —       | The parent collection containing the repeater field |
+| `item`       | `string \| number` | Yes      | —       | The parent item ID                                  |
+| `field`      | `string`           | Yes      | —       | The field name of the repeater (e.g., `'blocks'`)   |
 
 The button renders as a full-width dashed border area with a plus icon. You can customize it via the default slot:
 
@@ -227,9 +204,7 @@ const directusVisualEditor = useDirectusVisualEditor()
 
 <template>
   <div>
-    <div v-if="directusVisualEditor" class="editor-banner">
-      Editing Mode
-    </div>
+    <div v-if="directusVisualEditor" class="editor-banner">Editing Mode</div>
 
     <h1>{{ article.title }}</h1>
   </div>
@@ -256,16 +231,10 @@ const directusVisualEditor = useDirectusVisualEditor()
 <template>
   <div>
     <!-- Show preview banner when viewing draft content -->
-    <div v-if="directusPreview" class="preview-banner">
-      Preview Mode
-    </div>
+    <div v-if="directusPreview" class="preview-banner">Preview Mode</div>
 
     <!-- Editable content - attributes only added inside Directus iframe -->
-    <DirectusVisualEditor
-      collection="articles"
-      :item="article.id"
-      fields="title"
-    >
+    <DirectusVisualEditor collection="articles" :item="article.id" fields="title">
       <h1>{{ article.title }}</h1>
     </DirectusVisualEditor>
   </div>
@@ -282,9 +251,11 @@ const route = useRoute()
 const directus = useDirectus()
 
 const { data: article } = await useAsyncData('article', () =>
-  directus.request(readItem('articles', route.params.id, {
-    fields: ['*', { author: ['*'] }]
-  }))
+  directus.request(
+    readItem('articles', route.params.id, {
+      fields: ['*', { author: ['*'] }],
+    }),
+  ),
 )
 </script>
 
@@ -305,11 +276,7 @@ const { data: article } = await useAsyncData('article', () =>
     </DirectusVisualEditor>
 
     <!-- Title -->
-    <DirectusVisualEditor
-      collection="articles"
-      :item="article.id"
-      fields="title"
-    >
+    <DirectusVisualEditor collection="articles" :item="article.id" fields="title">
       <h1>{{ article.title }}</h1>
     </DirectusVisualEditor>
 
@@ -319,17 +286,11 @@ const { data: article } = await useAsyncData('article', () =>
       :item="article.author.id"
       :fields="['first_name', 'last_name']"
     >
-      <p class="author">
-        By {{ article.author.first_name }} {{ article.author.last_name }}
-      </p>
+      <p class="author">By {{ article.author.first_name }} {{ article.author.last_name }}</p>
     </DirectusVisualEditor>
 
     <!-- Content -->
-    <DirectusVisualEditor
-      collection="articles"
-      :item="article.id"
-      fields="content"
-    >
+    <DirectusVisualEditor collection="articles" :item="article.id" fields="content">
       <div class="content" v-html="article.content" />
     </DirectusVisualEditor>
 
@@ -347,20 +308,18 @@ const route = useRoute()
 const directus = useDirectus()
 
 const { data: page } = await useAsyncData('page', () =>
-  directus.request(readItem('pages', route.params.id, {
-    fields: ['*', { blocks: ['*'] }]
-  }))
+  directus.request(
+    readItem('pages', route.params.id, {
+      fields: ['*', { blocks: ['*'] }],
+    }),
+  ),
 )
 </script>
 
 <template>
   <div class="page">
     <!-- Page title -->
-    <DirectusVisualEditor
-      collection="pages"
-      :item="page.id"
-      fields="title"
-    >
+    <DirectusVisualEditor collection="pages" :item="page.id" fields="title">
       <h1>{{ page.title }}</h1>
     </DirectusVisualEditor>
 
@@ -376,11 +335,7 @@ const { data: page } = await useAsyncData('page', () =>
     </DirectusVisualEditor>
 
     <!-- Add new block button -->
-    <DirectusAddButton
-      collection="pages"
-      :item="page.id"
-      field="blocks"
-    />
+    <DirectusAddButton collection="pages" :item="page.id" field="blocks" />
 
     <!-- Edit page button -->
     <DirectusEditButton collection="pages" :item="page.id" />
@@ -411,6 +366,7 @@ This outputs detailed logs to the browser console:
 ```
 
 Debug mode is useful for diagnosing:
+
 - **CSP issues** — Content-Security-Policy blocking `frame-ancestors` or `postMessage`
 - **URL mismatches** — `directusUrl` in your config not matching the actual Directus admin origin
 - **Iframe detection** — Confirming your site correctly detects the Directus iframe
@@ -441,20 +397,12 @@ Edit related items from different collections:
 <template>
   <article>
     <!-- Edit the article -->
-    <DirectusVisualEditor
-      collection="articles"
-      :item="article.id"
-      fields="title"
-    >
+    <DirectusVisualEditor collection="articles" :item="article.id" fields="title">
       <h1>{{ article.title }}</h1>
     </DirectusVisualEditor>
 
     <!-- Edit the related category -->
-    <DirectusVisualEditor
-      collection="categories"
-      :item="article.category.id"
-      fields="name"
-    >
+    <DirectusVisualEditor collection="categories" :item="article.category.id" fields="name">
       <span class="category">{{ article.category.name }}</span>
     </DirectusVisualEditor>
 
@@ -488,11 +436,7 @@ const directusVisualEditor = useDirectusVisualEditor()
       <DirectusEditButton collection="articles" :item="article.id" />
     </div>
 
-    <DirectusVisualEditor
-      collection="articles"
-      :item="article.id"
-      fields="title"
-    >
+    <DirectusVisualEditor collection="articles" :item="article.id" fields="title">
       <h1>{{ article.title }}</h1>
     </DirectusVisualEditor>
   </div>
@@ -542,11 +486,12 @@ If `data-directus` attributes are not being added to elements:
 A component that wraps editable content with `data-directus` attributes.
 
 **Props:**
+
 ```typescript
 interface DirectusVisualEditorProps {
-  collection: string                    // Directus collection name
-  item: string | number                 // Item ID (primary key)
-  fields?: string | string[]            // Field(s) to edit
+  collection: string // Directus collection name
+  item: string | number // Item ID (primary key)
+  fields?: string | string[] // Field(s) to edit
   mode?: 'drawer' | 'modal' | 'popover' // Editor display mode
 }
 ```
@@ -556,10 +501,11 @@ interface DirectusVisualEditorProps {
 A floating button that triggers the Directus editor for a specific item.
 
 **Props:**
+
 ```typescript
 interface DirectusEditButtonProps {
-  collection: string                    // Directus collection name
-  item: string | number                 // Item ID (primary key)
+  collection: string // Directus collection name
+  item: string | number // Item ID (primary key)
   mode?: 'drawer' | 'modal' | 'popover' // Editor display mode
 }
 ```
@@ -569,11 +515,12 @@ interface DirectusEditButtonProps {
 An inline button that opens the editor for a repeater/relationship field.
 
 **Props:**
+
 ```typescript
 interface DirectusAddButtonProps {
-  collection: string                    // Parent collection name
-  item: string | number                 // Parent item ID
-  field: string                         // Repeater field name
+  collection: string // Parent collection name
+  item: string | number // Parent item ID
+  field: string // Repeater field name
 }
 ```
 

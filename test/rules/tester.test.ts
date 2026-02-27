@@ -44,10 +44,7 @@ describe('createRulesTester', () => {
                 },
                 delete: {
                   filter: {
-                    _and: [
-                      { author: { _eq: '$CURRENT_USER' } },
-                      { status: { _eq: 'draft' } },
-                    ],
+                    _and: [{ author: { _eq: '$CURRENT_USER' } }, { status: { _eq: 'draft' } }],
                   },
                 },
               },
@@ -190,14 +187,18 @@ describe('createRulesTester', () => {
       }
 
       // Editor can delete own drafts
-      expect(tester.itemMatchesFilter('Editor', 'delete', 'posts', draftItem, {
-        currentUser: 'user-123',
-      })).toBe(true)
+      expect(
+        tester.itemMatchesFilter('Editor', 'delete', 'posts', draftItem, {
+          currentUser: 'user-123',
+        }),
+      ).toBe(true)
 
       // Editor cannot delete own published posts
-      expect(tester.itemMatchesFilter('Editor', 'delete', 'posts', publishedItem, {
-        currentUser: 'user-123',
-      })).toBe(false)
+      expect(
+        tester.itemMatchesFilter('Editor', 'delete', 'posts', publishedItem, {
+          currentUser: 'user-123',
+        }),
+      ).toBe(false)
     })
   })
 
@@ -263,7 +264,7 @@ describe('createRulesTester', () => {
                   posts: {
                     create: {
                       fields: ['title', 'content'],
-                      presets: { status: 'draft', author: '$CURRENT_USER' as any },
+                      presets: { status: 'draft', author: '$CURRENT_USER' as any }, // eslint-disable-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- Directus dynamic variable
                     },
                   },
                 },
@@ -297,7 +298,7 @@ describe('createRulesTester', () => {
     it('returns the underlying rules config', () => {
       const rulesConfig = tester.getRules()
       expect(rulesConfig.roles).toHaveLength(3)
-      expect(rulesConfig.roles.map(r => r.name)).toEqual(['Admin', 'Editor', 'Viewer'])
+      expect(rulesConfig.roles.map((r) => r.name)).toEqual(['Admin', 'Editor', 'Viewer'])
     })
   })
 })

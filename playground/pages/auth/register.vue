@@ -22,31 +22,15 @@ async function registerForm() {
   <form @submit.prevent="registerForm">
     <div>
       <label for="first_name-input">First Name</label>
-      <input
-        id="first_name-input"
-        v-model="form.first_name"
-        autocomplete="given-name"
-        required
-      >
+      <input id="first_name-input" v-model="form.first_name" autocomplete="given-name" required />
     </div>
     <div>
       <label for="last_name-input">Last Name</label>
-      <input
-        id="last_name-input"
-        v-model="form.last_name"
-        autocomplete="family-name"
-        required
-      >
+      <input id="last_name-input" v-model="form.last_name" autocomplete="family-name" required />
     </div>
     <div>
       <label for="email-input">Email</label>
-      <input
-        id="email-input"
-        v-model="form.email"
-        type="email"
-        autocomplete="email"
-        required
-      >
+      <input id="email-input" v-model="form.email" type="email" autocomplete="email" required />
     </div>
 
     <div>
@@ -57,7 +41,7 @@ async function registerForm() {
         type="password"
         autocomplete="current-password"
         required
-      >
+      />
     </div>
 
     <button>Register New User</button>

@@ -4,7 +4,14 @@
 
 export type { CompareOptions } from './diff'
 
-export { compareRulesPayloads, diffRemoteRules, diffRules, fetchRemoteRules, fetchRemoteRulesAsJson, pullRules } from './diff'
+export {
+  compareRulesPayloads,
+  diffRemoteRules,
+  diffRules,
+  fetchRemoteRules,
+  fetchRemoteRulesAsJson,
+  pullRules,
+} from './diff'
 export { formatDiff } from './format'
 export { formatPushResult, pushRules } from './push'
 export type {

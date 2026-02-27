@@ -2,11 +2,9 @@ import type { VNode } from 'vue'
 import { cloneVNode, Comment, defineComponent, Fragment, mergeProps } from 'vue'
 
 export function renderSlotFragments(children?: VNode[]): VNode[] {
-  if (!children)
-    return []
+  if (!children) return []
   return children.flatMap((child) => {
-    if (child.type === Fragment)
-      return renderSlotFragments(child.children as VNode[])
+    if (child.type === Fragment) return renderSlotFragments(child.children as VNode[]) // eslint-disable-line typescript/no-unsafe-type-assertion -- Vue VNode children type
 
     return [child]
   })
@@ -17,13 +15,11 @@ export const Slot = defineComponent({
   inheritAttrs: false,
   setup(_, { attrs, slots }) {
     return () => {
-      if (!slots.default)
-        return null
+      if (!slots.default) return null
 
       const childrens = renderSlotFragments(slots.default())
-      const firstNonCommentChildrenIndex = childrens.findIndex(child => child.type !== Comment)
-      if (firstNonCommentChildrenIndex === -1)
-        return childrens
+      const firstNonCommentChildrenIndex = childrens.findIndex((child) => child.type !== Comment)
+      if (firstNonCommentChildrenIndex === -1) return childrens
 
       const firstNonCommentChildren = childrens[firstNonCommentChildrenIndex]
 
@@ -52,8 +48,7 @@ export const Slot = defineComponent({
         }
       }
 
-      if (childrens.length === 1)
-        return cloned
+      if (childrens.length === 1) return cloned
 
       childrens[firstNonCommentChildrenIndex] = cloned
       return childrens

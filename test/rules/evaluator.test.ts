@@ -179,53 +179,63 @@ describe('evaluateFilter', () => {
     it('handles _and operator', () => {
       const item = { status: 'published', author: 'user-1' }
 
-      expect(evaluateFilter({
-        _and: [
-          { status: { _eq: 'published' } },
-          { author: { _eq: 'user-1' } },
-        ],
-      }, item)).toBe(true)
+      expect(
+        evaluateFilter(
+          {
+            _and: [{ status: { _eq: 'published' } }, { author: { _eq: 'user-1' } }],
+          },
+          item,
+        ),
+      ).toBe(true)
 
-      expect(evaluateFilter({
-        _and: [
-          { status: { _eq: 'published' } },
-          { author: { _eq: 'user-2' } },
-        ],
-      }, item)).toBe(false)
+      expect(
+        evaluateFilter(
+          {
+            _and: [{ status: { _eq: 'published' } }, { author: { _eq: 'user-2' } }],
+          },
+          item,
+        ),
+      ).toBe(false)
     })
 
     it('handles _or operator', () => {
       const item = { status: 'published', author: 'user-1' }
 
-      expect(evaluateFilter({
-        _or: [
-          { status: { _eq: 'draft' } },
-          { author: { _eq: 'user-1' } },
-        ],
-      }, item)).toBe(true)
+      expect(
+        evaluateFilter(
+          {
+            _or: [{ status: { _eq: 'draft' } }, { author: { _eq: 'user-1' } }],
+          },
+          item,
+        ),
+      ).toBe(true)
 
-      expect(evaluateFilter({
-        _or: [
-          { status: { _eq: 'draft' } },
-          { author: { _eq: 'user-2' } },
-        ],
-      }, item)).toBe(false)
+      expect(
+        evaluateFilter(
+          {
+            _or: [{ status: { _eq: 'draft' } }, { author: { _eq: 'user-2' } }],
+          },
+          item,
+        ),
+      ).toBe(false)
     })
 
     it('handles nested logical operators', () => {
       const item = { status: 'published', author: 'user-1', type: 'article' }
 
-      expect(evaluateFilter({
-        _and: [
-          { status: { _eq: 'published' } },
+      expect(
+        evaluateFilter(
           {
-            _or: [
-              { type: { _eq: 'article' } },
-              { type: { _eq: 'page' } },
+            _and: [
+              { status: { _eq: 'published' } },
+              {
+                _or: [{ type: { _eq: 'article' } }, { type: { _eq: 'page' } }],
+              },
             ],
           },
-        ],
-      }, item)).toBe(true)
+          item,
+        ),
+      ).toBe(true)
     })
   })
 
@@ -233,37 +243,28 @@ describe('evaluateFilter', () => {
     it('resolves $CURRENT_USER', () => {
       const item = { author: 'user-123' }
 
-      expect(evaluateFilter(
-        { author: { _eq: '$CURRENT_USER' } },
-        item,
-        { currentUser: 'user-123' },
-      )).toBe(true)
+      expect(
+        evaluateFilter({ author: { _eq: '$CURRENT_USER' } }, item, { currentUser: 'user-123' }),
+      ).toBe(true)
 
-      expect(evaluateFilter(
-        { author: { _eq: '$CURRENT_USER' } },
-        item,
-        { currentUser: 'user-456' },
-      )).toBe(false)
+      expect(
+        evaluateFilter({ author: { _eq: '$CURRENT_USER' } }, item, { currentUser: 'user-456' }),
+      ).toBe(false)
     })
 
     it('resolves $CURRENT_ROLE', () => {
       const item = { role: 'role-123' }
 
-      expect(evaluateFilter(
-        { role: { _eq: '$CURRENT_ROLE' } },
-        item,
-        { currentRole: 'role-123' },
-      )).toBe(true)
+      expect(
+        evaluateFilter({ role: { _eq: '$CURRENT_ROLE' } }, item, { currentRole: 'role-123' }),
+      ).toBe(true)
     })
 
     it('uses default values when context not provided', () => {
       const item = { author: 'test-user-id' }
 
       // Default currentUser is 'test-user-id'
-      expect(evaluateFilter(
-        { author: { _eq: '$CURRENT_USER' } },
-        item,
-      )).toBe(true)
+      expect(evaluateFilter({ author: { _eq: '$CURRENT_USER' } }, item)).toBe(true)
     })
   })
 
@@ -271,37 +272,51 @@ describe('evaluateFilter', () => {
     it('handles _some operator', () => {
       const item = {
         id: 1,
-        tags: [
-          { name: 'typescript' },
-          { name: 'javascript' },
-        ],
+        tags: [{ name: 'typescript' }, { name: 'javascript' }],
       }
 
-      expect(evaluateFilter({
-        tags: { _some: { name: { _eq: 'typescript' } } },
-      }, item)).toBe(true)
+      expect(
+        evaluateFilter(
+          {
+            tags: { _some: { name: { _eq: 'typescript' } } },
+          },
+          item,
+        ),
+      ).toBe(true)
 
-      expect(evaluateFilter({
-        tags: { _some: { name: { _eq: 'rust' } } },
-      }, item)).toBe(false)
+      expect(
+        evaluateFilter(
+          {
+            tags: { _some: { name: { _eq: 'rust' } } },
+          },
+          item,
+        ),
+      ).toBe(false)
     })
 
     it('handles _none operator', () => {
       const item = {
         id: 1,
-        tags: [
-          { name: 'typescript' },
-          { name: 'javascript' },
-        ],
+        tags: [{ name: 'typescript' }, { name: 'javascript' }],
       }
 
-      expect(evaluateFilter({
-        tags: { _none: { name: { _eq: 'rust' } } },
-      }, item)).toBe(true)
+      expect(
+        evaluateFilter(
+          {
+            tags: { _none: { name: { _eq: 'rust' } } },
+          },
+          item,
+        ),
+      ).toBe(true)
 
-      expect(evaluateFilter({
-        tags: { _none: { name: { _eq: 'typescript' } } },
-      }, item)).toBe(false)
+      expect(
+        evaluateFilter(
+          {
+            tags: { _none: { name: { _eq: 'typescript' } } },
+          },
+          item,
+        ),
+      ).toBe(false)
     })
   })
 
@@ -315,13 +330,23 @@ describe('evaluateFilter', () => {
         },
       }
 
-      expect(evaluateFilter({
-        author: { id: { _eq: 'user-1' } },
-      }, item)).toBe(true)
+      expect(
+        evaluateFilter(
+          {
+            author: { id: { _eq: 'user-1' } },
+          },
+          item,
+        ),
+      ).toBe(true)
 
-      expect(evaluateFilter({
-        author: { name: { _eq: 'Jane' } },
-      }, item)).toBe(false)
+      expect(
+        evaluateFilter(
+          {
+            author: { name: { _eq: 'Jane' } },
+          },
+          item,
+        ),
+      ).toBe(false)
     })
   })
 
@@ -329,15 +354,25 @@ describe('evaluateFilter', () => {
     it('combines multiple field filters with AND logic', () => {
       const item = { status: 'published', author: 'user-1', type: 'article' }
 
-      expect(evaluateFilter({
-        status: { _eq: 'published' },
-        author: { _eq: 'user-1' },
-      }, item)).toBe(true)
+      expect(
+        evaluateFilter(
+          {
+            status: { _eq: 'published' },
+            author: { _eq: 'user-1' },
+          },
+          item,
+        ),
+      ).toBe(true)
 
-      expect(evaluateFilter({
-        status: { _eq: 'published' },
-        author: { _eq: 'user-2' },
-      }, item)).toBe(false)
+      expect(
+        evaluateFilter(
+          {
+            status: { _eq: 'published' },
+            author: { _eq: 'user-2' },
+          },
+          item,
+        ),
+      ).toBe(false)
     })
   })
 })

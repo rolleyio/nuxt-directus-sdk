@@ -38,8 +38,7 @@ function loadEnv(): void {
     const content = readFileSync(envPath, 'utf-8')
     for (const line of content.split('\n')) {
       const trimmed = line.trim()
-      if (!trimmed || trimmed.startsWith('#'))
-        continue
+      if (!trimmed || trimmed.startsWith('#')) continue
       const [key, ...valueParts] = trimmed.split('=')
       if (key && valueParts.length > 0) {
         const value = valueParts.join('=').replace(/^["']|["']$/g, '')
@@ -70,7 +69,9 @@ function getConnectionConfig(
 
   if (!token) {
     console.error(`Error: ${label} token is required`)
-    console.error(`Provide --${label.toLowerCase()}-token or set DIRECTUS_ADMIN_TOKEN in your .env file`)
+    console.error(
+      `Provide --${label.toLowerCase()}-token or set DIRECTUS_ADMIN_TOKEN in your .env file`,
+    )
     process.exit(1)
   }
 
@@ -78,9 +79,7 @@ function getConnectionConfig(
 }
 
 function createClient(url: string, token: string) {
-  return createDirectus(url)
-    .with(staticToken(token))
-    .with(rest())
+  return createDirectus(url).with(staticToken(token)).with(rest())
 }
 
 function printHelp(): void {
@@ -153,15 +152,14 @@ function loadJsonFile(filePath: string): DirectusRulesPayload {
   const content = readFileSync(filePath, 'utf-8')
   try {
     return JSON.parse(content)
-  }
-  catch {
+  } catch {
     console.error(`Error: Invalid JSON in ${filePath}`)
     process.exit(1)
   }
 }
 
 async function commandPull(
-  options: { output: string, compact: boolean },
+  options: { output: string; compact: boolean },
   connection: ConnectionConfig,
 ): Promise<void> {
   const client = createClient(connection.url, connection.token)
@@ -180,10 +178,7 @@ async function commandPull(
   console.log(`  ${rules.permissions.length} permissions`)
 }
 
-async function commandDiff(
-  localFile: string,
-  connection: ConnectionConfig,
-): Promise<void> {
+async function commandDiff(localFile: string, connection: ConnectionConfig): Promise<void> {
   const local = loadJsonFile(localFile)
 
   console.log(`Comparing ${localFile} with ${connection.url}...`)
@@ -262,8 +257,7 @@ async function commandPush(
 
     if (!diff.hasChanges) {
       console.log('\nNo changes to push.')
-    }
-    else {
+    } else {
       console.log('\nRun without --dry-run to apply these changes.')
     }
     return
@@ -295,9 +289,9 @@ async function main(): Promise<void> {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     options: {
-      'help': { type: 'boolean', short: 'h' },
-      'output': { type: 'string', short: 'o', default: 'rules.json' },
-      'compact': { type: 'boolean', default: false },
+      help: { type: 'boolean', short: 'h' },
+      output: { type: 'string', short: 'o', default: 'rules.json' },
+      compact: { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
       'add-only': { type: 'boolean', default: false },
       'skip-deletes': { type: 'boolean', default: false },
@@ -323,10 +317,13 @@ async function main(): Promise<void> {
           values['source-token'],
           'Source',
         )
-        await commandPull({
-          output: values.output!,
-          compact: values.compact!,
-        }, connection)
+        await commandPull(
+          {
+            output: values.output,
+            compact: values.compact,
+          },
+          connection,
+        )
         break
       }
 
@@ -342,9 +339,9 @@ async function main(): Promise<void> {
           'Source',
         )
         await commandPush(positionals[1], connection, {
-          dryRun: values['dry-run']!,
-          addOnly: values['add-only']!,
-          skipDeletes: values['skip-deletes']!,
+          dryRun: values['dry-run'],
+          addOnly: values['add-only'],
+          skipDeletes: values['skip-deletes'],
         })
         break
       }
@@ -374,16 +371,8 @@ async function main(): Promise<void> {
         break
 
       case 'rules:diff-remote': {
-        const source = getConnectionConfig(
-          values['source-url'],
-          values['source-token'],
-          'Source',
-        )
-        const target = getConnectionConfig(
-          values['target-url'],
-          values['target-token'],
-          'Target',
-        )
+        const source = getConnectionConfig(values['source-url'], values['source-token'], 'Source')
+        const target = getConnectionConfig(values['target-url'], values['target-token'], 'Target')
         await commandDiffRemote(source, target)
         break
       }
@@ -393,16 +382,14 @@ async function main(): Promise<void> {
         printHelp()
         process.exit(1)
     }
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof Error) {
       console.error(`Error: ${error.message}`)
-    }
-    else {
+    } else {
       console.error('An unknown error occurred')
     }
     process.exit(1)
   }
 }
 
-main()
+void main()

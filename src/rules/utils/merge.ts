@@ -102,9 +102,7 @@ export function extendRules<Schema>(
   })
 
   // Parse new roles
-  const newRoles = (extensions.roles ?? []).map(r =>
-    parseRoleInput<Schema>(r, policyRegistry),
-  )
+  const newRoles = (extensions.roles ?? []).map((r) => parseRoleInput<Schema>(r, policyRegistry))
 
   return {
     roles: [...base.roles, ...newRoles],
@@ -161,11 +159,14 @@ export function addPolicyToRole<Schema>(
  * })
  * ```
  */
-export function createAdminPolicy<Schema>(name: string, options?: {
-  id?: string
-  description?: string
-  icon?: string
-}): PolicyInput<Schema> {
+export function createAdminPolicy<Schema>(
+  name: string,
+  options?: {
+    id?: string
+    description?: string
+    icon?: string
+  },
+): PolicyInput<Schema> {
   return {
     id: options?.id,
     name,
@@ -173,7 +174,7 @@ export function createAdminPolicy<Schema>(name: string, options?: {
     description: options?.description ?? 'Full administrative access',
     adminAccess: true,
     appAccess: true,
-    permissions: {} as Record<keyof Schema, never>,
+    permissions: {} as Record<keyof Schema, never>, // eslint-disable-line typescript/no-unsafe-type-assertion -- empty permissions for admin policy
   }
 }
 
@@ -187,11 +188,14 @@ export function createAdminPolicy<Schema>(name: string, options?: {
  * const adminPolicy = createAdminPolicyConfig<DirectusSchema>('Super Admin')
  * ```
  */
-export function createAdminPolicyConfig<Schema>(name: string, options?: {
-  id?: string
-  description?: string
-  icon?: string
-}): PolicyConfig<Schema> {
+export function createAdminPolicyConfig<Schema>(
+  name: string,
+  options?: {
+    id?: string
+    description?: string
+    icon?: string
+  },
+): PolicyConfig<Schema> {
   return {
     id: options?.id,
     name,

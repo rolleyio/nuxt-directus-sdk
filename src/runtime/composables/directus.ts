@@ -15,19 +15,21 @@ export function useDirectusVisualEditor(): Ref<boolean> {
 
 function resolveClientUrl(): string {
   const config = useRuntimeConfig()
-  return (config.public.directus as any).directusUrl || config.public.directus.url
+  // eslint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime-injected config key not in static types
+  return ((config.public.directus as any).directusUrl as string) || config.public.directus.url
 }
 
 function resolveServerUrl(): string {
   const config = useRuntimeConfig()
-  return (config as any).directus?.serverDirectusUrl || resolveClientUrl()
+  // eslint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime-injected config key not in static types
+  return ((config as any).directus?.serverDirectusUrl as string) || resolveClientUrl()
 }
 
 export function useDirectusUrl(path = ''): string {
   const config = useRuntimeConfig()
 
   const devProxy = config.public.directus.devProxy
-  const devProxyEnabled = typeof devProxy === 'object' ? devProxy.enabled === true : devProxy === true
+  const devProxyEnabled = typeof devProxy === 'object' ? devProxy.enabled === true : devProxy
 
   // When devProxy is enabled, use current origin + proxy path
   if (devProxyEnabled) {
@@ -35,8 +37,7 @@ export function useDirectusUrl(path = ''): string {
 
     if (import.meta.client) {
       return useUrl(`${window.location.origin}${proxyPath}`, path)
-    }
-    else {
+    } else {
       // Server-side: get host from request headers if available
       const requestHeaders = useRequestHeaders(['host'])
       if (requestHeaders?.host) {
@@ -73,26 +74,32 @@ function createDirectusClient() {
 
     // During SSR, forward cookies from the incoming request
     if (import.meta.server && requestHeaders?.cookie) {
+      /* eslint-disable typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- bridging fetch RequestInit to $fetch options */
       return globalThis.$fetch(urlString, {
-        ...options as any, // $fetch will normalize the method for us
+        ...(options as Record<string, unknown>),
         headers: {
-          ...options?.headers,
+          ...(options?.headers as Record<string, string>),
           cookie: requestHeaders.cookie,
         },
       })
+      /* eslint-enable typescript/no-explicit-any, typescript/no-unsafe-type-assertion */
     }
 
     // On client, use regular fetch with credentials
-    return globalThis.$fetch(urlString, { ...options as any, credentials: 'include' })
+    return globalThis.$fetch(urlString, {
+      ...(options as Record<string, unknown>), // eslint-disable-line typescript/no-unsafe-type-assertion -- bridging fetch RequestInit to $fetch
+      credentials: 'include',
+    })
   }
 
   const baseUrl = useDirectusUrl()
 
   // Get WebSocket URL if devProxy is enabled
   const devProxy = config.public.directus.devProxy
-  const devProxyWsUrl = devProxy && typeof devProxy === 'object' && devProxy.wsPath && import.meta.client
-    ? `${window.location.origin}${devProxy.wsPath}`
-    : undefined
+  const devProxyWsUrl =
+    devProxy && typeof devProxy === 'object' && devProxy.wsPath && import.meta.client
+      ? `${window.location.origin}${devProxy.wsPath}`
+      : undefined
 
   // In dev mode with proxy, use the separate WebSocket proxy path
   // Otherwise, let the SDK use the default (baseUrl + /websocket)
@@ -101,20 +108,26 @@ function createDirectusClient() {
       fetch: customFetch,
     },
   })
-    .with(authentication('session', {
-      autoRefresh: authConfig.autoRefresh ?? true,
-      credentials: authConfig.credentials as RequestCredentials || 'include',
-      // Only use custom storage on server to prevent localStorage errors
-      ...(import.meta.server ? { storage: useDirectusStorage() } : {}),
-    }))
-    .with(rest({
-      credentials: authConfig.credentials as RequestCredentials || 'include',
-    }))
-    .with(realtime({
-      authMode: authConfig.realtimeAuthMode as WebSocketAuthModes || 'public',
-      // Only set custom URL if we have a proxy path (dev mode with proxy enabled)
-      ...(devProxyWsUrl ? { url: devProxyWsUrl } : {}),
-    }))
+    .with(
+      authentication('session', {
+        autoRefresh: authConfig.autoRefresh ?? true,
+        credentials: (authConfig.credentials || 'include') as RequestCredentials, // eslint-disable-line typescript/no-unsafe-type-assertion -- user-configured string
+        // Only use custom storage on server to prevent localStorage errors
+        ...(import.meta.server ? { storage: useDirectusStorage() } : {}),
+      }),
+    )
+    .with(
+      rest({
+        credentials: (authConfig.credentials || 'include') as RequestCredentials, // eslint-disable-line typescript/no-unsafe-type-assertion -- user-configured string
+      }),
+    )
+    .with(
+      realtime({
+        authMode: (authConfig.realtimeAuthMode || 'public') as WebSocketAuthModes, // eslint-disable-line typescript/no-unsafe-type-assertion -- user-configured string
+        // Only set custom URL if we have a proxy path (dev mode with proxy enabled)
+        ...(devProxyWsUrl ? { url: devProxyWsUrl } : {}),
+      }),
+    )
 
   return directus
 }

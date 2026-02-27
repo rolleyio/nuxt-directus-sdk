@@ -17,15 +17,19 @@ const directus = useDirectus()
 const articles = await directus.request(readItems('articles'))
 
 // Create item
-const newArticle = await directus.request(createItem('articles', {
-  title: 'New Article',
-  content: 'Article content...',
-}))
+const newArticle = await directus.request(
+  createItem('articles', {
+    title: 'New Article',
+    content: 'Article content...',
+  }),
+)
 
 // Update item
-await directus.request(updateItem('articles', 'item-id', {
-  title: 'Updated Title',
-}))
+await directus.request(
+  updateItem('articles', 'item-id', {
+    title: 'Updated Title',
+  }),
+)
 
 // Delete item
 await directus.request(deleteItem('articles', 'item-id'))
@@ -35,11 +39,13 @@ const settings = await directus.request(readSingleton('settings'))
 
 // Custom queries
 const { data: articles } = await useAsyncData('articles', () =>
-  directus.request(readItems('articles', {
-    filter: { status: { _eq: 'published' } },
-    sort: ['-date_created'],
-    limit: 10,
-  }))
+  directus.request(
+    readItems('articles', {
+      filter: { status: { _eq: 'published' } },
+      sort: ['-date_created'],
+      limit: 10,
+    }),
+  ),
 )
 ```
 
@@ -71,6 +77,7 @@ Generate full URLs to your Directus instance. This composable is context-aware:
 - **Dev proxy**: returns `window.location.origin + proxyPath` on client, or host header-based URL on server
 
 **Parameters:**
+
 - `path?: string` - Optional path to append
 
 **Returns:** `string`
@@ -96,6 +103,7 @@ Generate URLs to the **public-facing** Directus instance. Unlike `useDirectusUrl
 Use this when you need the real Directus URL for browser navigation (e.g. SSO redirects, admin links).
 
 **Parameters:**
+
 - `path?: string` - Optional path to append
 
 **Returns:** `string`
@@ -133,9 +141,7 @@ const directusPreview = useDirectusPreview()
 </script>
 
 <template>
-  <div v-if="directusPreview" class="preview-banner">
-    Preview Mode — Showing draft content
-  </div>
+  <div v-if="directusPreview" class="preview-banner">Preview Mode — Showing draft content</div>
 </template>
 ```
 
@@ -165,8 +171,6 @@ const directusVisualEditor = useDirectusVisualEditor()
 </script>
 
 <template>
-  <div v-if="directusVisualEditor" class="editor-banner">
-    Editing Mode Active
-  </div>
+  <div v-if="directusVisualEditor" class="editor-banner">Editing Mode Active</div>
 </template>
 ```

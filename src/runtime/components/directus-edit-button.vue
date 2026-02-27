@@ -13,7 +13,9 @@ const config = useRuntimeConfig()
 const directusVisualEditing = useDirectusVisualEditor()
 
 // Only show when inside Directus visual editor iframe
-const showButton = computed(() => config.public.directus.visualEditor && directusVisualEditing.value)
+const showButton = computed(
+  () => config.public.directus.visualEditor && directusVisualEditing.value,
+)
 
 // Directly trigger the Directus visual editor by sending a postMessage
 function triggerEdit() {
@@ -27,16 +29,18 @@ function triggerEdit() {
 
   // Send edit message directly to Directus parent frame
   try {
-    window.parent.postMessage({
-      action: 'edit',
-      data: {
-        key: crypto.randomUUID(),
-        editConfig,
-        rect: { top: 0, left: 0, width: 0, height: 0 },
+    window.parent.postMessage(
+      {
+        action: 'edit',
+        data: {
+          key: crypto.randomUUID(),
+          editConfig,
+          rect: { top: 0, left: 0, width: 0, height: 0 },
+        },
       },
-    }, directusUrl)
-  }
-  catch (error) {
+      directusUrl,
+    )
+  } catch (error) {
     console.error('[DirectusEditButton] Error triggering edit:', error)
   }
 }
@@ -84,7 +88,10 @@ function triggerEdit() {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  transition:
+    background 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
   font-size: 16px;
   font-weight: 500;
   box-shadow: 0 4px 12px rgba(102, 68, 255, 0.4);

@@ -136,9 +136,7 @@ export interface RulesTester<Schema> {
  * expect(matches).toBe(true)
  * ```
  */
-export function createRulesTester<Schema>(
-  rules: RulesConfig<Schema>,
-): RulesTester<Schema> {
+export function createRulesTester<Schema>(rules: RulesConfig<Schema>): RulesTester<Schema> {
   return new RulesTesterImpl(rules)
 }
 
@@ -176,8 +174,7 @@ class RulesTesterImpl<Schema> implements RulesTester<Schema> {
       }
 
       const collectionPerms = policy.permissions.get(collection)
-      if (!collectionPerms)
-        continue
+      if (!collectionPerms) continue
 
       const perm = collectionPerms[action]
 
@@ -195,7 +192,7 @@ class RulesTesterImpl<Schema> implements RulesTester<Schema> {
       if (perm && typeof perm === 'object') {
         return {
           allowed: true,
-          permission: perm as PermissionConfig<Schema, K>,
+          permission: perm as PermissionConfig<Schema, K>, // eslint-disable-line typescript/no-unsafe-type-assertion -- narrowed via typeof check, generic K mismatch
           reason: `Conditional ${action} access on ${String(collection)}`,
         }
       }
@@ -226,8 +223,8 @@ class RulesTesterImpl<Schema> implements RulesTester<Schema> {
     }
 
     return evaluateFilter(
-      result.permission.filter as Record<string, unknown>,
-      item as Record<string, unknown>,
+      result.permission.filter as Record<string, unknown>, // eslint-disable-line typescript/no-unsafe-type-assertion -- generic filter to evaluator format
+      item as Record<string, unknown>, // eslint-disable-line typescript/no-unsafe-type-assertion -- generic Schema[K] to evaluator format
       context,
     )
   }
@@ -284,7 +281,7 @@ class RulesTesterImpl<Schema> implements RulesTester<Schema> {
     }
 
     // Otherwise, it's Directus validation format
-    return validateWithDirectusFormat(validation as DirectusValidation, item)
+    return validateWithDirectusFormat(validation, item)
   }
 
   getRules(): RulesConfig<Schema> {
@@ -293,20 +290,20 @@ class RulesTesterImpl<Schema> implements RulesTester<Schema> {
 
   private getPoliciesFor(roleOrPolicy: string): PolicyConfig<Schema>[] {
     // Check if it's a role
-    const role = this.rules.roles.find(r => r.name === roleOrPolicy)
+    const role = this.rules.roles.find((r) => r.name === roleOrPolicy)
     if (role) {
       return role.policies
     }
 
     // Check standalone policies
-    const standalonePolicy = this.rules.policies.find(p => p.name === roleOrPolicy)
+    const standalonePolicy = this.rules.policies.find((p) => p.name === roleOrPolicy)
     if (standalonePolicy) {
       return [standalonePolicy]
     }
 
     // Check policies within roles
     for (const r of this.rules.roles) {
-      const policy = r.policies.find(p => p.name === roleOrPolicy)
+      const policy = r.policies.find((p) => p.name === roleOrPolicy)
       if (policy) {
         return [policy]
       }
@@ -329,7 +326,7 @@ async function validateWithStandardSchema<T>(
     if (result.issues && result.issues.length > 0) {
       return {
         valid: false,
-        issues: result.issues.map(issue => ({
+        issues: result.issues.map((issue) => ({
           field: issue.path?.join('.') ?? '*',
           message: issue.message,
         })),
@@ -337,14 +334,15 @@ async function validateWithStandardSchema<T>(
     }
 
     return { valid: true, issues: [] }
-  }
-  catch (error) {
+  } catch (error) {
     return {
       valid: false,
-      issues: [{
-        field: '*',
-        message: error instanceof Error ? error.message : 'Validation failed',
-      }],
+      issues: [
+        {
+          field: '*',
+          message: error instanceof Error ? error.message : 'Validation failed',
+        },
+      ],
     }
   }
 }
@@ -368,11 +366,11 @@ function validateWithDirectusFormat(
 
   // Handle _or
   if (validation._or && Array.isArray(validation._or)) {
-    const orResults = validation._or.map(rule =>
+    const orResults = validation._or.map((rule) =>
       validateWithDirectusFormat(rule as DirectusValidation, item),
     )
     // _or passes if at least one passes
-    const anyPassed = orResults.some(r => r.valid)
+    const anyPassed = orResults.some((r) => r.valid)
     if (!anyPassed && orResults.length > 0) {
       // Collect all issues from the first failing rule
       issues.push(...orResults[0]!.issues)
@@ -381,11 +379,10 @@ function validateWithDirectusFormat(
 
   // Handle field validations
   for (const [field, rules] of Object.entries(validation)) {
-    if (field.startsWith('_'))
-      continue // Skip logical operators
+    if (field.startsWith('_')) continue // Skip logical operators
 
     const fieldValue = item[field]
-    const fieldRules = rules as Record<string, unknown>
+    const fieldRules = rules as Record<string, unknown> // eslint-disable-line typescript/no-unsafe-type-assertion -- DirectusValidation index signature
 
     for (const [rule, expected] of Object.entries(fieldRules)) {
       const error = validateFieldRule(field, fieldValue, rule, expected)
@@ -425,13 +422,13 @@ function validateFieldRule(
 
     case '_eq':
       if (value !== expected) {
-        return { field, message: `${field} must equal ${expected}` }
+        return { field, message: `${field} must equal ${String(expected)}` }
       }
       break
 
     case '_neq':
       if (value === expected) {
-        return { field, message: `${field} must not equal ${expected}` }
+        return { field, message: `${field} must not equal ${String(expected)}` }
       }
       break
 
@@ -478,8 +475,7 @@ function validateFieldRule(
           if (!regex.test(value)) {
             return { field, message: `${field} does not match required pattern` }
           }
-        }
-        catch {
+        } catch {
           return { field, message: `Invalid regex pattern for ${field}` }
         }
       }

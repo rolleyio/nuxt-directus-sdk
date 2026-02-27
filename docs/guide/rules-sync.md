@@ -149,6 +149,7 @@ if (!result.success) {
 ```
 
 Push applies changes in dependency order:
+
 1. **Create/update:** policies -> roles -> permissions
 2. **Delete:** permissions -> roles -> policies
 

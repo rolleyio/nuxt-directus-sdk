@@ -17,9 +17,9 @@ const { subscription } = await directus.subscribe('posts', {
   query: {
     fields: ['*'],
     filter: {
-      status: { _eq: 'published' }
-    }
-  }
+      status: { _eq: 'published' },
+    },
+  },
 })
 
 // Listen for updates
@@ -60,13 +60,13 @@ onMounted(async () => {
       posts.value.push(message.data[0])
     }
     if (message.event === 'update') {
-      const index = posts.value.findIndex(p => p.id === message.data[0].id)
+      const index = posts.value.findIndex((p) => p.id === message.data[0].id)
       if (index !== -1) {
         posts.value[index] = message.data[0]
       }
     }
     if (message.event === 'delete') {
-      posts.value = posts.value.filter(p => !message.data.includes(p.id))
+      posts.value = posts.value.filter((p) => !message.data.includes(p.id))
     }
   }
 })
@@ -107,7 +107,7 @@ Configure realtime auth mode in your Nuxt app:
 export default defineNuxtConfig({
   directus: {
     auth: {
-      realtimeAuthMode: 'public',  // 'public', 'handshake', or 'strict'
+      realtimeAuthMode: 'public', // 'public', 'handshake', or 'strict'
     },
   },
 })
@@ -124,7 +124,7 @@ With session-based authentication and `WEBSOCKETS_REST_AUTH=strict` in Directus:
 export default defineNuxtConfig({
   directus: {
     auth: {
-      realtimeAuthMode: 'public',  // Default
+      realtimeAuthMode: 'public', // Default
     },
   },
 })
@@ -140,7 +140,7 @@ Authenticates during the initial WebSocket handshake:
 export default defineNuxtConfig({
   directus: {
     auth: {
-      realtimeAuthMode: 'public',  // Default - recommended
+      realtimeAuthMode: 'public', // Default - recommended
     },
   },
 })
@@ -165,6 +165,7 @@ export default defineNuxtConfig({
 ## Development Proxy
 
 In development mode, WebSocket connections use a special proxy route (`/directus-ws`) that:
+
 - Forwards WebSocket connections to Directus
 - Includes session cookies for authentication
 - Handles secure WebSocket upgrades
@@ -179,10 +180,12 @@ This is automatic - no configuration needed!
 const { subscription } = await directus.subscribe('collection_name', {
   query: {
     fields: ['*'],
-    filter: { /* filter options */ },
+    filter: {
+      /* filter options */
+    },
     limit: 100,
   },
-  uid: 'optional-uid'  // Unique identifier for this subscription
+  uid: 'optional-uid', // Unique identifier for this subscription
 })
 ```
 
@@ -205,7 +208,7 @@ for await (const message of subscription) {
       break
     case 'delete':
       // Item deleted
-      console.log('Deleted:', message.data)  // Array of IDs
+      console.log('Deleted:', message.data) // Array of IDs
       break
   }
 }
@@ -257,9 +260,9 @@ const { subscription } = await directus.subscribe('posts', {
   query: {
     filter: {
       status: { _eq: 'published' },
-      author: { _eq: '$CURRENT_USER' }
-    }
-  }
+      author: { _eq: '$CURRENT_USER' },
+    },
+  },
 })
 ```
 
@@ -293,15 +296,15 @@ export function useRealtimePosts() {
         posts.value.push(...message.data)
       }
       if (message.event === 'update') {
-        message.data.forEach(updated => {
-          const index = posts.value.findIndex(p => p.id === updated.id)
+        message.data.forEach((updated) => {
+          const index = posts.value.findIndex((p) => p.id === updated.id)
           if (index !== -1) {
             posts.value[index] = updated
           }
         })
       }
       if (message.event === 'delete') {
-        posts.value = posts.value.filter(p => !message.data.includes(p.id))
+        posts.value = posts.value.filter((p) => !message.data.includes(p.id))
       }
     }
   }

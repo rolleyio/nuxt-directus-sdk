@@ -11,9 +11,8 @@ export default defineNuxtPlugin({
     const config = useRuntimeConfig()
 
     const debug = route.query.debug !== undefined
-    const log = (...args: any[]) => {
-      if (debug)
-        console.warn('[Directus Visual Editor]', ...args)
+    const log = (...args: unknown[]) => {
+      if (debug) console.warn('[Directus Visual Editor]', ...args)
     }
 
     log('Config visualEditor:', config.public.directus.visualEditor)
@@ -48,7 +47,7 @@ export default defineNuxtPlugin({
           directusUrl,
           onSaved: (_data) => {
             log('onSaved triggered, refreshing data')
-            refreshNuxtData()
+            void refreshNuxtData()
           },
         })
 
@@ -58,10 +57,12 @@ export default defineNuxtPlugin({
           applied = true
           result.enable()
         }
-      }
-      catch (error) {
+      } catch (error) {
         console.error('[Directus Visual Editor] Error:', error)
-        log('This may be a CSP issue — check Content-Security-Policy headers allow frame-ancestors and postMessage to', directusUrl)
+        log(
+          'This may be a CSP issue — check Content-Security-Policy headers allow frame-ancestors and postMessage to',
+          directusUrl,
+        )
       }
     }
 
@@ -72,7 +73,7 @@ export default defineNuxtPlugin({
       if (elements.length > 0) {
         log('MutationObserver: found', elements.length, '[data-directus] elements')
         observer.disconnect()
-        applyVisualEditing()
+        void applyVisualEditing()
       }
     })
 
@@ -89,7 +90,7 @@ export default defineNuxtPlugin({
     nuxtApp.hook('page:finish', () => {
       log('page:finish — re-scanning for editable elements')
       applied = false
-      applyVisualEditing()
+      void applyVisualEditing()
     })
 
     return {

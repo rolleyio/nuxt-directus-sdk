@@ -6,9 +6,7 @@
       "icon": "verified",
       "description": "$t:admin_description",
       "parent": null,
-      "policies": [
-        "67b8e8bc-d4dc-48a8-8d7e-7505795318a0"
-      ]
+      "policies": ["67b8e8bc-d4dc-48a8-8d7e-7505795318a0"]
     }
   ],
   "policies": [

@@ -15,7 +15,4 @@ export {
 } from './directus-format'
 
 // Standard Schema conversion
-export {
-  isValidationStandardSchema,
-  toDirectusValidation,
-} from './standard-schema'
+export { isValidationStandardSchema, toDirectusValidation } from './standard-schema'

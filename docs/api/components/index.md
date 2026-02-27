@@ -1,5 +1,5 @@
 ---
-outline: [2,3]
+outline: [2, 3]
 ---
 
 # Components Reference
@@ -7,12 +7,15 @@ outline: [2,3]
 API reference for all components provided by nuxt-directus-sdk.
 
 ## DirectusVisualEditor
+
 <!--@include: ./visual-editor.md{7,}-->
 
 ## DirectusEditButton
+
 <!--@include: ./edit-button.md{7,}-->
 
 ## DirectusAddButton
+
 <!--@include: ./add-button.md{7,}-->
 
 ## Complete Examples
@@ -25,17 +28,13 @@ const route = useRoute()
 const directus = useDirectus()
 
 const { data: article } = await useAsyncData('article', () =>
-  directus.request(readItem('articles', route.params.id))
+  directus.request(readItem('articles', route.params.id)),
 )
 </script>
 
 <template>
   <article>
-    <DirectusVisualEditor
-      collection="articles"
-      :item="article.id"
-      fields="title"
-    >
+    <DirectusVisualEditor collection="articles" :item="article.id" fields="title">
       <h1>{{ article.title }}</h1>
     </DirectusVisualEditor>
 
@@ -51,11 +50,7 @@ const { data: article } = await useAsyncData('article', () =>
       />
     </DirectusVisualEditor>
 
-    <DirectusVisualEditor
-      collection="articles"
-      :item="article.id"
-      fields="content"
-    >
+    <DirectusVisualEditor collection="articles" :item="article.id" fields="content">
       <div class="content" v-html="article.content" />
     </DirectusVisualEditor>
 
@@ -69,19 +64,17 @@ const { data: article } = await useAsyncData('article', () =>
 ```vue
 <script setup>
 const { data: page } = await useAsyncData('page', () =>
-  directus.request(readItem('pages', route.params.id, {
-    fields: ['*', { blocks: ['*'] }]
-  }))
+  directus.request(
+    readItem('pages', route.params.id, {
+      fields: ['*', { blocks: ['*'] }],
+    }),
+  ),
 )
 </script>
 
 <template>
   <div class="page">
-    <DirectusVisualEditor
-      collection="pages"
-      :item="page.id"
-      fields="title"
-    >
+    <DirectusVisualEditor collection="pages" :item="page.id" fields="title">
       <h1>{{ page.title }}</h1>
     </DirectusVisualEditor>
 
@@ -95,11 +88,7 @@ const { data: page } = await useAsyncData('page', () =>
       <component :is="getBlockComponent(block.type)" :data="block" />
     </DirectusVisualEditor>
 
-    <DirectusAddButton
-      collection="pages"
-      :item="page.id"
-      field="blocks"
-    />
+    <DirectusAddButton collection="pages" :item="page.id" field="blocks" />
 
     <DirectusEditButton collection="pages" :item="page.id" />
   </div>
@@ -111,11 +100,7 @@ const { data: page } = await useAsyncData('page', () =>
 ```vue
 <template>
   <article>
-    <DirectusVisualEditor
-      collection="articles"
-      :item="article.id"
-      fields="title"
-    >
+    <DirectusVisualEditor collection="articles" :item="article.id" fields="title">
       <h1>{{ article.title }}</h1>
     </DirectusVisualEditor>
 
@@ -124,9 +109,7 @@ const { data: page } = await useAsyncData('page', () =>
       :item="article.author.id"
       :fields="['first_name', 'last_name']"
     >
-      <p class="author">
-        By {{ article.author.first_name }} {{ article.author.last_name }}
-      </p>
+      <p class="author">By {{ article.author.first_name }} {{ article.author.last_name }}</p>
     </DirectusVisualEditor>
 
     <div class="tags">

@@ -5,8 +5,8 @@
     <h1>Nuxt-Directus-SDK Playground</h1>
     <p>Examples of how to use the nuxt-directus-sdk in your application.</p>
     <p>
-      These examples will try to call out any potential security vulnerabilities
-      within code comments.
+      These examples will try to call out any potential security vulnerabilities within code
+      comments.
     </p>
 
     <h2>Playground To Do's:</h2>

@@ -91,8 +91,8 @@ export function createRulesMatchers<Schema>(tester: RulesTester<Schema>) {
         }
       }
 
-      const fieldStrings = accessibleFields as string[]
-      const missingFields = expectedFields.filter(f => !fieldStrings.includes(f))
+      const fieldStrings = accessibleFields.map(String)
+      const missingFields = expectedFields.filter((f) => !fieldStrings.includes(f))
 
       return {
         pass: missingFields.length === 0,
@@ -122,8 +122,8 @@ export function createRulesMatchers<Schema>(tester: RulesTester<Schema>) {
         }
       }
 
-      const fieldStrings = accessibleFields as string[]
-      const unexpectedlyAllowed = restrictedFields.filter(f => fieldStrings.includes(f))
+      const fieldStrings = accessibleFields.map(String)
+      const unexpectedlyAllowed = restrictedFields.filter((f) => fieldStrings.includes(f))
 
       return {
         pass: unexpectedlyAllowed.length === 0,
@@ -141,9 +141,9 @@ export function createRulesMatchers<Schema>(tester: RulesTester<Schema>) {
       const rules = tester.getRules()
 
       // Check roles
-      const role = rules.roles.find(r => r.name === received)
+      const role = rules.roles.find((r) => r.name === received)
       if (role) {
-        const hasAdmin = role.policies.some(p => p.adminAccess)
+        const hasAdmin = role.policies.some((p) => p.adminAccess)
         return {
           pass: hasAdmin,
           message: () =>
@@ -154,8 +154,9 @@ export function createRulesMatchers<Schema>(tester: RulesTester<Schema>) {
       }
 
       // Check policies
-      const policy = rules.policies.find(p => p.name === received)
-        || rules.roles.flatMap(r => r.policies).find(p => p.name === received)
+      const policy =
+        rules.policies.find((p) => p.name === received) ||
+        rules.roles.flatMap((r) => r.policies).find((p) => p.name === received)
 
       if (policy) {
         return {

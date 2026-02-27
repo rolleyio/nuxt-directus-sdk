@@ -9,6 +9,7 @@ outline: deep
 Upload a single file to Directus.
 
 **Parameters:**
+
 - `file: { file: File, data?: Partial<DirectusFiles> }` - File and metadata
 - `query?: Query` - Directus query options
 
@@ -17,16 +18,19 @@ Upload a single file to Directus.
 ```typescript
 const file = event.target.files[0]
 
-const uploaded = await uploadDirectusFile({
-  file,
-  data: {
-    title: 'My Image',
-    description: 'Image description',
-    folder: 'folder-uuid',
-  }
-}, {
-  fields: ['*'],
-})
+const uploaded = await uploadDirectusFile(
+  {
+    file,
+    data: {
+      title: 'My Image',
+      description: 'Image description',
+      folder: 'folder-uuid',
+    },
+  },
+  {
+    fields: ['*'],
+  },
+)
 
 console.log('Uploaded:', uploaded.id)
 ```
@@ -38,17 +42,18 @@ console.log('Uploaded:', uploaded.id)
 Upload multiple files to Directus.
 
 **Parameters:**
+
 - `files: Array<{ file: File, data?: Partial<DirectusFiles> }>` - Files and metadata
 - `query?: Query` - Directus query options
 
 **Returns:** `Promise<DirectusFiles[]>`
 
 ```typescript
-const files = Array.from(event.target.files).map(file => ({
+const files = Array.from(event.target.files).map((file) => ({
   file,
   data: {
     folder: 'folder-uuid',
-  }
+  },
 }))
 
 const uploaded = await uploadDirectusFiles(files)
@@ -63,6 +68,7 @@ console.log('Uploaded files:', uploaded.length)
 Generate a URL for a Directus file with optional transformations.
 
 **Parameters:**
+
 - `file: string | DirectusFiles` - File ID or file object
 - `options?: DirectusFileOptions` - Transformation options
 
@@ -96,15 +102,15 @@ const downloadUrl = getDirectusFileUrl(file, {
 
 ```typescript
 interface DirectusFileOptions {
-  filename?: string              // Custom filename for downloads
-  download?: boolean             // Force download
-  width?: number                 // Resize width
-  height?: number                // Resize height
-  quality?: number               // Image quality (1-100)
+  filename?: string // Custom filename for downloads
+  download?: boolean // Force download
+  width?: number // Resize width
+  height?: number // Resize height
+  quality?: number // Image quality (1-100)
   fit?: 'cover' | 'contain' | 'inside' | 'outside'
   format?: 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'
-  withoutEnlargement?: boolean   // Prevent upscaling
-  key?: string                   // Access key for private files
+  withoutEnlargement?: boolean // Prevent upscaling
+  key?: string // Access key for private files
 }
 ```
 

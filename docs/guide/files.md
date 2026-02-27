@@ -14,7 +14,7 @@ const uploadedFile = await uploadDirectusFile({
   data: {
     title: 'My Image',
     folder: 'folder-id',
-  }
+  },
 })
 
 console.log('File uploaded:', uploadedFile.id)
@@ -23,11 +23,11 @@ console.log('File uploaded:', uploadedFile.id)
 ### Upload Multiple Files
 
 ```typescript
-const files = Array.from(event.target.files).map(file => ({
+const files = Array.from(event.target.files).map((file) => ({
   file,
   data: {
     folder: 'folder-id',
-  }
+  },
 }))
 
 const uploadedFiles = await uploadDirectusFiles(files)
@@ -54,7 +54,7 @@ async function handleFileUpload(event) {
       data: {
         title: file.name,
         description: 'Uploaded from Nuxt app',
-      }
+      },
     })
 
     console.log('Upload successful:', uploadedFile.value)
@@ -70,9 +70,7 @@ async function handleFileUpload(event) {
   <div>
     <input type="file" @change="handleFileUpload" :disabled="uploading" />
 
-    <div v-if="uploading">
-      Uploading...
-    </div>
+    <div v-if="uploading">Uploading...</div>
 
     <div v-if="uploadedFile">
       <p>File uploaded successfully!</p>
@@ -196,7 +194,7 @@ getDirectusFileUrl(file, { download: true })
 // Download with custom filename
 getDirectusFileUrl(file, {
   download: true,
-  filename: 'my-custom-filename.jpg'
+  filename: 'my-custom-filename.jpg',
 })
 ```
 
@@ -273,8 +271,8 @@ export default defineNuxtConfig({
       modifiers: {
         withoutEnlargement: 'true',
         // array of options from sharp api (https://sharp.pixelplumbing.com/api-operation/)
-        transforms: [['blur', 4], ['negate']] 
-      }
+        transforms: [['blur', 4], ['negate']],
+      },
     },
   },
 })
@@ -285,11 +283,7 @@ With this setting, you can use `<NuxtImg>` without specifying the provider:
 ```vue
 <template>
   <!-- No need to specify provider="directus" -->
-  <NuxtImg
-    src="your-file-id"
-    width="800"
-    height="600"
-  />
+  <NuxtImg src="your-file-id" width="800" height="600" />
 </template>
 ```
 
@@ -320,22 +314,26 @@ const file = await directus.request(readFile('file-uuid'))
 const files = await directus.request(readFiles())
 
 // Get files with query
-const images = await directus.request(readFiles({
-  filter: {
-    type: { _starts_with: 'image/' }
-  },
-  limit: 10,
-}))
+const images = await directus.request(
+  readFiles({
+    filter: {
+      type: { _starts_with: 'image/' },
+    },
+    limit: 10,
+  }),
+)
 ```
 
 ### Updating Files
 
 ```typescript
 // Update file metadata
-await directus.request(updateFile('file-uuid', {
-  title: 'Updated Title',
-  description: 'New description',
-}))
+await directus.request(
+  updateFile('file-uuid', {
+    title: 'Updated Title',
+    description: 'New description',
+  }),
+)
 ```
 
 ### Deleting Files
@@ -359,22 +357,21 @@ const uploading = ref(false)
 
 // Load existing images
 const { data: images } = await useAsyncData('gallery', () =>
-  directus.request(readFiles({
-    filter: { type: { _starts_with: 'image/' } },
-    sort: ['-uploaded_on'],
-  }))
+  directus.request(
+    readFiles({
+      filter: { type: { _starts_with: 'image/' } },
+      sort: ['-uploaded_on'],
+    }),
+  ),
 )
 
 async function handleUpload(event) {
-  const files = Array.from(event.target.files).map(file => ({ file }))
+  const files = Array.from(event.target.files).map((file) => ({ file }))
   uploading.value = true
 
   try {
     const uploaded = await uploadDirectusFiles(files)
-    images.value = [
-      ...(Array.isArray(uploaded) ? uploaded : [uploaded]),
-      ...(images.value || [])
-    ]
+    images.value = [...(Array.isArray(uploaded) ? uploaded : [uploaded]), ...(images.value || [])]
   } finally {
     uploading.value = false
   }
@@ -383,24 +380,20 @@ async function handleUpload(event) {
 
 <template>
   <div>
-    <input
-      type="file"
-      multiple
-      accept="image/*"
-      @change="handleUpload"
-      :disabled="uploading"
-    />
+    <input type="file" multiple accept="image/*" @change="handleUpload" :disabled="uploading" />
 
     <div class="gallery">
       <div v-for="image in images" :key="image.id" class="gallery-item">
         <img
-          :src="getDirectusFileUrl(image, {
-            width: 300,
-            height: 300,
-            fit: 'cover',
-            format: 'webp',
-            quality: 80
-          })"
+          :src="
+            getDirectusFileUrl(image, {
+              width: 300,
+              height: 300,
+              fit: 'cover',
+              format: 'webp',
+              quality: 80,
+            })
+          "
           :alt="image.title"
         />
         <p>{{ image.title }}</p>
@@ -432,36 +425,36 @@ const sources = {
     desktop: getDirectusFileUrl(props.image, {
       width: 1920,
       format: 'avif',
-      quality: 75
+      quality: 75,
     }),
     mobile: getDirectusFileUrl(props.image, {
       width: 768,
       format: 'avif',
-      quality: 75
+      quality: 75,
     }),
   },
   webp: {
     desktop: getDirectusFileUrl(props.image, {
       width: 1920,
       format: 'webp',
-      quality: 80
+      quality: 80,
     }),
     mobile: getDirectusFileUrl(props.image, {
       width: 768,
       format: 'webp',
-      quality: 80
+      quality: 80,
     }),
   },
   jpg: {
     desktop: getDirectusFileUrl(props.image, {
       width: 1920,
       format: 'jpg',
-      quality: 85
+      quality: 85,
     }),
     mobile: getDirectusFileUrl(props.image, {
       width: 768,
       format: 'jpg',
-      quality: 85
+      quality: 85,
     }),
   },
 }
@@ -502,6 +495,7 @@ const sources = {
 Upload a single file to Directus.
 
 **Parameters:**
+
 - `file: { file: File, data?: Partial<DirectusFiles> }` - File and metadata
 - `query?: Query` - Directus query options
 
@@ -512,6 +506,7 @@ Upload a single file to Directus.
 Upload multiple files to Directus.
 
 **Parameters:**
+
 - `files: Array<{ file: File, data?: Partial<DirectusFiles> }>` - Files and metadata
 - `query?: Query` - Directus query options
 
@@ -522,21 +517,23 @@ Upload multiple files to Directus.
 Generate a URL for a Directus file with optional transformations.
 
 **Parameters:**
+
 - `file: string | DirectusFiles` - File ID or file object
 - `options?: DirectusFileOptions` - Transformation options
 
 **Options:**
+
 ```typescript
 interface DirectusFileOptions {
-  filename?: string              // Custom filename for downloads
-  download?: boolean             // Force download
-  width?: number                 // Resize width
-  height?: number                // Resize height
-  quality?: number               // Image quality (1-100)
+  filename?: string // Custom filename for downloads
+  download?: boolean // Force download
+  width?: number // Resize width
+  height?: number // Resize height
+  quality?: number // Image quality (1-100)
   fit?: 'cover' | 'contain' | 'inside' | 'outside'
   format?: 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'
-  withoutEnlargement?: boolean   // Prevent upscaling
-  key?: string                   // Access key for private files
+  withoutEnlargement?: boolean // Prevent upscaling
+  key?: string // Access key for private files
 }
 ```
 

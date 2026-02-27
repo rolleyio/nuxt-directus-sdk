@@ -9,8 +9,8 @@ import type { DirectusValidation, StandardSchemaV1 } from './validation'
  * Helper type to extract the item type from a collection
  * Handles both array collections (posts: Post[]) and single collections (posts: Post)
  */
-export type CollectionItem<Schema, K extends keyof Schema>
-  = Schema[K] extends Array<infer Item> ? Item : Schema[K]
+export type CollectionItem<Schema, K extends keyof Schema> =
+  Schema[K] extends Array<infer Item> ? Item : Schema[K]
 
 /**
  * Permission actions supported by Directus
@@ -20,10 +20,7 @@ export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'share'
 /**
  * Configuration for a single permission action
  */
-export interface PermissionConfig<
-  Schema,
-  Collection extends keyof Schema,
-> {
+export interface PermissionConfig<Schema, Collection extends keyof Schema> {
   /** Fields that can be accessed. '*' for all, array for specific fields */
   fields?: '*' | (keyof CollectionItem<Schema, Collection>)[]
   /** Filter that restricts which items can be accessed */
@@ -37,10 +34,7 @@ export interface PermissionConfig<
 /**
  * Collection permissions mapping actions to their configurations
  */
-export interface CollectionPermissions<
-  Schema,
-  Collection extends keyof Schema,
-> {
+export interface CollectionPermissions<Schema, Collection extends keyof Schema> {
   create?: PermissionConfig<Schema, Collection> | boolean
   read?: PermissionConfig<Schema, Collection> | boolean
   update?: PermissionConfig<Schema, Collection> | boolean
@@ -246,10 +240,10 @@ export interface CollectionPermissionsInput<Schema, K extends keyof Schema> {
  * - `'*'` - Allow access to all fields (equivalent to { fields: '*' })
  * - `{ fields, filter, presets, validation }` - Detailed configuration
  */
-export type PermissionInput<Schema, K extends keyof Schema>
-  = | boolean
-    | '*'
-    | PermissionConfigInput<Schema, K>
+export type PermissionInput<Schema, K extends keyof Schema> =
+  | boolean
+  | '*'
+  | PermissionConfigInput<Schema, K>
 
 /**
  * Detailed permission configuration input

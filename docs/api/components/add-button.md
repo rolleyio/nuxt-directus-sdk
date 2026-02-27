@@ -15,11 +15,7 @@ An inline button for adding items to a repeater or relationship field. Only visi
       <component :is="getBlockComponent(block.type)" :data="block" />
     </div>
 
-    <DirectusAddButton
-      collection="pages"
-      :item="page.id"
-      field="blocks"
-    />
+    <DirectusAddButton collection="pages" :item="page.id" field="blocks" />
   </div>
 </template>
 ```

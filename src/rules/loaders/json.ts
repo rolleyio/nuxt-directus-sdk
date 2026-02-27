@@ -1,3 +1,5 @@
+/* eslint-disable typescript/no-unsafe-type-assertion -- JSON loader converts untyped data to generic Schema types */
+
 /**
  * JSON loader for Directus Rules
  *
@@ -14,7 +16,6 @@ import type {
   DirectusRolePayload,
   DirectusRulesPayload,
   DirectusValidation,
-  PermissionAction,
   PermissionConfig,
   PolicyConfig,
   RoleConfig,
@@ -97,14 +98,12 @@ export interface RulesJson {
  * })
  * ```
  */
-export function loadRulesFromJson<Schema>(
-  json: string | RulesJson,
-): RulesConfig<Schema> {
+export function loadRulesFromJson<Schema>(json: string | RulesJson): RulesConfig<Schema> {
   const data: RulesJson = typeof json === 'string' ? JSON.parse(json) : json
 
   return {
-    roles: (data.roles || []).map(role => parseRole<Schema>(role)),
-    policies: (data.policies || []).map(policy => parsePolicy<Schema>(policy)),
+    roles: (data.roles || []).map((role) => parseRole<Schema>(role)),
+    policies: (data.policies || []).map((policy) => parsePolicy<Schema>(policy)),
   }
 }
 
@@ -135,7 +134,7 @@ function parseRole<Schema>(role: RoleJson): RoleConfig<Schema> {
     icon: role.icon,
     description: role.description,
     parent: role.parent,
-    policies: role.policies.map(policy => parsePolicy<Schema>(policy)),
+    policies: role.policies.map((policy) => parsePolicy<Schema>(policy)),
   }
 }
 
@@ -146,10 +145,7 @@ function parsePolicy<Schema>(policy: PolicyJson): PolicyConfig<Schema> {
   const permissions = new Map<keyof Schema, CollectionPermissions<Schema, keyof Schema>>()
 
   for (const [collection, perms] of Object.entries(policy.permissions)) {
-    permissions.set(
-      collection as keyof Schema,
-      parseCollectionPermissions<Schema>(perms),
-    )
+    permissions.set(collection as keyof Schema, parseCollectionPermissions<Schema>(perms))
   }
 
   return {
@@ -192,6 +188,7 @@ function parsePermissionConfig<Schema, Collection extends keyof Schema>(
 
   return {
     fields: config.fields as '*' | (keyof Schema[Collection])[] | undefined,
+    // eslint-disable-next-line typescript/no-explicit-any
     filter: config.filter as any,
     presets: config.presets as Partial<Schema[Collection]> | undefined,
     validation: config.validation as DirectusValidation | undefined,
@@ -209,8 +206,8 @@ function parsePermissionConfig<Schema, Collection extends keyof Schema>(
  */
 export function rulesToJson<Schema>(rules: RulesConfig<Schema>): RulesJson {
   return {
-    roles: rules.roles.map(role => roleToJson(role)),
-    policies: rules.policies.map(policy => policyToJson(policy)),
+    roles: rules.roles.map((role) => roleToJson(role)),
+    policies: rules.policies.map((policy) => policyToJson(policy)),
   }
 }
 
@@ -224,7 +221,7 @@ function roleToJson<Schema>(role: RoleConfig<Schema>): RoleJson {
     icon: role.icon,
     description: role.description,
     parent: role.parent,
-    policies: role.policies.map(policy => policyToJson(policy)),
+    policies: role.policies.map((policy) => policyToJson(policy)),
   }
 }
 
@@ -320,9 +317,7 @@ function permissionConfigToJson<Schema, Collection extends keyof Schema>(
  * })
  * ```
  */
-export function loadRulesFromPayload<Schema>(
-  payload: DirectusRulesPayload,
-): RulesConfig<Schema> {
+export function loadRulesFromPayload<Schema>(payload: DirectusRulesPayload): RulesConfig<Schema> {
   // Build a map of policy ID -> permissions
   const permissionsByPolicy = new Map<string | null, DirectusPermissionPayload[]>()
   for (const perm of payload.permissions) {
@@ -406,21 +401,19 @@ function convertPayloadPolicy<Schema>(
     const collPerms: Partial<CollectionPermissions<Schema, keyof Schema>> = {}
 
     for (const perm of collectionPerms) {
-      const action = perm.action as PermissionAction
+      const action = perm.action
       const config = convertPayloadPermission<Schema>(perm)
-      if (action === 'create')
-        collPerms.create = config
-      else if (action === 'read')
-        collPerms.read = config
-      else if (action === 'update')
-        collPerms.update = config
-      else if (action === 'delete')
-        collPerms.delete = config
-      else if (action === 'share')
-        collPerms.share = config
+      if (action === 'create') collPerms.create = config
+      else if (action === 'read') collPerms.read = config
+      else if (action === 'update') collPerms.update = config
+      else if (action === 'delete') collPerms.delete = config
+      else if (action === 'share') collPerms.share = config
     }
 
-    permissionsMap.set(collection as keyof Schema, collPerms as CollectionPermissions<Schema, keyof Schema>)
+    permissionsMap.set(
+      collection as keyof Schema,
+      collPerms as CollectionPermissions<Schema, keyof Schema>,
+    )
   }
 
   return {
@@ -428,7 +421,7 @@ function convertPayloadPolicy<Schema>(
     name: policy.name,
     icon: policy.icon,
     description: policy.description ?? undefined,
-    ipAccess: policy.ip_access ? policy.ip_access.split(',').map(s => s.trim()) : undefined,
+    ipAccess: policy.ip_access ? policy.ip_access.split(',').map((s) => s.trim()) : undefined,
     enforceTfa: policy.enforce_tfa,
     adminAccess: policy.admin_access,
     appAccess: policy.app_access,
@@ -442,7 +435,8 @@ function convertPayloadPolicy<Schema>(
 function convertPayloadPermission<Schema>(
   perm: DirectusPermissionPayload,
 ): PermissionConfig<Schema, keyof Schema> | true {
-  const hasConfig = perm.permissions || perm.validation || perm.presets || (perm.fields && perm.fields.length > 0)
+  const hasConfig =
+    perm.permissions || perm.validation || perm.presets || (perm.fields && perm.fields.length > 0)
 
   if (!hasConfig) {
     return true
@@ -450,9 +444,11 @@ function convertPayloadPermission<Schema>(
 
   return {
     fields: perm.fields
-      ? (perm.fields.includes('*') ? '*' : perm.fields) as '*' | (keyof Schema[keyof Schema])[]
+      ? ((perm.fields.includes('*') ? '*' : perm.fields) as '*' | (keyof Schema[keyof Schema])[])
       : undefined,
+    // eslint-disable-next-line typescript/no-explicit-any
     filter: perm.permissions as any,
+    // eslint-disable-next-line typescript/no-explicit-any
     presets: perm.presets as any,
     validation: perm.validation ?? undefined,
   }

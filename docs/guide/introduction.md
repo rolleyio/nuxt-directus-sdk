@@ -5,6 +5,7 @@
 ## Why nuxt-directus-sdk?
 
 Integrating Directus with Nuxt manually involves solving many complex problems:
+
 - **Authentication**: Managing sessions, tokens, cookies across SSR/client
 - **CORS**: Dealing with cross-origin requests in development
 - **TypeScript**: Keeping types in sync with your Directus schema
@@ -16,6 +17,7 @@ This module solves all of these problems and more, providing a **production-read
 ## Key Features
 
 ### 🔐 Complete Authentication System
+
 - Session-based auth with httpOnly cookies (more secure than tokens)
 - Auto-login on page load
 - SSO/OAuth support (Google, GitHub, Microsoft, etc.)
@@ -23,30 +25,35 @@ This module solves all of these problems and more, providing a **production-read
 - Works seamlessly across domains
 
 ### ⚡ Realtime & WebSocket Support
+
 - Full WebSocket integration with automatic authentication
 - Dev proxy that handles WebSocket connections
 - Multiple auth modes (handshake, public, strict)
 - Live subscriptions to collection changes
 
 ### 🛠️ Zero-Config Development
+
 - Auto-imports for all Directus SDK functions
 - Auto-generated TypeScript types from your schema
 - Dev proxy eliminates CORS issues
 - Directus admin panel in Nuxt DevTools
 
 ### 📁 File & Asset Management
+
 - Single and batch file uploads
 - Image transformations (resize, format conversion, quality control)
 - Smart URL generation with parameters
 - Support for signed URLs
 
 ### 🎨 Visual Editor
+
 - Live preview mode with inline editing
 - `<DirectusVisualEditor>` component
 - Multiple edit modes (drawer, modal, popover)
 - Works with Directus Visual Editing SDK
 
 ### 🔒 SSR Ready
+
 - Full SSR support
 - HttpOnly cookies for security
 - CORS credential handling
@@ -63,10 +70,12 @@ const directus = useDirectus()
 
 // Fetch data with type safety
 const { data: posts } = await useAsyncData('posts', () =>
-  directus.request(readItems('posts', {
-    fields: ['*'],
-    limit: 10
-  }))
+  directus.request(
+    readItems('posts', {
+      fields: ['*'],
+      limit: 10,
+    }),
+  ),
 )
 
 // Subscribe to realtime updates

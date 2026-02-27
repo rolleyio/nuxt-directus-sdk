@@ -28,10 +28,7 @@ const rules = defineDirectusRules<DirectusSchema>({
               },
               delete: {
                 filter: {
-                  _and: [
-                    { author: { _eq: '$CURRENT_USER' } },
-                    { status: { _eq: 'draft' } },
-                  ],
+                  _and: [{ author: { _eq: '$CURRENT_USER' } }, { status: { _eq: 'draft' } }],
                 },
               },
             },
@@ -120,7 +117,13 @@ describe('Editor filter matching', () => {
   })
 
   it('cannot update other users posts', () => {
-    const post = { id: 2, title: 'Their Post', content: '...', status: 'draft', author: 'user-456' }
+    const post = {
+      id: 2,
+      title: 'Their Post',
+      content: '...',
+      status: 'draft',
+      author: 'user-456',
+    }
 
     const matches = tester.itemMatchesFilter('Editor', 'update', 'posts', post, {
       currentUser: 'user-123',
@@ -131,27 +134,37 @@ describe('Editor filter matching', () => {
 
   it('can only delete own drafts', () => {
     const draft = { id: 1, title: 'Draft', content: '...', status: 'draft', author: 'user-123' }
-    const published = { id: 2, title: 'Live', content: '...', status: 'published', author: 'user-123' }
+    const published = {
+      id: 2,
+      title: 'Live',
+      content: '...',
+      status: 'published',
+      author: 'user-123',
+    }
 
-    expect(tester.itemMatchesFilter('Editor', 'delete', 'posts', draft, {
-      currentUser: 'user-123',
-    })).toBe(true)
+    expect(
+      tester.itemMatchesFilter('Editor', 'delete', 'posts', draft, {
+        currentUser: 'user-123',
+      }),
+    ).toBe(true)
 
-    expect(tester.itemMatchesFilter('Editor', 'delete', 'posts', published, {
-      currentUser: 'user-123',
-    })).toBe(false)
+    expect(
+      tester.itemMatchesFilter('Editor', 'delete', 'posts', published, {
+        currentUser: 'user-123',
+      }),
+    ).toBe(false)
   })
 })
 ```
 
 The `context` parameter supports these dynamic variables:
 
-| Variable | Context Key |
-|----------|------------|
-| `$CURRENT_USER` | `currentUser` |
-| `$CURRENT_ROLE` | `currentRole` |
-| `$CURRENT_ROLES` | `currentRoles` |
-| `$NOW` | Current timestamp |
+| Variable         | Context Key       |
+| ---------------- | ----------------- |
+| `$CURRENT_USER`  | `currentUser`     |
+| `$CURRENT_ROLE`  | `currentRole`     |
+| `$CURRENT_ROLES` | `currentRoles`    |
+| `$NOW`           | Current timestamp |
 
 ## Field-Level Access
 
@@ -237,10 +250,7 @@ const rules = defineDirectusRules<DirectusSchema>({
             posts: {
               create: {
                 fields: ['title', 'slug'],
-                validation: allOf(
-                  required('title'),
-                  pattern('slug', '^[a-z0-9-]+$'),
-                ),
+                validation: allOf(required('title'), pattern('slug', '^[a-z0-9-]+$')),
               },
             },
           },
@@ -378,15 +388,15 @@ describe('local additions', () => {
 
 Creates a tester instance with the following methods:
 
-| Method | Returns | Description |
-|--------|---------|-------------|
-| `can(roleOrPolicy, action, collection)` | `PermissionTestResult` | Check if an action is allowed |
-| `itemMatchesFilter(roleOrPolicy, action, collection, item, context?)` | `boolean` | Test item against permission filter |
-| `getAccessibleFields(roleOrPolicy, action, collection)` | `string[] \| '*'` | Get allowed fields |
-| `canAccessField(roleOrPolicy, action, collection, field)` | `boolean` | Check single field access |
-| `getPresets(roleOrPolicy, action, collection)` | `object \| null` | Get default values |
-| `validateItem(roleOrPolicy, action, collection, item)` | `Promise<ValidationTestResult>` | Validate item data |
-| `getRules()` | `RulesConfig` | Get the underlying rules |
+| Method                                                                | Returns                         | Description                         |
+| --------------------------------------------------------------------- | ------------------------------- | ----------------------------------- |
+| `can(roleOrPolicy, action, collection)`                               | `PermissionTestResult`          | Check if an action is allowed       |
+| `itemMatchesFilter(roleOrPolicy, action, collection, item, context?)` | `boolean`                       | Test item against permission filter |
+| `getAccessibleFields(roleOrPolicy, action, collection)`               | `string[] \| '*'`               | Get allowed fields                  |
+| `canAccessField(roleOrPolicy, action, collection, field)`             | `boolean`                       | Check single field access           |
+| `getPresets(roleOrPolicy, action, collection)`                        | `object \| null`                | Get default values                  |
+| `validateItem(roleOrPolicy, action, collection, item)`                | `Promise<ValidationTestResult>` | Validate item data                  |
+| `getRules()`                                                          | `RulesConfig`                   | Get the underlying rules            |
 
 ### `PermissionTestResult`
 
@@ -404,8 +414,8 @@ Creates a tester instance with the following methods:
 {
   valid: boolean
   issues: Array<{
-    field: string    // Field that failed, or '*' for general errors
-    message: string  // Human-readable error
+    field: string // Field that failed, or '*' for general errors
+    message: string // Human-readable error
   }>
 }
 ```

@@ -35,21 +35,16 @@ export function evaluateFilter<T extends Record<string, unknown>>(
 
   // Handle logical operators
   if ('_and' in filter && Array.isArray(filter._and)) {
-    return filter._and.every((f: Record<string, unknown>) =>
-      evaluateFilter(f, item, context),
-    )
+    return filter._and.every((f: Record<string, unknown>) => evaluateFilter(f, item, context))
   }
 
   if ('_or' in filter && Array.isArray(filter._or)) {
-    return filter._or.some((f: Record<string, unknown>) =>
-      evaluateFilter(f, item, context),
-    )
+    return filter._or.some((f: Record<string, unknown>) => evaluateFilter(f, item, context))
   }
 
   // Handle field filters
   for (const [field, condition] of Object.entries(filter)) {
-    if (field.startsWith('_'))
-      continue // Skip logical operators
+    if (field.startsWith('_')) continue // Skip logical operators
 
     // Handle nested field access (e.g., "author.name")
     const itemValue = getNestedValue(item, field)
@@ -74,9 +69,8 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
       return undefined
     }
     if (typeof current === 'object') {
-      current = (current as Record<string, unknown>)[part]
-    }
-    else {
+      current = (current as Record<string, unknown>)[part] // eslint-disable-line typescript/no-unsafe-type-assertion -- narrowed via typeof check
+    } else {
       return undefined
     }
   }
@@ -97,7 +91,8 @@ function evaluateCondition(
     return itemValue === resolveDynamicValue(condition, context)
   }
 
-  const conditionObj = condition as Record<string, unknown>
+  // Already checked: condition is non-null object
+  const conditionObj = condition as Record<string, unknown> // eslint-disable-line typescript/no-unsafe-type-assertion -- narrowed via typeof check above
 
   // Handle nested object filter (for relations)
   if (!hasOperator(conditionObj)) {
@@ -105,7 +100,7 @@ function evaluateCondition(
     if (typeof itemValue !== 'object' || itemValue === null) {
       return false
     }
-    return evaluateFilter(conditionObj, itemValue as Record<string, unknown>, context)
+    return evaluateFilter(conditionObj, itemValue as Record<string, unknown>, context) // eslint-disable-line typescript/no-unsafe-type-assertion -- narrowed via typeof check above
   }
 
   // Handle operators
@@ -124,7 +119,7 @@ function evaluateCondition(
  * Check if an object contains filter operators
  */
 function hasOperator(obj: Record<string, unknown>): boolean {
-  return Object.keys(obj).some(key => key.startsWith('_'))
+  return Object.keys(obj).some((key) => key.startsWith('_'))
 }
 
 /**
@@ -177,92 +172,124 @@ function evaluateOperator(
 
     case '_empty':
       if (resolvedValue) {
-        return itemValue === null || itemValue === undefined || itemValue === ''
-          || (Array.isArray(itemValue) && itemValue.length === 0)
+        return (
+          itemValue === null ||
+          itemValue === undefined ||
+          itemValue === '' ||
+          (Array.isArray(itemValue) && itemValue.length === 0)
+        )
       }
-      return itemValue !== null && itemValue !== undefined && itemValue !== ''
-        && !(Array.isArray(itemValue) && itemValue.length === 0)
+      return (
+        itemValue !== null &&
+        itemValue !== undefined &&
+        itemValue !== '' &&
+        !(Array.isArray(itemValue) && itemValue.length === 0)
+      )
 
     case '_nempty':
       if (resolvedValue) {
-        return itemValue !== null && itemValue !== undefined && itemValue !== ''
-          && !(Array.isArray(itemValue) && itemValue.length === 0)
+        return (
+          itemValue !== null &&
+          itemValue !== undefined &&
+          itemValue !== '' &&
+          !(Array.isArray(itemValue) && itemValue.length === 0)
+        )
       }
-      return itemValue === null || itemValue === undefined || itemValue === ''
-        || (Array.isArray(itemValue) && itemValue.length === 0)
+      return (
+        itemValue === null ||
+        itemValue === undefined ||
+        itemValue === '' ||
+        (Array.isArray(itemValue) && itemValue.length === 0)
+      )
 
     case '_contains':
-      return typeof itemValue === 'string'
-        && typeof resolvedValue === 'string'
-        && itemValue.includes(resolvedValue)
+      return (
+        typeof itemValue === 'string' &&
+        typeof resolvedValue === 'string' &&
+        itemValue.includes(resolvedValue)
+      )
 
     case '_ncontains':
-      return typeof itemValue === 'string'
-        && typeof resolvedValue === 'string'
-        && !itemValue.includes(resolvedValue)
+      return (
+        typeof itemValue === 'string' &&
+        typeof resolvedValue === 'string' &&
+        !itemValue.includes(resolvedValue)
+      )
 
     case '_icontains':
-      return typeof itemValue === 'string'
-        && typeof resolvedValue === 'string'
-        && itemValue.toLowerCase().includes(resolvedValue.toLowerCase())
+      return (
+        typeof itemValue === 'string' &&
+        typeof resolvedValue === 'string' &&
+        itemValue.toLowerCase().includes(resolvedValue.toLowerCase())
+      )
 
     case '_starts_with':
-      return typeof itemValue === 'string'
-        && typeof resolvedValue === 'string'
-        && itemValue.startsWith(resolvedValue)
+      return (
+        typeof itemValue === 'string' &&
+        typeof resolvedValue === 'string' &&
+        itemValue.startsWith(resolvedValue)
+      )
 
     case '_istarts_with':
-      return typeof itemValue === 'string'
-        && typeof resolvedValue === 'string'
-        && itemValue.toLowerCase().startsWith(resolvedValue.toLowerCase())
+      return (
+        typeof itemValue === 'string' &&
+        typeof resolvedValue === 'string' &&
+        itemValue.toLowerCase().startsWith(resolvedValue.toLowerCase())
+      )
 
     case '_nstarts_with':
-      return typeof itemValue === 'string'
-        && typeof resolvedValue === 'string'
-        && !itemValue.startsWith(resolvedValue)
+      return (
+        typeof itemValue === 'string' &&
+        typeof resolvedValue === 'string' &&
+        !itemValue.startsWith(resolvedValue)
+      )
 
     case '_nistarts_with':
-      return typeof itemValue === 'string'
-        && typeof resolvedValue === 'string'
-        && !itemValue.toLowerCase().startsWith(resolvedValue.toLowerCase())
+      return (
+        typeof itemValue === 'string' &&
+        typeof resolvedValue === 'string' &&
+        !itemValue.toLowerCase().startsWith(resolvedValue.toLowerCase())
+      )
 
     case '_ends_with':
-      return typeof itemValue === 'string'
-        && typeof resolvedValue === 'string'
-        && itemValue.endsWith(resolvedValue)
+      return (
+        typeof itemValue === 'string' &&
+        typeof resolvedValue === 'string' &&
+        itemValue.endsWith(resolvedValue)
+      )
 
     case '_iends_with':
-      return typeof itemValue === 'string'
-        && typeof resolvedValue === 'string'
-        && itemValue.toLowerCase().endsWith(resolvedValue.toLowerCase())
+      return (
+        typeof itemValue === 'string' &&
+        typeof resolvedValue === 'string' &&
+        itemValue.toLowerCase().endsWith(resolvedValue.toLowerCase())
+      )
 
     case '_nends_with':
-      return typeof itemValue === 'string'
-        && typeof resolvedValue === 'string'
-        && !itemValue.endsWith(resolvedValue)
+      return (
+        typeof itemValue === 'string' &&
+        typeof resolvedValue === 'string' &&
+        !itemValue.endsWith(resolvedValue)
+      )
 
     case '_niends_with':
-      return typeof itemValue === 'string'
-        && typeof resolvedValue === 'string'
-        && !itemValue.toLowerCase().endsWith(resolvedValue.toLowerCase())
+      return (
+        typeof itemValue === 'string' &&
+        typeof resolvedValue === 'string' &&
+        !itemValue.toLowerCase().endsWith(resolvedValue.toLowerCase())
+      )
 
     case '_between':
       if (Array.isArray(resolvedValue) && resolvedValue.length === 2) {
         const [min, max] = resolvedValue
-        return itemValue !== null
-          && itemValue !== undefined
-          && itemValue >= min
-          && itemValue <= max
+        return itemValue !== null && itemValue !== undefined && itemValue >= min && itemValue <= max
       }
       return false
 
     case '_nbetween':
       if (Array.isArray(resolvedValue) && resolvedValue.length === 2) {
         const [min, max] = resolvedValue
-        return itemValue === null
-          || itemValue === undefined
-          || itemValue < min
-          || itemValue > max
+        return itemValue === null || itemValue === undefined || itemValue < min || itemValue > max
       }
       return true
 
@@ -273,24 +300,29 @@ function evaluateOperator(
       try {
         const regex = new RegExp(resolvedValue)
         return regex.test(itemValue)
-      }
-      catch {
+      } catch {
         return false
       }
 
     // Relational operators
     case '_some':
-      if (!Array.isArray(itemValue))
-        return false
-      return itemValue.some(v =>
-        evaluateFilter(resolvedValue as Record<string, unknown>, v as Record<string, unknown>, context),
+      if (!Array.isArray(itemValue)) return false
+      return itemValue.some((v: unknown) =>
+        evaluateFilter(
+          resolvedValue as Record<string, unknown>, // eslint-disable-line typescript/no-unsafe-type-assertion -- filter shape from Directus API
+          v as Record<string, unknown>, // eslint-disable-line typescript/no-unsafe-type-assertion -- relational items are objects
+          context,
+        ),
       )
 
     case '_none':
-      if (!Array.isArray(itemValue))
-        return true
-      return !itemValue.some(v =>
-        evaluateFilter(resolvedValue as Record<string, unknown>, v as Record<string, unknown>, context),
+      if (!Array.isArray(itemValue)) return true
+      return !itemValue.some((v: unknown) =>
+        evaluateFilter(
+          resolvedValue as Record<string, unknown>, // eslint-disable-line typescript/no-unsafe-type-assertion -- filter shape from Directus API
+          v as Record<string, unknown>, // eslint-disable-line typescript/no-unsafe-type-assertion -- relational items are objects
+          context,
+        ),
       )
 
     default:
@@ -304,8 +336,7 @@ function evaluateOperator(
  * Resolve dynamic variables in filter values
  */
 function resolveDynamicValue(value: unknown, context: FilterContext): unknown {
-  if (typeof value !== 'string')
-    return value
+  if (typeof value !== 'string') return value
 
   switch (value) {
     case '$CURRENT_USER':

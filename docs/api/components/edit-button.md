@@ -14,10 +14,7 @@ A floating button that triggers the Directus editor for a specific item. Only vi
     <h1>{{ article.title }}</h1>
     <div v-html="article.content" />
 
-    <DirectusEditButton
-      collection="articles"
-      :item="article.id"
-    />
+    <DirectusEditButton collection="articles" :item="article.id" />
   </article>
 </template>
 ```

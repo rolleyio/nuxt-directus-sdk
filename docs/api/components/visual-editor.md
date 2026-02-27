@@ -15,17 +15,12 @@ The component only adds attributes when the visual editor detects it is inside a
 const directus = useDirectus()
 
 const { data: article } = await useAsyncData('article', () =>
-  directus.request(readItem('articles', route.params.id))
+  directus.request(readItem('articles', route.params.id)),
 )
 </script>
 
 <template>
-  <DirectusVisualEditor
-    collection="articles"
-    :item="article.id"
-    fields="title"
-    mode="drawer"
-  >
+  <DirectusVisualEditor collection="articles" :item="article.id" fields="title" mode="drawer">
     <h1>{{ article.title }}</h1>
   </DirectusVisualEditor>
 </template>
@@ -47,6 +42,7 @@ The name of the Directus collection containing the item to edit.
 ```
 
 **Examples:**
+
 ```vue
 <!-- System collections -->
 <DirectusVisualEditor collection="directus_users" :item="user.id">
@@ -67,10 +63,7 @@ The name of the Directus collection containing the item to edit.
 The primary key (ID) of the item to edit.
 
 ```vue
-<DirectusVisualEditor
-  collection="articles"
-  :item="article.id"
->
+<DirectusVisualEditor collection="articles" :item="article.id">
   <h1>{{ article.title }}</h1>
 </DirectusVisualEditor>
 ```
@@ -84,17 +77,15 @@ The primary key (ID) of the item to edit.
 Specify which field(s) should be editable. Can be a single field name or an array of field names.
 
 **Single field:**
+
 ```vue
-<DirectusVisualEditor
-  collection="articles"
-  :item="article.id"
-  fields="title"
->
+<DirectusVisualEditor collection="articles" :item="article.id" fields="title">
   <h1>{{ article.title }}</h1>
 </DirectusVisualEditor>
 ```
 
 **Multiple fields:**
+
 ```vue
 <DirectusVisualEditor
   collection="articles"
@@ -151,7 +142,7 @@ When content is saved in the Directus editor, `refreshNuxtData()` is called auto
 <script setup>
 // Good - reactive data that updates on save
 const { data: article } = await useAsyncData('article', () =>
-  directus.request(readItem('articles', id))
+  directus.request(readItem('articles', id)),
 )
 
 // Avoid - static data won't update after edits
