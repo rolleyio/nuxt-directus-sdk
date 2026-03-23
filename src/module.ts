@@ -12,6 +12,7 @@ import { generateTypes } from './runtime/types'
 import { useUrl } from './runtime/utils'
 
 export type DirectusUrl = string | { client: string, server: string }
+type ReadMeFields = Query<DirectusSchema, DirectusSchema['directus_users']>['fields']
 
 export interface ModuleOptions {
   /**
@@ -139,9 +140,9 @@ export interface ModuleOptions {
     /**
      * ReadMe fields to fetch
      * @default []
-     * @type Query<DirectusSchema, DirectusSchema['directus_users']>['fields']
+     * @type ReadMeFields
      */
-    readMeFields?: Query<DirectusSchema, DirectusSchema['directus_users']>['fields']
+    readMeFields?: ReadMeFields
 
     redirect?: {
       /**
@@ -345,7 +346,7 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     (options as any).directusUrl = clientUrl
-    ;(options as any).serverDirectusUrl = serverUrl || clientUrl
+      ; (options as any).serverDirectusUrl = serverUrl || clientUrl
 
     nuxtApp.options.runtimeConfig[configKey] = options as any
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
