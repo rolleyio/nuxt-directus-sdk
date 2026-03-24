@@ -1,6 +1,6 @@
 import type { ComputedRef, Ref } from '#imports'
 import type { RouteLocationRaw } from '#vue-router'
-import type { DirectusUser, LoginOptions } from '@directus/sdk'
+import type { LoginOptions } from '@directus/sdk'
 import type {
   DirectusError,
   RegisterUserInput,
@@ -21,15 +21,15 @@ import { useDirectus, useDirectusOriginUrl } from './directus'
 
 // Auto types don't seem to be generating correctly here, so we need to specify the return type
 export interface DirectusAuth {
-  user: Ref<Partial<DirectusUser> | null>
+  user: Ref<DirectusUser | null>
   loggedIn: ComputedRef<boolean>
-  readMe: () => Promise<Partial<DirectusUser> | DirectusError | null>
-  updateMe: (data: Partial<DirectusUser>) => Promise<Partial<DirectusUser> | DirectusError | null>
+  readMe: () => Promise<DirectusUser | DirectusError | null>
+  updateMe: (data: Partial<DirectusUser>) => Promise<DirectusUser | DirectusError | null>
   login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<DirectusUser | null>
   loginWithProvider: (provider: string, redirectOnLogin?: boolean | string) => Promise<void>
   logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
-  createUser: (data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>) => Promise<Omit<DirectusUser, 'last_access'>>
-  register: (data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>) => Promise<Omit<DirectusUser, 'last_access'>>
+  createUser: (data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>) => Promise<DirectusUser>
+  register: (data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>) => Promise<DirectusUser>
   inviteUser: (email: string, role: string, inviteUrl?: string | undefined) => Promise<void>
   acceptUserInvite: (token: string, password: string) => Promise<void>
   passwordRequest: (email: string, resetUrl?: string | undefined) => Promise<void>
@@ -62,12 +62,11 @@ export function useDirectusAuth(): DirectusAuth {
     loading.value = true
 
     try {
-      // Types are generated with Admin Token but User Tokens may not have access to all fields, including required fields.
-      const response: Partial<DirectusUser> = await directus.request(directusReadMe({ fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
+      const response = await directus.request(directusReadMe({ fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
       if (!response.id) {
         console.warn('Directus is not configured to return the \'id\' field for DirectusUsers.')
       }
-      user.value = response as DirectusUser
+      user.value = response as unknown as DirectusUser
     }
     catch (error) {
       console.error('[Auth] Failed to fetch user:', error)
@@ -87,8 +86,8 @@ export function useDirectusAuth(): DirectusAuth {
     if (!currentUser?.id)
       throw new Error('No user available')
     // INVESTIGATE: Does this cause issues with creative inputs in the config? Config won't have typesafety so probably a heavy lift for a low return.
-    const response: Partial<DirectusUser> = await directus.request(directusUpdateMe(data, { fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
-    user.value = response as DirectusUser
+    const response = await directus.request(directusUpdateMe(data as any, { fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
+    user.value = response as unknown as DirectusUser
     return user.value
   }
 
@@ -139,7 +138,7 @@ export function useDirectusAuth(): DirectusAuth {
 
   async function createUser(data: RegisterUserInput) {
     const response = await directus.request(directusCreateUser(data))
-    return response as DirectusUser
+    return response as unknown as DirectusUser
   }
 
   // Alias for createUser
