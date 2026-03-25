@@ -2355,7 +2355,7 @@ export default defineEventHandler(async (event) => {
 ### API Key Authentication
 
 ```typescript
-// server/api/webhook.ts
+// server/api/posts.ts
 export default defineEventHandler(async (event) => {
   const apiKey = getHeader(event, 'X-API-Key')
 
@@ -2365,7 +2365,7 @@ export default defineEventHandler(async (event) => {
   const directus = useTokenDirectus(token)
 
   // Make authenticated request
-  const items = await directus.request(readItems('webhooks'))
+  const items = await directus.request(readItems('posts'))
 
   return { items }
 })

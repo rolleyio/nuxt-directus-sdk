@@ -30,6 +30,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 This automatically:
+
 1. Extracts the session token from cookies
 2. Attaches it to Directus requests
 3. Maintains the user's authentication context
@@ -46,13 +47,15 @@ export default defineEventHandler(async (event) => {
     const user = await directus.request(readMe())
 
     // Fetch user's articles
-    const articles = await directus.request(readItems('articles', {
-      filter: {
-        author: { _eq: user.id }
-      },
-      sort: ['-date_created'],
-      limit: 10,
-    }))
+    const articles = await directus.request(
+      readItems('articles', {
+        filter: {
+          author: { _eq: user.id },
+        },
+        sort: ['-date_created'],
+        limit: 10,
+      }),
+    )
 
     return {
       user,
@@ -79,15 +82,18 @@ export default defineEventHandler(async () => {
   const directus = useAdminDirectus()
 
   // Admin-level access to all users
-  const users = await directus.request(readUsers({
-    fields: ['id', 'email', 'first_name', 'last_name', 'role'],
-  }))
+  const users = await directus.request(
+    readUsers({
+      fields: ['id', 'email', 'first_name', 'last_name', 'role'],
+    }),
+  )
 
   return { users }
 })
 ```
 
 Requirements:
+
 - `DIRECTUS_ADMIN_TOKEN` must be set in `.env`
 - Should only be used for server-side operations
 - Never expose admin token to client
@@ -102,11 +108,13 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   // Create user with admin privileges
-  const user = await directus.request(createUser({
-    email: body.email,
-    password: body.password,
-    role: body.role,
-  }))
+  const user = await directus.request(
+    createUser({
+      email: body.email,
+      password: body.password,
+      role: body.role,
+    }),
+  )
 
   return { user }
 })
@@ -142,7 +150,7 @@ export default defineEventHandler(async (event) => {
 ### API Key Authentication
 
 ```typescript
-// server/api/webhook.ts
+// server/api/posts.ts
 export default defineEventHandler(async (event) => {
   const apiKey = getHeader(event, 'X-API-Key')
 
@@ -152,7 +160,7 @@ export default defineEventHandler(async (event) => {
   const directus = useTokenDirectus(token)
 
   // Make authenticated request
-  const items = await directus.request(readItems('webhooks'))
+  const items = await directus.request(readItems('posts'))
 
   return { items }
 })
@@ -183,7 +191,7 @@ Use case: Custom authentication logic
 export default defineEventHandler((event) => {
   const publicPaths = ['/api/public']
 
-  if (publicPaths.some(path => event.path.startsWith(path))) {
+  if (publicPaths.some((path) => event.path.startsWith(path))) {
     return
   }
 
@@ -267,14 +275,14 @@ export default defineEventHandler(async (event) => {
   }
 
   // Fetch data based on scope
-  const filter = scope === 'public'
-    ? { status: { _eq: 'published' } }
-    : {}
+  const filter = scope === 'public' ? { status: { _eq: 'published' } } : {}
 
-  const analytics = await directus.request(readItems('analytics', {
-    filter,
-    limit: scope === 'admin' ? -1 : 10,
-  }))
+  const analytics = await directus.request(
+    readItems('analytics', {
+      filter,
+      limit: scope === 'admin' ? -1 : 10,
+    }),
+  )
 
   return { scope, analytics }
 })
@@ -319,7 +327,7 @@ export default defineEventHandler(async (event) => {
 
   const formData = new FormData()
 
-  files.forEach(file => {
+  files.forEach((file) => {
     formData.append('file', file)
   })
 
@@ -344,10 +352,12 @@ export default defineTask({
     const directus = useAdminDirectus()
 
     // Fetch items to sync
-    const items = await directus.request(readItems('sync_queue', {
-      filter: { status: { _eq: 'pending' } },
-      limit: 100,
-    }))
+    const items = await directus.request(
+      readItems('sync_queue', {
+        filter: { status: { _eq: 'pending' } },
+        limit: 100,
+      }),
+    )
 
     for (const item of items) {
       try {
@@ -355,10 +365,12 @@ export default defineTask({
         await syncToExternalAPI(item)
 
         // Update status
-        await directus.request(updateItem('sync_queue', item.id, {
-          status: 'completed',
-          synced_at: new Date(),
-        }))
+        await directus.request(
+          updateItem('sync_queue', item.id, {
+            status: 'completed',
+            synced_at: new Date(),
+          }),
+        )
       } catch (error) {
         console.error(`Failed to sync item ${item.id}:`, error)
       }
@@ -378,7 +390,7 @@ import type { Query } from '@directus/sdk'
 export async function fetchWithAuth<T>(
   event: H3Event,
   collection: string,
-  query?: Query<DirectusSchema, any>
+  query?: Query<DirectusSchema, any>,
 ) {
   const directus = useServerDirectus(event)
   return directus.request(readItems(collection, query))
@@ -403,9 +415,11 @@ export default defineEventHandler(async (event) => {
 export async function requireRole(event: H3Event, requiredRole: string) {
   const directus = useServerDirectus(event)
 
-  const user = await directus.request(readMe({
-    fields: ['id', 'email', 'role.*'],
-  }))
+  const user = await directus.request(
+    readMe({
+      fields: ['id', 'email', 'role.*'],
+    }),
+  )
 
   if (user.role.name !== requiredRole) {
     throw createError({
@@ -440,12 +454,14 @@ DIRECTUS_ADMIN_TOKEN=your_admin_token_here
 ```
 
 Get your admin token from Directus:
+
 1. Go to Directus Admin → User Menu → Account
 2. Copy your token under "Admin Access Token"
 
 ### Security Best Practices
 
 1. **Never expose admin token to client**
+
    ```typescript
    // ❌ DON'T
    export default defineEventHandler(() => {
@@ -460,6 +476,7 @@ Get your admin token from Directus:
    ```
 
 2. **Always validate user input**
+
    ```typescript
    export default defineEventHandler(async (event) => {
      const body = await readBody(event)
@@ -475,6 +492,7 @@ Get your admin token from Directus:
    ```
 
 3. **Use appropriate authentication level**
+
    ```typescript
    // User operations - use user session
    const directus = useServerDirectus(event)
@@ -490,11 +508,13 @@ Get your admin token from Directus:
 Create a Directus client authenticated with the user's session token.
 
 **Parameters:**
+
 - `event: H3Event` - The Nuxt server event
 
 **Returns:** `DirectusClient` - Authenticated Directus client
 
 **Example:**
+
 ```typescript
 const directus = useServerDirectus(event)
 const user = await directus.request(readMe())
@@ -509,6 +529,7 @@ Create a Directus client authenticated with the admin token.
 **Throws:** Error if `DIRECTUS_ADMIN_TOKEN` is not set
 
 **Example:**
+
 ```typescript
 const directus = useAdminDirectus()
 const users = await directus.request(readUsers())
@@ -519,11 +540,13 @@ const users = await directus.request(readUsers())
 Create a Directus client with a custom token.
 
 **Parameters:**
+
 - `token?: string` - Optional authentication token
 
 **Returns:** `DirectusClient` - Token-authenticated Directus client
 
 **Example:**
+
 ```typescript
 const directus = useTokenDirectus('custom-token')
 const items = await directus.request(readItems('items'))
@@ -534,11 +557,13 @@ const items = await directus.request(readItems('items'))
 Extract the session token from cookies.
 
 **Parameters:**
+
 - `event: H3Event` - The Nuxt server event
 
 **Returns:** `string | undefined` - The session token if present
 
 **Example:**
+
 ```typescript
 const token = getDirectusSessionToken(event)
 if (token) {
@@ -551,11 +576,13 @@ if (token) {
 Get the full Directus URL for a given path.
 
 **Parameters:**
+
 - `path?: string` - Optional path to append
 
 **Returns:** `string` - Full Directus URL
 
 **Example:**
+
 ```typescript
 const assetsUrl = useDirectusUrl('assets')
 // Returns: https://your-directus.com/assets
