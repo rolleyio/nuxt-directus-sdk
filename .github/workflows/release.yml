@@ -28,6 +28,8 @@ jobs:
 
       - run: bun run lint
 
+      - run: bun run dev:prepare
+
       - run: bun run test
 
       - run: bun run prepack
