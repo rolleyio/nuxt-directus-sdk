@@ -13,7 +13,8 @@ export function useDirectusUrl(path = ''): string {
   const config = useRuntimeConfig()
   const serverUrl = (config as any).directus?.serverDirectusUrl
   const fallback = (config.public.directus as any).directusUrl || config.public.directus.url
-  return useUrl(serverUrl || fallback, path)
+  const url = serverUrl || fallback || process.env.DIRECTUS_URL
+  return useUrl(url, path)
 }
 
 export function useTokenDirectus(token?: string) {
@@ -34,9 +35,10 @@ export function useServerDirectus(event: H3Event) {
 
 export function useAdminDirectus() {
   const config = useRuntimeConfig().directus
+  const adminToken = config.adminToken || process.env.DIRECTUS_ADMIN_TOKEN
 
-  if (!config.adminToken)
+  if (!adminToken)
     throw new Error('DIRECTUS_ADMIN_TOKEN is not set in config options or .env file')
 
-  return useTokenDirectus(config.adminToken)
+  return useTokenDirectus(adminToken)
 }

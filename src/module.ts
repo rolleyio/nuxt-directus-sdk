@@ -222,8 +222,7 @@ export default defineNuxtModule<ModuleOptions>({
     const serverUrl = typeof options.url === 'string' ? options.url : options.url?.server
 
     if (!clientUrl) {
-      logger.error('nuxt-directus-sdk requires a url to your Directus instance, set it in the config options or .env file as DIRECTUS_URL')
-      return
+      logger.warn('No Directus URL found at build time. Set it in config options, .env file as DIRECTUS_URL, or at runtime via NUXT_PUBLIC_DIRECTUS_URL.')
     }
 
     const resolver = createResolver(import.meta.url)
