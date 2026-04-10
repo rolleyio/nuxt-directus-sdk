@@ -5,6 +5,10 @@
   "description": "A Directus nuxt module that uses the Directus SDK",
   "author": "Matthew Rollinson <matt@rolley.io>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rolleyio/nuxt-directus-sdk"
+  },
   "exports": {
     ".": {
       "types": "./dist/module.d.mts",
