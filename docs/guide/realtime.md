@@ -107,7 +107,7 @@ Configure realtime auth mode in your Nuxt app:
 export default defineNuxtConfig({
   directus: {
     auth: {
-      realtimeAuthMode: 'public',  // 'public', 'handshake', or 'strict'
+      realtimeAuthMode: 'public', // 'public', 'handshake', or 'strict'
     },
   },
 })
@@ -124,7 +124,7 @@ With session-based authentication and `WEBSOCKETS_REST_AUTH=strict` in Directus:
 export default defineNuxtConfig({
   directus: {
     auth: {
-      realtimeAuthMode: 'public',  // Default
+      realtimeAuthMode: 'public', // Default
     },
   },
 })
@@ -140,7 +140,7 @@ Authenticates during the initial WebSocket handshake:
 export default defineNuxtConfig({
   directus: {
     auth: {
-      realtimeAuthMode: 'public',  // Default - recommended
+      realtimeAuthMode: 'public', // Default - recommended
     },
   },
 })
@@ -182,7 +182,7 @@ const { subscription } = await directus.subscribe('collection_name', {
     filter: { /* filter options */ },
     limit: 100,
   },
-  uid: 'optional-uid'  // Unique identifier for this subscription
+  uid: 'optional-uid' // Unique identifier for this subscription
 })
 ```
 
@@ -205,7 +205,7 @@ for await (const message of subscription) {
       break
     case 'delete':
       // Item deleted
-      console.log('Deleted:', message.data)  // Array of IDs
+      console.log('Deleted:', message.data) // Array of IDs
       break
   }
 }
@@ -293,7 +293,7 @@ export function useRealtimePosts() {
         posts.value.push(...message.data)
       }
       if (message.event === 'update') {
-        message.data.forEach(updated => {
+        message.data.forEach((updated) => {
           const index = posts.value.findIndex(p => p.id === updated.id)
           if (index !== -1) {
             posts.value[index] = updated
@@ -334,7 +334,9 @@ onBeforeUnmount(() => disconnect())
 
 <template>
   <div>
-    <p v-if="connected">🟢 Live</p>
+    <p v-if="connected">
+      🟢 Live
+    </p>
     <div v-for="post in posts" :key="post.id">
       {{ post.title }}
     </div>

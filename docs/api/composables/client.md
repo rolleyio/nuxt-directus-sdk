@@ -39,8 +39,7 @@ const { data: articles } = await useAsyncData('articles', () =>
     filter: { status: { _eq: 'published' } },
     sort: ['-date_created'],
     limit: 10,
-  }))
-)
+  })))
 ```
 
 **Common Operations:**

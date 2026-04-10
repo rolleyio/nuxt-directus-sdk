@@ -4,7 +4,7 @@ outline: deep
 
 # Environment Variables
 
-### .env.development
+### .env for development
 
 ```dotenv
 # Required
@@ -14,7 +14,7 @@ DIRECTUS_URL=http://localhost:8055
 DIRECTUS_ADMIN_TOKEN=your-admin-token-here
 ```
 
-### .env.production
+### .env for production
 
 For production, set environment variables in your hosting platform:
 
@@ -40,11 +40,13 @@ ENV DIRECTUS_ADMIN_TOKEN=your-token
 ::: tip Docker with split URLs
 When using Docker Compose, you can use the object URL form in `nuxt.config.ts` to route SSR requests through the internal Docker network:
 ```typescript
-directus: {
-  url: {
-    client: 'https://cms.example.com',
-    server: 'http://directus:8055', // Docker service name
-  },
-}
+export default defineNuxtConfig({
+  directus: {
+    url: {
+      client: 'https://cms.example.com',
+      server: 'http://directus:8055', // Docker service name
+    },
+  }
+})
 ```
 :::

@@ -297,7 +297,8 @@ console.log(user.value?.first_name)
 watch(user, (newUser) => {
   if (newUser) {
     console.log('User logged in:', newUser.email)
-  } else {
+  }
+  else {
     console.log('User logged out')
   }
 })

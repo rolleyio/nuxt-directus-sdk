@@ -33,7 +33,7 @@ export default defineNuxtConfig({
 })
 ```
 ::: info
-View all module options in the [API Reference > Configuration](../api/configuration.md#complete-configuration-example) page. 
+View all module options in the [API Reference > Configuration](../api/configuration.md#complete-configuration-example) page.
 :::
 
 3. Add the following variables to the `.env` file in your nuxt project root:
@@ -45,7 +45,6 @@ DIRECTUS_ADMIN_TOKEN=admin_token_required_for_typegen
 
   - **`DIRECTUS_URL`** (required): Your Directus instance URL
   - **`DIRECTUS_ADMIN_TOKEN`** (optional): Admin token for type generation and `useAdminDirectus()` module.
-
 
 ## Directus Configuration
 
@@ -82,7 +81,6 @@ These configuration examples assume that you do not modify the default environme
 WEBSOCKETS_ENABLED=true
 ```
 
-
 ## Verify Installation
 
 Create a simple page to test the integration:
@@ -102,7 +100,7 @@ npx directus-template-cli@latest apply
 The template cli will attempt to merge with your existing content, but is not guaranteed to preserve anything. It is recommended that you use the cli on a fresh instance for testing as needed or modify the examples to work with your existing data structures.
 :::
 
-<!-- 
+<!--
 //TODO: Convert to snippets to avoid code replication and ability to edit in multiple places.
 -->
 
@@ -117,8 +115,8 @@ export default defineNuxtConfig({
   directus: {
     // Proxy configuration (optional)
     devProxy: {
-      enabled: true,  // default: true in dev mode
-      path: '/directus',  // default: '/directus'
+      enabled: true, // default: true in dev mode
+      path: '/directus', // default: '/directus'
     },
   },
 })
@@ -134,8 +132,8 @@ If your Nuxt server can reach Directus via an internal URL (e.g. Docker service 
 export default defineNuxtConfig({
   directus: {
     url: {
-      client: 'https://cms.example.com',    // Used by the browser
-      server: 'http://directus:8055',        // Used during SSR
+      client: 'https://cms.example.com', // Used by the browser
+      server: 'http://directus:8055', // Used during SSR
     },
   },
 })
