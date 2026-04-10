@@ -58,7 +58,8 @@ export default defineEventHandler(async (event) => {
       user,
       articles,
     }
-  } catch (error) {
+  }
+  catch (error) {
     throw createError({
       statusCode: 401,
       message: 'Unauthorized - Please log in',
@@ -257,10 +258,12 @@ export default defineEventHandler(async (event) => {
     if (user.role.name === 'Admin') {
       directus = useAdminDirectus()
       scope = 'admin'
-    } else {
+    }
+    else {
       scope = 'user'
     }
-  } else {
+  }
+  else {
     // Public users get limited data
     directus = useAdminDirectus() // Still need read access
     scope = 'public'
@@ -319,7 +322,7 @@ export default defineEventHandler(async (event) => {
 
   const formData = new FormData()
 
-  files.forEach(file => {
+  files.forEach((file) => {
     formData.append('file', file)
   })
 
@@ -359,7 +362,8 @@ export default defineTask({
           status: 'completed',
           synced_at: new Date(),
         }))
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`Failed to sync item ${item.id}:`, error)
       }
     }

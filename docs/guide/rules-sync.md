@@ -98,8 +98,8 @@ const rules = await pullRules(client)
 ```typescript
 import {
   compareRulesPayloads,
-  diffRules,
   diffRemoteRules,
+  diffRules,
   formatDiff,
   serializeToDirectusApi,
 } from 'nuxt-directus-sdk/rules'
@@ -126,7 +126,7 @@ const diff = await diffRemoteRules(stagingClient, productionClient)
 ### Pushing
 
 ```typescript
-import { pushRules, formatPushResult } from 'nuxt-directus-sdk/rules'
+import { formatPushResult, pushRules } from 'nuxt-directus-sdk/rules'
 
 const result = await pushRules(client, localRules, {
   // Only create, don't update or delete

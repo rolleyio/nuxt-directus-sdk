@@ -66,8 +66,7 @@ const { data: posts } = await useAsyncData('posts', () =>
   directus.request(readItems('posts', {
     fields: ['*'],
     limit: 10
-  }))
-)
+  })))
 
 // Subscribe to realtime updates
 await directus.connect()
@@ -78,7 +77,9 @@ const { subscription } = await directus.subscribe('posts')
   <div>
     <div v-if="loggedIn">
       <p>Welcome, {{ user.email }}</p>
-      <button @click="logout()">Logout</button>
+      <button @click="logout()">
+        Logout
+      </button>
     </div>
 
     <div v-for="post in posts" :key="post.id">
