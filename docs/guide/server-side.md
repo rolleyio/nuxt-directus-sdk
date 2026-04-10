@@ -153,7 +153,7 @@ export default defineEventHandler(async (event) => {
   const directus = useTokenDirectus(token)
 
   // Make authenticated request
-  const items = await directus.request(readItems('webhooks'))
+  const items = await directus.request(readItems('posts'))
 
   return { items }
 })
