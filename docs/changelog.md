@@ -1,5 +1,29 @@
 # Changelog
 
+## v5.0.0...v5.0.1-beta.1
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v5.0.0...v5.0.1-beta.1)
+
+### 🩹 Fixes
+
+- Only set directus_instance_url cookie when session exists to allow CDN caching ([f073367](https://github.com/rolleyio/nuxt-directus-sdk/commit/f073367))
+
+### 📖 Documentation
+
+- Update changelog for v5.0.0 ([9ffdf21](https://github.com/rolleyio/nuxt-directus-sdk/commit/9ffdf21))
+
+### 🏡 Chore
+
+- Bump version to 5.0.1-beta.1 ([195ecf9](https://github.com/rolleyio/nuxt-directus-sdk/commit/195ecf9))
+
+### 🤖 CI
+
+- Fix changelogen to compare from previous tag ([2806026](https://github.com/rolleyio/nuxt-directus-sdk/commit/2806026))
+
+### ❤️ Contributors
+
+- Matthew Rollinson <matt@rolley.io>
+
 ## v5.0.0...v5.0.0
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v5.0.0...v5.0.0)
