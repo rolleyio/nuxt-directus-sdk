@@ -4,7 +4,7 @@ Get up and running with nuxt-directus-sdk in minutes.
 
 ## Installation
 
-Install the module using your package manager:
+1. Install the module using your preferred package manager:
 
 ::: code-group
 ```bash [npm]
@@ -24,108 +24,87 @@ bun add nuxt-directus-sdk
 ```
 :::
 
-## Configuration
+2. Add the module to your `nuxt.config.ts`:
 
-Add the module to your `nuxt.config.ts`:
-
-```typescript
+```ts
 export default defineNuxtConfig({
-  modules: ['nuxt-directus-sdk'],
-
-  directus: {
-  },
+  modules: ['nuxt-directus-sdk'], // [!code focus]
+  directus: {},
 })
 ```
+::: info
+View all module options in the [API Reference > Configuration](../api/configuration.md#complete-configuration-example) page. 
+:::
 
-## Environment Variables
+3. Add the following variables to the `.env` file in your nuxt project root:
 
-Create a `.env` file in your project root:
-
-```env
-DIRECTUS_URL=https://your-directus-instance.com
-DIRECTUS_ADMIN_TOKEN=your_admin_token_here
+```dotenv
+DIRECTUS_URL=https://url-to.directus.app
+DIRECTUS_ADMIN_TOKEN=admin_token_required_for_typegen
 ```
 
-### Environment Variables Explained
+  - **`DIRECTUS_URL`** (required): Your Directus instance URL
+  - **`DIRECTUS_ADMIN_TOKEN`** (optional): Admin token for type generation and `useAdminDirectus()` module.
 
-- **`DIRECTUS_URL`** (required): Your Directus instance URL
-- **`DIRECTUS_ADMIN_TOKEN`** (optional): Admin token for type generation and admin operations
 
 ## Directus Configuration
 
-For the module to work properly, you need to configure your Directus instance:
+For the module to work properly, you need to configure your Directus instance with the following environment variables depending on your environment:
 
-### Basic Setup (Same Domain)
-
-If your Nuxt app and Directus are on the same domain (e.g., `localhost` in development):
-
-```env
-# Directus .env
-AUTH_LOCAL_MODE=session
-SESSION_COOKIE_SECURE=false  # true in production
-SESSION_COOKIE_SAME_SITE=Lax
-
+::: code-group
+```dotenv [development]
 CORS_ENABLED=true
-CORS_ORIGIN=http://localhost:3000
-CORS_CREDENTIALS=true
-
-# For realtime features
-WEBSOCKETS_ENABLED=true
-WEBSOCKETS_REST_AUTH=strict
+CORS_ORIGIN=*
+SESSION_COOKIE_DOMAIN=localhost
 ```
-
-### Cross-Domain Setup
-
-If your frontend and backend are on different domains:
-
-```env
-# Directus .env
-AUTH_LOCAL_MODE=session
-SESSION_COOKIE_DOMAIN=.yourdomain.com  # Shared parent domain
+```dotenv [same-domain]
+SESSION_COOKIE_DOMAIN=http://url-to.nuxt.app
 SESSION_COOKIE_SECURE=true
 SESSION_COOKIE_SAME_SITE=None
-
-CORS_ENABLED=true
-CORS_ORIGIN=https://app.yourdomain.com
-CORS_CREDENTIALS=true
-
-# For realtime features
-WEBSOCKETS_ENABLED=true
-WEBSOCKETS_REST_AUTH=strict
 ```
+```dotenv [cross-domain]
+CORS_ENABLED=true
+CORS_ORIGIN=http://url-to.nuxt.app
+AUTH_LOCAL_MODE=session
+SESSION_COOKIE_DOMAIN=url-to.nuxt.app
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAME_SITE=none
+```
+:::
+
+::: info
+These configuration examples assume that you do not modify the default environment variables in Directus. Refer to [Directus Configuration](https://directus.io/docs/configuration/general) for details about environment variables and their defaults.
+:::
+
+### Optional Configuration
+
+```dotenv
+WEBSOCKETS_ENABLED=true
+```
+
 
 ## Verify Installation
 
 Create a simple page to test the integration:
 
-```vue
-<script setup>
-const { user, loggedIn } = useDirectusAuth()
-const directus = useDirectus()
+<<< @/snippets/quick-example.vue
 
-const { data: items } = await useAsyncData('items', () =>
-  directus.request(readItems('your_collection'))
-)
-</script>
+::: info
+The examples provided are written to work with the [directus-template-cli](https://github.com/directus-labs/directus-template-cli?tab=readme-ov-file#directus-template-cli) CMS Template provided by the Directus team.
 
-<template>
-  <div>
-    <h1>nuxt-directus-sdk Test</h1>
+To populate your Directus instance with the information used in the examples, use the following command:
 
-    <div v-if="loggedIn">
-      <p>Logged in as: {{ user.email }}</p>
-    </div>
-    <div v-else>
-      <p>Not logged in</p>
-    </div>
-
-    <div v-if="items">
-      <p>Successfully connected to Directus!</p>
-      <p>Item count: {{ items.length }}</p>
-    </div>
-  </div>
-</template>
+```bash
+npx directus-template-cli@latest apply
 ```
+
+::: warning
+The template cli will attempt to merge with your existing content, but is not guaranteed to preserve anything. It is recommended that you use the cli on a fresh instance for testing as needed or modify the examples to work with your existing data structures.
+:::
+
+<!-- 
+//TODO: Convert to snippets to avoid code replication and ability to edit in multiple places.
+-->
 
 ## Development Proxy
 
@@ -136,7 +115,6 @@ You can configure the proxy:
 ```typescript
 export default defineNuxtConfig({
   directus: {
-
     // Proxy configuration (optional)
     devProxy: {
       enabled: true,  // default: true in dev mode
@@ -145,6 +123,25 @@ export default defineNuxtConfig({
   },
 })
 ```
+
+The proxy automatically detects the host and port from Nuxt's dev server, including dynamic port changes.
+
+## Split URLs (Docker / Kubernetes)
+
+If your Nuxt server can reach Directus via an internal URL (e.g. Docker service name), you can configure separate client and server URLs:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    url: {
+      client: 'https://cms.example.com',    // Used by the browser
+      server: 'http://directus:8055',        // Used during SSR
+    },
+  },
+})
+```
+
+The `server` URL is only used during SSR and is never exposed to the browser. See the [Configuration Reference](/api/configuration#url) for more details.
 
 ## Type Generation
 
@@ -155,7 +152,6 @@ To disable type generation:
 ```typescript
 export default defineNuxtConfig({
   directus: {
-
     types: {
       enabled: false,
     },

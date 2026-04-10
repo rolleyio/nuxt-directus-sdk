@@ -53,13 +53,13 @@ The flow:
 ::: warning Directus Configuration Required
 For SSO to work with external redirects, you must add your frontend URL to the Directus redirect allow list:
 
-```env
+```dotenv
 # Directus .env
 AUTH_<PROVIDER>_REDIRECT_ALLOW_LIST=https://yourapp.com,http://localhost:3000
 ```
 
 For example:
-```env
+```dotenv
 AUTH_GOOGLE_REDIRECT_ALLOW_LIST=https://yourapp.com,http://localhost:3000
 AUTH_GITHUB_REDIRECT_ALLOW_LIST=https://yourapp.com,http://localhost:3000
 ```
@@ -117,6 +117,17 @@ await passwordRequest('user@example.com', 'https://yourapp.com/reset-password')
 await passwordReset('reset-token', 'new-password')
 ```
 
+::: warning Directus Configuration Required
+For password reset links to work with external domains, you must add them to the Directus redirect allow list:
+
+```dotenv
+# Directus .env
+PASSWORD_RESET_URL_ALLOW_LIST=https://yourapp.com/auth/password-reset,http://localhost:3000/auth/password-reset
+```
+
+This is a security setting in Directus to prevent open redirect vulnerabilities when users accept invitations.
+:::
+
 ### User Invites
 
 ```typescript
@@ -132,7 +143,7 @@ await acceptUserInvite('invite-token', 'password')
 ::: warning Directus Configuration Required
 For invite URLs to work with external domains, you must add them to the Directus redirect allow list:
 
-```env
+```dotenv
 # Directus .env
 USER_INVITE_URL_ALLOW_LIST=https://yourapp.com/accept-invite,http://localhost:3000/accept-invite
 ```
@@ -200,8 +211,8 @@ export default defineNuxtConfig({
   directus: {
     auth: {
       redirect: {
-        login: '/account/login',    // Where to go when not logged in
-        home: '/dashboard',          // Where to go after login
+        home: '/',          // Where to go after login
+        login: '/auth/login',    // Where to go when not logged in
         logout: '/',                 // Where to go after logout
       },
     },
@@ -257,7 +268,7 @@ export default defineNuxtConfig({
       readMeFields: ['*'],              // fields to fetch for current user
       redirect: {
         home: '/',
-        login: '/account/login',
+        login: '/auth/login',
         logout: '/',
       },
     },
@@ -271,7 +282,7 @@ export default defineNuxtConfig({
 
 If your Nuxt app and Directus are on the same domain (e.g., localhost in dev):
 
-```env
+```dotenv
 # Directus .env
 AUTH_LOCAL_MODE=session
 SESSION_COOKIE_SECURE=false  # true in production
@@ -286,7 +297,7 @@ CORS_CREDENTIALS=true
 
 For production with separate domains (e.g., `app.example.com` and `api.example.com`):
 
-```env
+```dotenv
 # Directus .env
 AUTH_LOCAL_MODE=session
 SESSION_COOKIE_DOMAIN=.example.com    # Shared parent domain

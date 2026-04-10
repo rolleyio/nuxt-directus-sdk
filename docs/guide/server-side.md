@@ -435,7 +435,7 @@ export default defineEventHandler(async (event) => {
 
 Set your admin token in `.env`:
 
-```env
+```dotenv
 DIRECTUS_ADMIN_TOKEN=your_admin_token_here
 ```
 
@@ -548,7 +548,7 @@ if (token) {
 
 ### `useDirectusUrl(path?)`
 
-Get the full Directus URL for a given path.
+Get the full Directus URL for a given path. On the server, this prefers the `serverDirectusUrl` if configured (for Docker/K8s internal networking), falling back to the client URL.
 
 **Parameters:**
 - `path?: string` - Optional path to append
@@ -558,7 +558,8 @@ Get the full Directus URL for a given path.
 **Example:**
 ```typescript
 const assetsUrl = useDirectusUrl('assets')
-// Returns: https://your-directus.com/assets
+// With simple URL: https://your-directus.com/assets
+// With split URL: http://directus:8055/assets (uses internal server URL)
 ```
 
 ## Troubleshooting
