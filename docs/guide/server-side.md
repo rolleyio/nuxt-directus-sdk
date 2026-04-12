@@ -61,8 +61,8 @@ export default defineEventHandler(async (event) => {
   }
   catch (error) {
     throw createError({
-      statusCode: 401,
-      message: 'Unauthorized - Please log in',
+      status: 401,
+      statusText: 'Unauthorized - Please log in',
     })
   }
 })
@@ -127,8 +127,8 @@ export default defineEventHandler(async (event) => {
 
   if (!token) {
     throw createError({
-      statusCode: 401,
-      message: 'No token provided',
+      status: 401,
+      statusText: 'No token provided',
     })
   }
 
@@ -192,8 +192,8 @@ export default defineEventHandler((event) => {
 
   if (!token) {
     throw createError({
-      statusCode: 401,
-      message: 'Authentication required',
+      status: 401,
+      statusText: 'Authentication required',
     })
   }
 })
@@ -211,8 +211,8 @@ export default defineEventHandler(async (event) => {
   const token = getDirectusSessionToken(event)
   if (!token) {
     throw createError({
-      statusCode: 401,
-      message: 'Unauthorized',
+      status: 401,
+      statusText: 'Unauthorized',
     })
   }
 
@@ -224,8 +224,8 @@ export default defineEventHandler(async (event) => {
   // Check user role
   if (user.role.name !== 'Admin') {
     throw createError({
-      statusCode: 403,
-      message: 'Forbidden - Admin access required',
+      status: 403,
+      statusText: 'Forbidden - Admin access required',
     })
   }
 
@@ -315,8 +315,8 @@ export default defineEventHandler(async (event) => {
 
   if (!files || files.length === 0) {
     throw createError({
-      statusCode: 400,
-      message: 'No files provided',
+      status: 400,
+      statusText: 'No files provided',
     })
   }
 
@@ -413,8 +413,8 @@ export async function requireRole(event: H3Event, requiredRole: string) {
 
   if (user.role.name !== requiredRole) {
     throw createError({
-      statusCode: 403,
-      message: `Access denied - ${requiredRole} role required`,
+      status: 403,
+      statusText: `Access denied - ${requiredRole} role required`,
     })
   }
 
@@ -470,7 +470,7 @@ Get your admin token from Directus:
 
      // Validate input
      if (!body.email || !isValidEmail(body.email)) {
-       throw createError({ statusCode: 400, message: 'Invalid email' })
+       throw createError({ status: 400, statusText: 'Invalid email' })
      }
 
      const directus = useServerDirectus(event)
