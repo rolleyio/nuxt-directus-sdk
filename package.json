@@ -80,7 +80,7 @@
     "changelogen": "^0.6.1",
     "eslint": "^9.22.0",
     "nuxt": "^4.4.2",
-    "vitepress": "^1.6.3",
+    "vitepress": "^1.6.4",
     "vitest": "^3.0.8",
     "vue-tsc": "^3.0.8"
   },
