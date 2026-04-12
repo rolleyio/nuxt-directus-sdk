@@ -61,10 +61,10 @@
   },
   "dependencies": {
     "@nuxt/kit": "^4.0.0",
-    "defu": "^6.1.1",
+    "defu": "^6.1.7",
     "directus-sdk-typegen": "^0.2.1",
     "http-proxy": "^1.18.1",
-    "ufo": "^1.6.1"
+    "ufo": "^1.6.3"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.10.0",
