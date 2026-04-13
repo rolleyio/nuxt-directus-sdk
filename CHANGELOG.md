@@ -1,5 +1,25 @@
 # Changelog
 
+## v5.0.1-beta.1...v5.0.1-beta.2
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v5.0.1-beta.1...v5.0.1-beta.2)
+
+### 🩹 Fixes
+
+- Check @nuxt/image is installed before attempting to register it ([bf7ce46](https://github.com/rolleyio/nuxt-directus-sdk/commit/bf7ce46))
+
+### 📖 Documentation
+
+- Update changelog for v5.0.1-beta.1 ([5c13e60](https://github.com/rolleyio/nuxt-directus-sdk/commit/5c13e60))
+
+### 🏡 Chore
+
+- Bump version to 5.0.1-beta.2 ([92b57ca](https://github.com/rolleyio/nuxt-directus-sdk/commit/92b57ca))
+
+### ❤️ Contributors
+
+- Matthew Rollinson <matt@rolley.io>
+
 ## v5.0.0...v5.0.1-beta.1
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v5.0.0...v5.0.1-beta.1)
