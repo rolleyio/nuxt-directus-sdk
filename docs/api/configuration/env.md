@@ -4,7 +4,6 @@ outline: deep
 
 # Environment Variables
 
-<!-- eslint-disable-next-line markdown/heading-increment -->
 ### .env for development
 
 ```dotenv

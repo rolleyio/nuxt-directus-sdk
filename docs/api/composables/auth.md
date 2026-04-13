@@ -4,7 +4,6 @@ outline: deep
 
 # Authentication Composables
 
-<!-- eslint-disable-next-line markdown/heading-increment -->
 ### `useDirectusAuth()`
 
 Main authentication composable with methods and state for user authentication.

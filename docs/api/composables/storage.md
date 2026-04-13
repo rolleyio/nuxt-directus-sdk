@@ -4,7 +4,6 @@ outline: deep
 
 # Storage Composables
 
-<!-- eslint-disable-next-line markdown/heading-increment -->
 ### `useDirectusStorage()`
 
 Get the Directus client storage instance (primarily for internal use).

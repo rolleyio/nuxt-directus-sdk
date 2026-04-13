@@ -4,7 +4,6 @@ outline: deep
 
 # File Composables
 
-<!-- eslint-disable-next-line markdown/heading-increment -->
 ### `uploadDirectusFile(file, query?)`
 
 Upload a single file to Directus.

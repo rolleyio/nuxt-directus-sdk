@@ -6,7 +6,6 @@ outline: deep
 
 A floating button that triggers the Directus editor for a specific item. Only visible when inside the Directus admin iframe.
 
-<!-- eslint-disable-next-line markdown/heading-increment -->
 ### Usage
 
 ```vue
