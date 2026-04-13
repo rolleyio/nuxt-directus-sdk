@@ -38,7 +38,7 @@ export async function generateTypes(options: GenerateOptions) {
     // Split by lines to process each line separately and avoid double-prefixing interface names
     processedTypes = processedTypes.split('\n').map((line) => {
       // Skip lines that define interfaces (already handled in Step 1)
-      if (line.match(/^export interface /)) {
+      if (line.startsWith('export interface ')) {
         return line
       }
 

@@ -4,6 +4,7 @@ outline: deep
 
 # Client Composables
 
+<!-- eslint-disable-next-line markdown/heading-increment -->
 ### `useDirectus()`
 
 Get the Directus client instance for making API requests.

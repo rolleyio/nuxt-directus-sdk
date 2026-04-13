@@ -4,6 +4,7 @@ outline: deep
 
 # Directus Server Configuration
 
+<!-- eslint-disable-next-line markdown/heading-increment -->
 ### Required Directus Settings
 
 For the module to work correctly, configure your Directus instance:

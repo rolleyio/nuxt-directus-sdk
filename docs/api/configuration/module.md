@@ -81,6 +81,7 @@ export default defineNuxtConfig({
 
 :::
 
+<!-- eslint-disable-next-line markdown/heading-increment -->
 ### Core Options
 
 #### `url`

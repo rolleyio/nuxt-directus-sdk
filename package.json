@@ -67,7 +67,7 @@
     "ufo": "^1.6.3"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^4.10.0",
+    "@antfu/eslint-config": "^8.2.0",
     "@directus/sdk": "^20.0.0",
     "@directus/types": "^13.0.0",
     "@directus/visual-editing": "^1.1.0",
@@ -78,7 +78,7 @@
     "@nuxt/test-utils": "^4.0.2",
     "@types/http-proxy": "^1.17.17",
     "changelogen": "^0.6.1",
-    "eslint": "^9.22.0",
+    "eslint": "^10.2.0",
     "nuxt": "^4.4.2",
     "vitepress": "^1.6.4",
     "vitest": "^4.1.4",
@@ -89,5 +89,10 @@
     "externals": [
       "consola/utils"
     ]
-  }
+  },
+  "trustedDependencies": [
+    "@parcel/watcher",
+    "esbuild",
+    "sharp"
+  ]
 }

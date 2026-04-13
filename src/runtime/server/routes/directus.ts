@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
             rewrittenCookie = rewrittenCookie.replace(/;\s*Secure\s*(?=;|$)/gi, '')
 
             // Ensure SameSite is set for Safari compatibility
-            if (!rewrittenCookie.match(/SameSite=/i)) {
+            if (!/SameSite=/i.test(rewrittenCookie)) {
               rewrittenCookie += '; SameSite=Lax'
             }
           }

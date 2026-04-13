@@ -8,6 +8,7 @@ A wrapper component that marks content as editable by adding `data-directus` att
 
 The component only adds attributes when the visual editor detects it is inside a Directus iframe — normal visitors will not see any extra attributes in the DOM.
 
+<!-- eslint-disable-next-line markdown/heading-increment -->
 ### Usage
 
 ```vue

@@ -6,6 +6,7 @@ outline: deep
 
 An inline button for adding items to a repeater or relationship field. Only visible when inside the Directus admin iframe.
 
+<!-- eslint-disable-next-line markdown/heading-increment -->
 ### Usage
 
 ```vue
