@@ -49,7 +49,12 @@ jobs:
 
       - name: Generate changelog
         run: |
-          bunx changelogen --output CHANGELOG.md
+          PREV_TAG=$(git tag --sort=-v:refname | grep -v "${{ github.ref_name }}" | head -1)
+          if [ -n "$PREV_TAG" ]; then
+            bunx changelogen --from "$PREV_TAG" --to "${{ github.ref_name }}" --output CHANGELOG.md
+          else
+            bunx changelogen --output CHANGELOG.md
+          fi
           cp CHANGELOG.md docs/changelog.md
 
       - name: Commit changelog

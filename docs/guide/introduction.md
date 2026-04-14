@@ -96,4 +96,4 @@ const { subscription } = await directus.subscribe('posts')
 - [Installation](/guide/getting-started) - Get started in minutes
 - [Authentication](/guide/authentication) - Learn about session-based auth
 - [Realtime](/guide/realtime) - Set up WebSocket connections
-- [API Reference](/api/configuration) - Full configuration options
+- [API Reference](/api/configuration/) - Full configuration options

@@ -376,4 +376,4 @@ onBeforeUnmount(() => disconnect())
 
 - [Directus Realtime Docs](https://docs.directus.io/guides/real-time/)
 - [Authentication](/guide/authentication)
-- [Configuration Reference](/api/configuration)
+- [Configuration Reference](/api/configuration/)

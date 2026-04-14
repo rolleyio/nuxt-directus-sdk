@@ -148,6 +148,6 @@ const { data: page } = await useAsyncData('page', () =>
 ## See Also
 
 - [Visual Editor Guide](/guide/visual-editor)
-- [Composables Reference](/api/composables)
-- [Configuration Reference](/api/configuration)
+- [Composables Reference](/api/composables/)
+- [Configuration Reference](/api/configuration/)
 - [Directus Visual Editing Documentation](https://docs.directus.io/guides/headless-cms/live-preview-nuxt.html)

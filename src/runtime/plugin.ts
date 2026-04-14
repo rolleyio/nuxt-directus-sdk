@@ -52,16 +52,17 @@ export default defineNuxtPlugin({
       const sessionCookie = useCookie('directus_session_token')
       const directusUrlCookie = useCookie('directus_instance_url')
 
-      // Check if we're connecting to a different Directus instance
-      // If so, clear the session cookie to prevent session leakage between instances
-      const currentDirectusUrl = useDirectusOriginUrl()
-      if (directusUrlCookie.value && directusUrlCookie.value !== currentDirectusUrl) {
-        // Different Directus instance detected - clear the session
-        sessionCookie.value = null
+      // Only track the Directus instance URL when there's an active session
+      // This avoids setting a cookie on anonymous requests, allowing CDN caching
+      if (sessionCookie.value) {
+        const currentDirectusUrl = useDirectusOriginUrl()
+        if (directusUrlCookie.value !== currentDirectusUrl) {
+          if (directusUrlCookie.value) {
+            sessionCookie.value = null
+          }
+          directusUrlCookie.value = currentDirectusUrl
+        }
       }
-
-      // Update the Directus URL cookie to track which instance we're connected to
-      directusUrlCookie.value = currentDirectusUrl
 
       if (directusAuth.user.value === null && sessionCookie.value) {
         const user = await directusAuth.readMe()

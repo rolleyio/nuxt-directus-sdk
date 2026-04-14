@@ -33,7 +33,7 @@ export default defineNuxtConfig({
 })
 ```
 ::: info
-View all module options in the [API Reference > Configuration](../api/configuration.md#complete-configuration-example) page. 
+View all module options in the [API Reference > Configuration](../api/configuration/#complete-configuration-example) page. 
 :::
 
 3. Add the following variables to the `.env` file in your nuxt project root:
@@ -141,7 +141,7 @@ export default defineNuxtConfig({
 })
 ```
 
-The `server` URL is only used during SSR and is never exposed to the browser. See the [Configuration Reference](/api/configuration#url) for more details.
+The `server` URL is only used during SSR and is never exposed to the browser. See the [Configuration Reference](/api/configuration/#url) for more details.
 
 ## Type Generation
 
@@ -168,4 +168,4 @@ Now that you're set up, explore the features:
 - [File Management](/guide/files) - Upload and transform files
 - [Visual Editor](/guide/visual-editor) - Live preview and inline editing
 - [Server-Side Utils](/guide/server-side) - Server routes and utilities
-- [Configuration Reference](/api/configuration) - All configuration options
+- [Configuration Reference](/api/configuration/) - All configuration options
