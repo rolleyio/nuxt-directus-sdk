@@ -546,4 +546,4 @@ interface DirectusFileOptions {
 
 - [Directus Files Documentation](https://docs.directus.io/reference/files.html)
 - [Getting Started](/guide/getting-started)
-- [Configuration Reference](/api/configuration)
+- [Configuration Reference](/api/configuration/)

@@ -423,4 +423,4 @@ export default defineNuxtConfig({
 
 - [Directus Authentication Docs](https://docs.directus.io/reference/authentication.html)
 - [Server-Side Utils](/guide/server-side)
-- [Configuration Reference](/api/configuration)
+- [Configuration Reference](/api/configuration/)

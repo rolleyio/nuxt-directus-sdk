@@ -111,6 +111,6 @@ const created = await directus.request(createItem('articles', {
 ## See Also
 
 - [Server-Side Utilities](/guide/server-side)
-- [Configuration Reference](/api/configuration)
-- [Components Reference](/api/components)
+- [Configuration Reference](/api/configuration/)
+- [Components Reference](/api/components/)
 - [Directus SDK Documentation](https://docs.directus.io/reference/sdk.html)

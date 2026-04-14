@@ -9,7 +9,7 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/getting-started' },
-      { text: 'API Reference', link: '/api/configuration' },
+      { text: 'API Reference', link: '/api/configuration/' },
       { text: 'Changelog', link: '/changelog' },
     ],
     sidebar: [
