@@ -1,5 +1,35 @@
 # Changelog
 
+## v5.0.0...v5.0.1
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v5.0.0...v5.0.1)
+
+### 🩹 Fixes
+
+- Only set directus_instance_url cookie when session exists to allow CDN caching ([f073367](https://github.com/rolleyio/nuxt-directus-sdk/commit/f073367))
+- Check @nuxt/image is installed before attempting to register it ([bf7ce46](https://github.com/rolleyio/nuxt-directus-sdk/commit/bf7ce46))
+
+### 📖 Documentation
+
+- Update changelog for v5.0.0 ([9ffdf21](https://github.com/rolleyio/nuxt-directus-sdk/commit/9ffdf21))
+- Update changelog for v5.0.1-beta.1 ([5c13e60](https://github.com/rolleyio/nuxt-directus-sdk/commit/5c13e60))
+- Update changelog for v5.0.1-beta.2 ([6731a41](https://github.com/rolleyio/nuxt-directus-sdk/commit/6731a41))
+- Fix dead links by adding trailing slashes to API reference URLs ([d29180e](https://github.com/rolleyio/nuxt-directus-sdk/commit/d29180e))
+
+### 🏡 Chore
+
+- Bump version to 5.0.1-beta.1 ([195ecf9](https://github.com/rolleyio/nuxt-directus-sdk/commit/195ecf9))
+- Bump version to 5.0.1-beta.2 ([92b57ca](https://github.com/rolleyio/nuxt-directus-sdk/commit/92b57ca))
+- Bump version to 5.0.1 ([efd74be](https://github.com/rolleyio/nuxt-directus-sdk/commit/efd74be))
+
+### 🤖 CI
+
+- Fix changelogen to compare from previous tag ([2806026](https://github.com/rolleyio/nuxt-directus-sdk/commit/2806026))
+
+### ❤️ Contributors
+
+- Matthew Rollinson <matt@rolley.io>
+
 ## v5.0.1-beta.1...v5.0.1-beta.2
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v5.0.1-beta.1...v5.0.1-beta.2)
