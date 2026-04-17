@@ -597,5 +597,5 @@ If you get permission errors:
 
 - [Authentication Guide](/guide/authentication)
 - [Getting Started](/guide/getting-started)
-- [Configuration Reference](/api/configuration)
+- [Configuration Reference](/api/configuration/)
 - [Directus Server-Side Documentation](https://docs.directus.io/)

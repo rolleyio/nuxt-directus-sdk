@@ -358,7 +358,9 @@ export default defineNuxtModule<ModuleOptions>({
     const imageConfig = typeof options.image === 'boolean' ? { enabled: options.image } : options.image
     const imageEnabled = imageConfig?.enabled ?? true
 
-    if (imageEnabled) {
+    const hasNuxtImage = imageEnabled && (hasNuxtModule('@nuxt/image') || await tryResolveModule('@nuxt/image', new URL(import.meta.url)))
+
+    if (hasNuxtImage) {
       const { setDefaultProvider, modifiers } = imageConfig || {}
 
       const imageBaseUrl = devProxyEnabled

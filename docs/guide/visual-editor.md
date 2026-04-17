@@ -605,5 +605,5 @@ directusPreview.value = true
 
 - [Directus Visual Editing Documentation](https://docs.directus.io/guides/headless-cms/live-preview-nuxt.html)
 - [Getting Started](/guide/getting-started)
-- [Configuration Reference](/api/configuration)
-- [Components Reference](/api/components)
+- [Configuration Reference](/api/configuration/)
+- [Components Reference](/api/components/)
