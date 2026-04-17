@@ -13,7 +13,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -21,7 +21,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: lts/jod
           registry-url: https://registry.npmjs.org
 
       - run: bun install
@@ -45,7 +45,8 @@ jobs:
           fi
 
       - name: Publish to npm
-        run: npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }}
+        run: npm publish --provenance --access public --tag ${{
+          steps.npm-tag.outputs.tag }}
 
       - name: Generate changelog
         run: |
