@@ -33,7 +33,7 @@ export default defineNuxtConfig({
 })
 ```
 ::: info
-View all module options in the [API Reference > Configuration](../api/configuration/#complete-configuration-example) page. 
+View all module options in the [API Reference > Configuration](../api/configuration/#complete-configuration-example) page.
 :::
 
 3. Add the following variables to the `.env` file in your nuxt project root:
