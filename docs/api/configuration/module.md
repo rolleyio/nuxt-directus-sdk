@@ -16,8 +16,8 @@ export default defineNuxtConfig({
 })
 ```
 
->[!NOTE]
->::: details Module options automatically loaded into runtime config. `adminToken` is automatically excluded from public runtime config for security.
+>[!NOTE] Module options are automatically loaded into Nuxt RuntimeConfig().
+>::: details  `adminToken` is automatically excluded from public runtime config for security.
 >
 >
 >```typescript
@@ -29,7 +29,6 @@ export default defineNuxtConfig({
 >const config = useRuntimeConfig()
 >console.log(config.directus.adminToken)
 >```
-
 
 ::: details All Configuration Options
 
@@ -101,8 +100,8 @@ export default defineNuxtConfig({
 
     // Or split URLs for Docker/K8s
     url: {
-      client: 'https://cms.example.com',    // Browser requests
-      server: 'http://directus:8055',        // SSR / server-side requests
+      client: 'https://cms.example.com', // Browser requests
+      server: 'http://directus:8055', // SSR / server-side requests
     },
   },
 })
@@ -166,7 +165,7 @@ export default defineNuxtConfig({
     // Or detailed configuration
     devProxy: {
       enabled: true,
-      path: '/directus',      // HTTP proxy mount path
+      path: '/directus', // HTTP proxy mount path
       wsPath: '/directus-ws', // WebSocket proxy path (optional)
     },
   },
@@ -529,9 +528,9 @@ export default defineNuxtConfig({
   directus: {
     auth: {
       redirect: {
-        home: '/',                  // After login
-        login: '/auth/login',    // When not authenticated
-        logout: '/',                // After logout
+        home: '/', // After login
+        login: '/auth/login', // When not authenticated
+        logout: '/', // After logout
       },
     },
   },

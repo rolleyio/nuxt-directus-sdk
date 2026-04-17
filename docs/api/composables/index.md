@@ -32,46 +32,19 @@ const url = getDirectusFileUrl(file, {
 
 The module auto-imports commonly used Directus SDK functions:
 
-```typescript
-// Items
-readItems, readItem, createItem, createItems,
-updateItem, updateItems, deleteItem, deleteItems
-
-// Singletons
-readSingleton, updateSingleton
-
-// Files
-readFile, readFiles, updateFile, updateFiles,
-deleteFile, deleteFiles, uploadFiles
-
-// Users
-readUser, readUsers, createUser, createUsers,
-updateUser, updateUsers, deleteUser, deleteUsers,
-readMe, updateMe
-
-// Collections
-readCollection, readCollections, createCollection,
-updateCollection, deleteCollection
-
-// Fields
-readField, readFields, readFieldsByCollection,
-createField, updateField, deleteField
-
-// Folders
-readFolder, readFolders, updateFolder, updateFolders
-
-// Comments
-createComment, updateComment, deleteComment
-
-// Activities
-readActivity, readActivities
-
-// Auth
-readProviders
-
-// Utilities
-aggregate, generateUid, withToken, importFile
-```
+|Category|AutoImported Functions|
+|---|---|
+| <Badge>Items</Badge> | `createItem()`, `createItems()`, `readItem()`, `readItems()`, `updateItem()`, `updateItems()`, `deleteItem()`, `deleteItems()` |
+| <Badge>Singletons</Badge> | `readSingleton()`, `updateSingleton()` |
+| <Badge>Files</Badge> | `uploadFiles()`, `readFile()`, `readFiles()`, `updateFile()`, `updateFiles()`, `deleteFile()`, `deleteFiles()` |
+| <Badge>Users</Badge> | `createUser()`, `createUsers()`, `readMe()`, `readUser()`, `readUsers()`, `updateMe()`, `updateUser()`, `updateUsers()`, `deleteUser()`, `deleteUsers()` |
+| <Badge>Collections</Badge> | `createCollection()`, `readCollection()`, `readCollections()`, `updateCollection()`, `deleteCollection()` |
+| <Badge>Fields</Badge> | `createField()`, `readField()`, `readFields()`, `readFieldsByCollection()`, `updateField()`, `deleteField()` |
+| <Badge>Folders</Badge> | `readFolder()`, `readFolders()`, `updateFolder()`, `updateFolders()` |
+| <Badge>Comments</Badge> | `createComment()`, `updateComment()`, `deleteComment()` |
+| <Badge>Activities</Badge> | `readActivity()`, `readActivities()` |
+| <Badge>Auth</Badge> | `readProviders()` |
+| <Badge>Utilities</Badge> | `aggregate()`, `generateUid()`, `importFile()`, `withToken()` |
 
 **Usage:**
 
@@ -106,7 +79,6 @@ const created = await directus.request(createItem('articles', {
 
 ## Storage Composables
 <!--@include: ./storage.md{7,}-->
-
 
 ## See Also
 

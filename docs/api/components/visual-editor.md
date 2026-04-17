@@ -15,8 +15,7 @@ The component only adds attributes when the visual editor detects it is inside a
 const directus = useDirectus()
 
 const { data: article } = await useAsyncData('article', () =>
-  directus.request(readItem('articles', route.params.id))
-)
+  directus.request(readItem('articles', route.params.id)))
 </script>
 
 <template>
@@ -151,8 +150,7 @@ When content is saved in the Directus editor, `refreshNuxtData()` is called auto
 <script setup>
 // Good - reactive data that updates on save
 const { data: article } = await useAsyncData('article', () =>
-  directus.request(readItem('articles', id))
-)
+  directus.request(readItem('articles', id)))
 
 // Avoid - static data won't update after edits
 const article = await directus.request(readItem('articles', id))
@@ -166,14 +164,17 @@ The component is fully typed with generics:
 ```vue
 <script setup lang="ts">
 // TypeScript will enforce correct collection names and field names
-<DirectusVisualEditor
-  collection="articles"  // Must match a key in DirectusSchema
-  :item="article.id"
-  fields="title"         // Must match a field in the collection
->
-  <h1>{{ article.title }}</h1>
-</DirectusVisualEditor>
 </script>
+
+<template>
+  <DirectusVisualEditor
+    key collection="articles"
+    :item="article.id"
+    fields="title"
+  >
+    <h1>{{ article.title }}</h1>
+  </DirectusVisualEditor>
+</template>
 ```
 
 **Props type definition:**

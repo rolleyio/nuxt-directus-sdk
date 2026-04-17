@@ -70,9 +70,15 @@ For cross-domain setups (e.g., `app.example.com` ↔ `api.example.com`), see the
 
 ## Development
 
+> [!IMPORTANT] The playground uses [directus-template-cli](https://github.com/directus-labs/directus-template-cli?tab=readme-ov-file#applying-a-template) `cms` template.
+> Apply the template with `npx directus-template-cli@latest apply` and follow the interactive prompts.
+
 ```bash
 # Install dependencies
 bun install
+
+# Add DIRECTUS_ADMIN_TOKEN to playground .env (don't forget to update your token)
+cp ./playground/.env.example ./playground/.env
 
 # Generate type stubs
 bun run dev:prepare

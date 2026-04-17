@@ -96,15 +96,15 @@ const downloadUrl = getDirectusFileUrl(file, {
 
 ```typescript
 interface DirectusFileOptions {
-  filename?: string              // Custom filename for downloads
-  download?: boolean             // Force download
-  width?: number                 // Resize width
-  height?: number                // Resize height
-  quality?: number               // Image quality (1-100)
+  filename?: string // Custom filename for downloads
+  download?: boolean // Force download
+  width?: number // Resize width
+  height?: number // Resize height
+  quality?: number // Image quality (1-100)
   fit?: 'cover' | 'contain' | 'inside' | 'outside'
   format?: 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'
-  withoutEnlargement?: boolean   // Prevent upscaling
-  key?: string                   // Access key for private files
+  withoutEnlargement?: boolean // Prevent upscaling
+  key?: string // Access key for private files
 }
 ```
 
