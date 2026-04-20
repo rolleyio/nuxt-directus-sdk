@@ -256,9 +256,9 @@ export default defineNuxtModule<ModuleOptions>({
 
     // Set up development proxy if enabled and in dev mode
     if (devProxyEnabled && nuxtApp.options.dev) {
-      loggerMessage.push(`🌐 Development mode:`)
-      loggerMessage.push(`URL${colors.dim(` ${devProxyPath}`)} proxies ${colors.underline(colors.green(`${directusUrl}`))}`)
-      loggerMessage.push(`WS URL${colors.dim(` ${wsProxyPath}`)} proxies ${colors.underline(colors.green(`${wsTarget}`))}`)
+      loggerMessage.push(`🌐 Development Proxy Mode Enabled:`)
+      loggerMessage.push(`  - URL${colors.dim(` ${devProxyPath}`)} proxies ${colors.underline(colors.green(`${directusUrl}`))}`)
+      loggerMessage.push(`  - WS URL${colors.dim(` ${wsProxyPath}`)} proxies ${colors.underline(colors.green(`${wsTarget}`))}`, '')
 
       // Configure WebSocket proxy for realtime support (WebSocket only)
       nuxtApp.options.nitro = nuxtApp.options.nitro || {}
@@ -340,12 +340,12 @@ export default defineNuxtModule<ModuleOptions>({
       }
     }
     else if (!nuxtApp.options.dev) {
-      loggerMessage.push(`🌐 Production mode:`, ` SDK connects directly to ${colors.dim(`${directusUrl}`)}`)
+      loggerMessage.push(`🌐 Production Mode:`, `  - SDK connects directly to ${colors.dim(`${directusUrl}`)}`, '')
       options.devProxy = false
     }
 
     (options as any).directusUrl = clientUrl
-    ; (options as any).serverDirectusUrl = serverUrl || clientUrl
+      ; (options as any).serverDirectusUrl = serverUrl || clientUrl
 
     nuxtApp.options.runtimeConfig[configKey] = options as any
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
@@ -376,6 +376,7 @@ export default defineNuxtModule<ModuleOptions>({
           modifiers,
         },
       })
+      loggerMessage.push('📷 Nuxt/Image default provider is set to Directus', '')
     }
 
     // Add plugin to load user before bootstrap
@@ -384,11 +385,22 @@ export default defineNuxtModule<ModuleOptions>({
     // Add visual editor plugin and components only when enabled AND @directus/visual-editing is installed
     const hasVisualEditing = options.visualEditor && await tryResolveModule('@directus/visual-editing', new URL(import.meta.url))
 
+    // Only register visual editor components when enabled and @directus/visual-editing is installed
     if (hasVisualEditing) {
       addPlugin(resolver.resolve('./runtime/plugins/visual-editor.client'))
+      addComponentsDir({
+        path: resolver.resolve('./runtime/components'),
+        pathPrefix: false,
+        prefix: '',
+        global: true,
+      })
+      loggerMessage.push('✏️ Visual Editor Components Added', '')
     }
 
     // Add route middleware
+    if (options.auth?.enableGlobalAuthMiddleware) {
+      loggerMessage.push('🔒 Auth middleware installed globally.', '')
+    }
     addRouteMiddleware({
       name: 'auth',
       path: resolver.resolve('./runtime/middleware/auth'),
@@ -403,16 +415,7 @@ export default defineNuxtModule<ModuleOptions>({
     // Add composables
     addImportsDir(resolver.resolve('./runtime/composables'))
 
-    // Only register visual editor components when enabled and @directus/visual-editing is installed
-    if (hasVisualEditing) {
-      addComponentsDir({
-        path: resolver.resolve('./runtime/components'),
-        pathPrefix: false,
-        prefix: '',
-        global: true,
-      })
-    }
-
+    // TODO: Revist exports from @directus/sdk (eg: readComments is not here)
     const directusSdkImports: InlinePreset = {
       from: '@directus/sdk',
       imports: [
@@ -490,9 +493,9 @@ export default defineNuxtModule<ModuleOptions>({
         ],
       })
     })
-    loggerMessage.push(``)
+
     if (options.devtools) {
-      loggerMessage.push(`Directus Admin added to Nuxt DevTools`)
+      loggerMessage.push(`📦 Directus added to Nuxt DevTools`, '')
       nuxtApp.hook('devtools:customTabs' as any, (iframeTabs: any) => {
         iframeTabs.push({
           name: 'directus',
@@ -505,16 +508,14 @@ export default defineNuxtModule<ModuleOptions>({
         })
       })
     }
-    else {
-      loggerMessage.push(`${colors.dim(`  Directus Admin was not added to Nuxt DevTools`)}`)
-    }
 
     const typesEnabled = (typeof options.types === 'boolean' && options.types) || (options.types && options.types.enabled === true)
     const typesPrefix = typeof options.types === 'object' ? options.types.prefix ?? '' : ''
 
     if (typesEnabled) {
+      loggerMessage.push('📋 Directus Type Generator Enabled')
       if (!options.adminToken) {
-        loggerMessage.push(``, `${colors.bgRedBright(`${colors.red('⚑ ERROR:')} Unable to generate Types`)}`, `  Fix: Set adminToken in config or DIRECTUS_ADMIN_TOKEN in .env`)
+        loggerMessage.push(`  ${colors.bgRedBright(`${colors.red('⚑ ERROR:')} Unable to generate Types`)}`, `   Fix: Set adminToken in config or DIRECTUS_ADMIN_TOKEN in .env`)
       }
       else {
         try {
@@ -535,10 +536,10 @@ export default defineNuxtModule<ModuleOptions>({
               return cachedTypes
             },
           }, { nitro: true, nuxt: true })
-          loggerMessage.push(`${colors.dim(`  Directus Types saved successfully to #build/types/${configKey}.d.ts`)}`)
+          loggerMessage.push(`${colors.dim(`  - Directus Types saved successfully to #build/types/${configKey}.d.ts`)}`)
         }
         catch (error) {
-          logger.error((error as Error).message)
+          loggerMessage.push(`  - Error Generating Types: ${(error as Error).message}`)
         }
       }
     }
