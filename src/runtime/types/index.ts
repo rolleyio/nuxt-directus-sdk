@@ -1,1 +1,1 @@
-export { generateTypes } from './generate'
+export { generateTypesFromDirectus } from './generate'

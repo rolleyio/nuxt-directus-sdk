@@ -1,6 +1,5 @@
 import type { Query } from '@directus/sdk'
 import type { ImageModifiers, ImageProviders } from '@nuxt/image'
-
 import type { InlinePreset } from 'unimport'
 
 import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, hasNuxtModule, installModule, tryResolveModule, useLogger } from '@nuxt/kit'
@@ -8,7 +7,7 @@ import { colors } from 'consola/utils'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
 import { name, version } from '../package.json'
-import { generateTypes } from './runtime/types'
+import { generateTypesFromDirectus } from './runtime/types'
 import { useUrl } from './runtime/utils'
 
 export type DirectusUrl = string | { client: string, server: string }
@@ -236,6 +235,8 @@ export default defineNuxtModule<ModuleOptions>({
         (nuxtApp.options as any)[key] = defu((nuxtApp.options as any)[key], moduleOptions)
       }
     }
+    // set up array to send logs in messagebox
+    const loggerMessage: string[] = []
 
     // Normalize devProxy options
     const devProxyConfig = typeof options.devProxy === 'boolean'
@@ -250,9 +251,6 @@ export default defineNuxtModule<ModuleOptions>({
     // Use a separate route for WebSocket proxy to avoid conflicts with the HTTP handler
     const wsProxyPath = devProxyConfig.wsPath ?? `${devProxyPath}-ws`
     const wsTarget = joinURL(directusUrl, 'websocket')
-
-    // Store the original URL for type generation and server-side use
-    const loggerMessage = []
 
     // Set up development proxy if enabled and in dev mode
     if (devProxyEnabled && nuxtApp.options.dev) {
@@ -345,7 +343,7 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     (options as any).directusUrl = clientUrl
-      ; (options as any).serverDirectusUrl = serverUrl || clientUrl
+    ; (options as any).serverDirectusUrl = serverUrl || clientUrl
 
     nuxtApp.options.runtimeConfig[configKey] = options as any
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
@@ -519,27 +517,19 @@ export default defineNuxtModule<ModuleOptions>({
       }
       else {
         try {
-          // Generate types once and cache the result
-          let cachedTypes: string | null = null
+          const { typeString, logs } = await generateTypesFromDirectus(directusUrl, options.adminToken!, typesPrefix)
+          loggerMessage.push(...logs)
 
           addTypeTemplate({
             filename: `types/${configKey}.d.ts`,
-            async getContents() {
-              if (!cachedTypes) {
-                // Use the original URL for type generation (not the proxy URL)
-                cachedTypes = await generateTypes({
-                  url: directusUrl,
-                  token: options.adminToken!,
-                  prefix: typesPrefix,
-                })
-              }
-              return cachedTypes
+            getContents() {
+              return typeString
             },
           }, { nitro: true, nuxt: true })
-          loggerMessage.push(`${colors.dim(`  - Directus Types saved successfully to #build/types/${configKey}.d.ts`)}`)
+          loggerMessage.push(`  - Directus Types saved successfully to ${colors.dim(`#build/types/${configKey}.d.ts`)}`)
         }
         catch (error) {
-          loggerMessage.push(`  - Error Generating Types: ${(error as Error).message}`)
+          loggerMessage.push(`  - Error Generating Types: ${(error as Error).message}`, `  - Fallback for DirectusSchema being used (not recommended)`)
         }
       }
     }
