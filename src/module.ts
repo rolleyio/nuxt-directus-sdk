@@ -413,7 +413,6 @@ export default defineNuxtModule<ModuleOptions>({
     // Add composables
     addImportsDir(resolver.resolve('./runtime/composables'))
 
-    // TODO: Revist exports from @directus/sdk (eg: readComments is not here)
     const directusSdkImports: InlinePreset = {
       from: '@directus/sdk',
       imports: [
