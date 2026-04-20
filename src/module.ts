@@ -525,10 +525,14 @@ export default defineNuxtModule<ModuleOptions>({
               return typeString
             },
           }, { nitro: true, nuxt: true })
+
+          if (logs.some(log => log.toLowerCase().includes('error'))) {
+            throw new Error(`  ${colors.bgRedBright(`${colors.red('⚑ ERROR:')} TypeGenerator returned an error`)}`)
+          }
           loggerMessage.push(`  - Directus Types saved successfully to ${colors.dim(`#build/types/${configKey}.d.ts`)}`)
         }
         catch (error) {
-          loggerMessage.push(`  - Error Generating Types: ${(error as Error).message}`, `  - Fallback for DirectusSchema being used (not recommended)`)
+          loggerMessage.push(`${error instanceof Error ? error.message : String(error)}`, `  - Fallback DirectusSchema is being used ${colors.dim('(not recommended)')}`)
         }
       }
     }

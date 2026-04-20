@@ -1,6 +1,6 @@
 import * as directusSdk from '@directus/sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { generateTypesFromDirectus } from '../src/runtime/types/generate'
+import { FALLBACK_TYPE_STRING, generateTypesFromDirectus } from '../src/runtime/types/generate'
 import { mockDirectusRequest, requestMock } from './fixtures/directus-sdk/request/with-directus-version.mock'
 
 vi.mock('@directus/sdk', async () => {
@@ -37,9 +37,15 @@ describe('generateTypesFromDirectus()', () => {
   it('logs network failure to present to user', async () => {
     requestMock.mockRejectedValue(new Error('Network error'))
     const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
-    expect(result.typeString).toBe('')
+    expect(result.typeString).toBe(FALLBACK_TYPE_STRING)
     expect(result.logs).toBeInstanceOf(Array)
-    expect(result.logs[0]).toContain('  - Unexpected error: Network error')
+    expect(result.logs[0]).toContain('  - Error: Network error')
+  })
+  it('returns fallback and logs error when collections, fields, or relations are empty', async () => {
+    mockDirectusRequest().directusVersion('latest')
+    const result = await generateTypesFromDirectus('http://localhost', 'empty', 'App')
+    expect(result.typeString).toBe(FALLBACK_TYPE_STRING)
+    expect(result.logs.some(log => log.toLowerCase().includes('error'))).toBe(true)
   })
   it('logs directus errors to present to user', async () => {
     vi.spyOn(directusSdk, 'isDirectusError').mockReturnValue(true)
@@ -52,7 +58,7 @@ describe('generateTypesFromDirectus()', () => {
       ],
     })
     const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
-    expect(result.typeString).toBe('')
+    expect(result.typeString).toBe(FALLBACK_TYPE_STRING)
     expect(result.logs).toBeInstanceOf(Array)
     expect(result.logs[0]).toContain('  - Directus error [FORBIDDEN] UniqueMessage')
   })

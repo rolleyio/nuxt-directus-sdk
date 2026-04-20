@@ -3,6 +3,8 @@ import type { TypegenExtension } from './extensions'
 import { createDirectus, isDirectusError, readCollections, readFields, readRelations, rest, staticToken } from '@directus/sdk'
 import { typegenExtensions } from './extensions'
 
+export const FALLBACK_TYPE_STRING = 'declare global {\n\ninterface DirectusFile {\n\tid: string;\n}\ninterface DirectusUser {\n\tid: string;\n}\ninterface DirectusSchema { }\n}\n\nexport {};'
+
 type RelationMap = Map<string, CollectionRelations>
 
 interface CollectionRelations {
@@ -49,6 +51,11 @@ export async function generateTypesFromDirectus(
       client.request(readRelations()),
     ])
     logs.push(`  - Fetched ${collections.length} collections, ${fields.length} fields, ${relations.length} relations`)
+
+    if (collections.length === 0 || fields.length === 0 || relations.length === 0) {
+      throw new Error(`Empty response from Directus — collections: ${collections.length}, fields: ${fields.length}, relations: ${relations.length}`)
+    }
+
     result = [
       collections as unknown as SnapshotCollection[],
       fields as unknown as SnapshotField[],
@@ -60,9 +67,9 @@ export async function generateTypesFromDirectus(
       logs.push(`  - Directus error ${error.errors.map(e => `[${e.extensions?.code}] ${e.message}`).join(', ')}`)
     }
     else {
-      logs.push(`  - Unexpected error: ${error instanceof Error ? error.message : String(error)}`)
+      logs.push(`  - Error: ${error instanceof Error ? error.message : String(error)}`)
     }
-    return { typeString: '', logs }
+    return { typeString: FALLBACK_TYPE_STRING, logs }
   }
 
   const typeString = transformSnapshotToTypeString(...result, prefix)
