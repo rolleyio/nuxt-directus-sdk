@@ -44,8 +44,8 @@
     "docs:preview": "vitepress preview docs"
   },
   "peerDependencies": {
-    "@directus/sdk": ">=21.0.0",
-    "@directus/types": ">=15.0.0",
+    "@directus/sdk": ">=20.0.0",
+    "@directus/types": ">=13.0.0",
     "@directus/visual-editing": ">=1.1.0",
     "@nuxt/image": ">=2.0.0"
   },
