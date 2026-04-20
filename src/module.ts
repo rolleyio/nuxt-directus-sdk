@@ -392,7 +392,7 @@ export default defineNuxtModule<ModuleOptions>({
         prefix: '',
         global: true,
       })
-      loggerMessage.push('✏️ Visual Editor Components Added', '')
+      loggerMessage.push('📝 Visual Editor Components Added', '')
     }
 
     // Add route middleware
@@ -419,7 +419,9 @@ export default defineNuxtModule<ModuleOptions>({
         'aggregate',
         'generateUid',
         'createComment',
-        'updateComment',
+'createComment',
+'readComment',
+'updateComment',
         'deleteComment',
         'createField',
         'createItem',
