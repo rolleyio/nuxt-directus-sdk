@@ -519,7 +519,7 @@ export default defineNuxtModule<ModuleOptions>({
         imports: [
           'getDirectusSessionToken',
           'useAdminDirectus',
-          'useServerDirectus',
+          'useSessionDirectus',
           'useDirectusUrl',
           'useTokenDirectus',
         ],

@@ -227,7 +227,7 @@ export default defineNuxtConfig({
 ```typescript
 // server/api/profile.ts
 export default defineEventHandler(async (event) => {
-  const directus = useServerDirectus(event)
+  const directus = useSessionDirectus(event)
 
   // This request is automatically authenticated with the user's session
   const user = await directus.request(readMe())
@@ -416,7 +416,7 @@ export default defineNuxtConfig({
 
 ### SSR Issues
 
-1. ✅ Use `useServerDirectus(event)` in server routes (not `useDirectus()`)
+1. ✅ Use `useSessionDirectus(event)` in server routes (not `useDirectus()`)
 2. ✅ Check cookies are being forwarded on SSR (automatic with this module)
 3. ✅ Verify server-side requests include session cookie
 
