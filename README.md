@@ -70,35 +70,42 @@ For cross-domain setups (e.g., `app.example.com` ↔ `api.example.com`), see the
 
 ## Development
 
-> [!IMPORTANT] The playground uses [directus-template-cli](https://github.com/directus-labs/directus-template-cli?tab=readme-ov-file#applying-a-template) `cms` template.
-> Apply the template with `npx directus-template-cli@latest apply` and follow the interactive prompts.
+This project uses [pnpm](https://pnpm.io) via [corepack](https://nodejs.org/api/corepack.html). Run `corepack enable` once to activate it, then pnpm is available automatically at the version pinned in `package.json`.
+
+> [!IMPORTANT]
+> The playground uses the [directus-template-cli](https://github.com/directus-labs/directus-template-cli?tab=readme-ov-file#applying-a-template) `cms` template.
+> Apply it with `npx directus-template-cli@latest apply` and follow the interactive prompts.
 
 ```bash
 # Install dependencies
-bun install
+pnpm install
 
 # Add DIRECTUS_ADMIN_TOKEN to playground .env (don't forget to update your token)
 cp ./playground/.env.example ./playground/.env
 
 # Generate type stubs
-bun run dev:prepare
+pnpm dev:prepare
 
 # Develop with the playground
-bun run dev
+pnpm dev
 
 # Build the playground
-bun run dev:build
+pnpm dev:build
 
 # Run ESLint
-bun run lint
+pnpm lint
 
 # Run Vitest
-bun run test
-bun run test:watch
+pnpm test
+pnpm test:watch
 
 # Release new version
-bun run release
+pnpm release
 ```
+
+## Contributing
+
+Contributions are welcome! Please target the **`next`** branch for new features and fixes — `main` is reserved for stable releases and hotfixes only. See [RELEASING.md](./RELEASING.md) for details on the release process.
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/nuxt-directus-sdk/latest.svg?style=flat&colorA=18181B&colorB=28CF8D
