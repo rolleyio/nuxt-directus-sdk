@@ -41,7 +41,7 @@ The module auto-imports commonly used Directus SDK functions:
 | <Badge>Collections</Badge> | `createCollection()`, `readCollection()`, `readCollections()`, `updateCollection()`, `deleteCollection()` |
 | <Badge>Fields</Badge> | `createField()`, `readField()`, `readFields()`, `readFieldsByCollection()`, `updateField()`, `deleteField()` |
 | <Badge>Folders</Badge> | `readFolder()`, `readFolders()`, `updateFolder()`, `updateFolders()` |
-| <Badge>Comments</Badge> | `createComment()`, `updateComment()`, `deleteComment()` |
+| <Badge>Comments</Badge> | `createComment()`, `readComment()`, `updateComment()`, `deleteComment()` |
 | <Badge>Activities</Badge> | `readActivity()`, `readActivities()` |
 | <Badge>Auth</Badge> | `readProviders()` |
 | <Badge>Utilities</Badge> | `aggregate()`, `generateUid()`, `importFile()`, `withToken()` |

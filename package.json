@@ -39,13 +39,13 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "docs:dev": "bun run dev:prepare && vitepress dev docs",
+    "docs:dev": "bun run dev:prepare && viteprprojects using this package must update their dependencies accordingly.ess dev docs",
     "docs:build": "bun run dev:prepare && vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
   "peerDependencies": {
-    "@directus/sdk": ">=20.0.0",
-    "@directus/types": ">=13.0.0",
+    "@directus/sdk": ">=21.0.0",
+    "@directus/types": ">=15.0.0",
     "@directus/visual-editing": ">=1.1.0",
     "@nuxt/image": ">=2.0.0"
   },
@@ -63,14 +63,13 @@
   "dependencies": {
     "@nuxt/kit": "^4.4.2",
     "defu": "^6.1.7",
-    "directus-sdk-typegen": "^0.2.1",
     "http-proxy": "^1.18.1",
     "ufo": "^1.6.3"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.10.0",
-    "@directus/sdk": "^20.0.0",
-    "@directus/types": "^13.0.0",
+    "@directus/sdk": "^21.2.2",
+    "@directus/types": "^15.0.2",
     "@directus/visual-editing": "^1.1.0",
     "@nuxt/devtools": "^3.2.4",
     "@nuxt/image": "^2.0.0",
