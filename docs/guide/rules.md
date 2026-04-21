@@ -7,7 +7,7 @@ The Rules DSL lets you define Directus roles, policies, and permissions as code.
 ```typescript
 import { defineDirectusRules } from 'nuxt-directus-sdk/rules'
 
-const rules = defineDirectusRules<DirectusSchema>({
+const rules = defineDirectusRules <DirectusSchema> ({
   roles: [
     {
       name: 'Editor',
@@ -116,7 +116,7 @@ import {
 
 // Load remote rules (e.g. pulled from Directus)
 const payload = JSON.parse(readFileSync('rules.json', 'utf-8'))
-const remoteRules = loadRulesFromPayload<DirectusSchema>(payload)
+const remoteRules = loadRulesFromPayload <DirectusSchema> (payload)
 
 // Add local roles and policies
 const rules = extendRules(remoteRules, {
@@ -164,7 +164,7 @@ Attach validation rules to permissions using Directus filter syntax or standard 
 ```typescript
 import { allOf, field, pattern, required } from 'nuxt-directus-sdk/rules'
 
-const rules = defineDirectusRules<DirectusSchema>({
+const rules = defineDirectusRules <DirectusSchema> ({
   roles: [
     {
       name: 'Editor',
@@ -197,7 +197,7 @@ You can use Zod, Valibot, or Arktype schemas directly:
 ```typescript
 import { z } from 'zod'
 
-const rules = defineDirectusRules<DirectusSchema>({
+const rules = defineDirectusRules <DirectusSchema> ({
   roles: [
     {
       name: 'Editor',

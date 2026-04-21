@@ -2,6 +2,7 @@
   "name": "nuxt-directus-sdk",
   "type": "module",
   "version": "5.0.1",
+  "packageManager": "pnpm@10.32.1",
   "description": "A Directus nuxt module that uses the Directus SDK",
   "author": "Matthew Rollinson <matt@rolley.io>",
   "license": "MIT",
@@ -30,17 +31,17 @@
   ],
   "scripts": {
     "prepack": "nuxt-module-build build",
-    "dev": "bun run dev:prepare && nuxt dev playground",
+    "dev": "pnpm run dev:prepare && nuxt dev playground",
     "dev:build": "nuxt build playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt prepare playground",
-    "release": "npm run lint && npm run prepack && npm publish && git push --follow-tags",
-    "release:next": "npm run lint && npm run prepack && npm publish --tag next && git push --follow-tags",
+    "release": "pnpm run lint && pnpm run test && pnpm run prepack && changelogen --release --push --no-github",
+    "release:next": "pnpm run lint && pnpm run test && pnpm run prepack && changelogen --release --prerelease beta --push --no-github",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "docs:dev": "bun run dev:prepare && viteprprojects using this package must update their dependencies accordingly.ess dev docs",
-    "docs:build": "bun run dev:prepare && vitepress build docs",
+    "docs:dev": "pnpm run dev:prepare && vitepress dev docs",
+    "docs:build": "pnpm run dev:prepare && vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
   "peerDependencies": {
@@ -80,6 +81,7 @@
     "changelogen": "^0.6.1",
     "eslint": "^9.22.0",
     "nuxt": "^4.4.2",
+    "typescript": "^6.0.3",
     "vitepress": "^1.6.4",
     "vitest": "^4.1.4",
     "vue-tsc": "^3.0.8"

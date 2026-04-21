@@ -10,7 +10,7 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'API Reference', link: '/api/configuration/' },
-      { text: 'Changelog', link: '/changelog' },
+      { text: 'Changelog', link: 'https://github.com/rolleyio/nuxt-directus-sdk/releases' },
     ],
     sidebar: [
       {
