@@ -31,8 +31,8 @@ importers:
         specifier: ^15.0.2
         version: 15.0.2(knex@3.1.0)(sharp@0.34.5)(vue@3.5.32(typescript@6.0.3))
       '@directus/visual-editing':
-        specifier: ^1.1.0
-        version: 1.2.0
+        specifier: ^2.0.0
+        version: 2.0.0
       '@nuxt/devtools':
         specifier: ^3.2.4
         version: 3.2.4(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.32(typescript@6.0.3))
@@ -533,8 +533,8 @@ packages:
       ws:
         optional: true
 
-  '@directus/visual-editing@1.2.0':
-    resolution: {integrity: sha512-kC0MugiMLXwpy3t2a0qvKDSCuTLNw/STMt+7j95c+YOztRkyD+exz9a+EAcv+x6mMhUYLvNq9Yyo4wZ9xjHShQ==}
+  '@directus/visual-editing@2.0.0':
+    resolution: {integrity: sha512-cPcMEPiFVdVO6KeC3OcuZPRoiYHxeATBJSflbewhcwGuG0Qze6ybKL+WWtCgV+mS4DCFbPd/7+ctQPu/JL60RQ==}
     engines: {node: '>=22.12.0'}
 
   '@docsearch/css@3.8.2':
@@ -6801,7 +6801,7 @@ snapshots:
       - supports-color
       - tedious
 
-  '@directus/visual-editing@1.2.0':
+  '@directus/visual-editing@2.0.0':
     dependencies:
       '@reach/observe-rect': 1.2.0
 
