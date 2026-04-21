@@ -10,6 +10,7 @@ import { joinURL } from 'ufo'
 import { name, version } from '../package.json'
 import { generateTypesFromDirectus } from './runtime/types'
 import { useUrl } from './runtime/utils'
+import { discoverSdkImports } from './sdk-imports'
 
 export type DirectusUrl = string | { client: string, server: string }
 export type ReadMeFields = Query<DirectusSchema, DirectusSchema['directus_users']>['fields']
@@ -436,32 +437,6 @@ export default defineNuxtModule<ModuleOptions>({
     // Add composables
     addImportsDir(resolver.resolve('./runtime/composables'))
 
-    // Auto-import every function @directus/sdk exports, except for the
-    // following which the module either wraps, provides a composable for,
-    // or explicitly does not support. Users can still import them manually
-    // from '@directus/sdk' when they have a deliberate reason to.
-    //
-    // Keep MANUAL_IMPORT_ONLY in sync with docs/api/composables/index.md.
-    const MANUAL_IMPORT_ONLY = new Set([
-      // Client construction — useDirectus() returns a fully-configured
-      // singleton with auth, rest, realtime, and SSR cookie forwarding.
-      'createDirectus',
-      'rest',
-      'realtime',
-      'staticToken',
-      'authentication',
-      // Auth internals — use the auth composables (useDirectusAuth, etc.)
-      'auth',
-      'getAuthEndpoint',
-      // Storage primitive — use useDirectusStorage()
-      'memoryStorage',
-      // GraphQL — the module does not wrap or support GraphQL. Imported
-      // manually to keep users' expectations explicit about what this
-      // module covers.
-      'graphql',
-      'readGraphqlSdl',
-    ])
-
     // autoImportSdk=false disables auto-imports entirely; the { exclude }
     // shape adds user-provided names on top of the built-in exclusions.
     const autoImportSdk = options.autoImportSdk ?? true
@@ -475,11 +450,7 @@ export default defineNuxtModule<ModuleOptions>({
       ? null
       : {
           from: '@directus/sdk',
-          imports: Object.keys(directusSdk).filter(name =>
-            typeof (directusSdk as Record<string, unknown>)[name] === 'function'
-            && !MANUAL_IMPORT_ONLY.has(name)
-            && !userExclude.has(name),
-          ),
+          imports: discoverSdkImports(directusSdk as Record<string, unknown>, userExclude),
         }
 
     if (directusSdkImports) {
