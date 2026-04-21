@@ -1,39 +1,57 @@
 # nuxt-directus-sdk
 
-> The comprehensive Nuxt module for seamless Directus CMS integration
+> A Nuxt module for Directus with built-in authentication, realtime, file management, type generation, and visual editor support.
 
 - GitHub: https://github.com/rolleyio/nuxt-directus-sdk
 - Docs: https://nuxt-directus-sdk.rolley.io
 
 ## Overview
 
-nuxt-directus-sdk is a production-ready Nuxt module that provides complete integration with Directus CMS. It handles authentication, realtime updates, file management, visual editing, type generation, and more — all with minimal configuration.
+Production-ready Nuxt module for Directus CMS. Handles session-based authentication, realtime WebSocket subscriptions, file management, type generation from the Directus schema, visual editor integration, and permissions/rules sync. Sensible defaults out of the box; opt-in advanced configuration when you need it.
 
 ## Guides
 
-- [Getting Started](https://nuxt-directus-sdk.rolley.io/guide/getting-started) — Installation, setup, Directus config, split URLs for Docker/K8s
-- [Authentication](https://nuxt-directus-sdk.rolley.io/guide/authentication) — Session-based auth, SSO/OAuth, user management, protected routes
+- [Getting Started](https://nuxt-directus-sdk.rolley.io/guide/getting-started) — Installation, Directus backend configuration, next steps
+- [Authentication](https://nuxt-directus-sdk.rolley.io/guide/authentication) — Session-based auth, SSO/OAuth, protected routes, user management
 - [Realtime & WebSockets](https://nuxt-directus-sdk.rolley.io/guide/realtime) — Live subscriptions, auth modes, dev proxy
-- [Visual Editor](https://nuxt-directus-sdk.rolley.io/guide/visual-editor) — Iframe detection, inline editing, debug mode
+- [File Management](https://nuxt-directus-sdk.rolley.io/guide/files) — Uploads, transformations, `@nuxt/image` integration
+- [Visual Editor](https://nuxt-directus-sdk.rolley.io/guide/visual-editor) — `DirectusVisualEditor` component, iframe detection, preview mode
+- [Type Generation](https://nuxt-directus-sdk.rolley.io/guide/type-generation) — Auto-generated types, prefix, filtering with `include` / `exclude`
+- [Dev Proxy](https://nuxt-directus-sdk.rolley.io/guide/dev-proxy) — CORS-free local development, split URLs for Docker/K8s
 - [Server-Side Utilities](https://nuxt-directus-sdk.rolley.io/guide/server-side) — Server routes, admin operations, token auth
+
+## Rules DSL
+
+- [Defining Rules](https://nuxt-directus-sdk.rolley.io/guide/rules) — Code-first permissions and policies
+- [Testing Rules](https://nuxt-directus-sdk.rolley.io/guide/rules-testing) — Unit-test access-control decisions
+- [Sync & CLI](https://nuxt-directus-sdk.rolley.io/guide/rules-sync) — Pull, diff, and push rules
+
+## CLI
+
+- [Overview](https://nuxt-directus-sdk.rolley.io/cli) — Connection settings, exit codes
+- [`generate-types`](https://nuxt-directus-sdk.rolley.io/cli/generate-types) — Generate TypeScript types from a Directus schema
+- [`rules:*`](https://nuxt-directus-sdk.rolley.io/cli/rules) — Pull, push, and diff Directus permissions/policies/roles
 
 ## API Reference
 
-- [Configuration](https://nuxt-directus-sdk.rolley.io/api/configuration) — Module options, env vars, Directus server config
-- [Composables](https://nuxt-directus-sdk.rolley.io/api/composables) — useDirectusAuth, useDirectus, file helpers, and more
-- [CLI](https://nuxt-directus-sdk.rolley.io/cli) — generate-types, rules sync
+- [Module Options](https://nuxt-directus-sdk.rolley.io/api/configuration/module) — `directus.*` configuration options
+- [Environment Variables](https://nuxt-directus-sdk.rolley.io/api/configuration/env) — `DIRECTUS_URL`, `DIRECTUS_ADMIN_TOKEN`, etc.
+- [Directus Server Configuration](https://nuxt-directus-sdk.rolley.io/api/configuration/server) — CORS, cookies, and other backend settings needed for cross-domain setups
+- [Composables](https://nuxt-directus-sdk.rolley.io/api/composables) — `useDirectus`, `useDirectusAuth`, `useDirectusStorage`, file helpers
 
 ## Installation
 
 ```bash
-npm install nuxt-directus-sdk
+pnpm add -D nuxt-directus-sdk
 ```
 
 ```typescript
 // nuxt.config.ts
 export default defineNuxtConfig({
   modules: ['nuxt-directus-sdk'],
-  directus: {},
+  directus: {
+    url: process.env.DIRECTUS_URL,
+  },
 })
 ```
 
@@ -43,183 +61,26 @@ DIRECTUS_URL=https://your-directus.com
 DIRECTUS_ADMIN_TOKEN=your-admin-token
 ```
 
-## Core Features
+## Requirements
 
-### Authentication
-- Session-based auth with httpOnly cookies
-- Auto-login on app load
-- SSO/OAuth support (Google, GitHub, Microsoft, etc.)
-- User management (register, password reset, invites)
-- Protected routes with `auth` and `guest` middleware
+- Nuxt 4.0+
+- Directus v11.16.0+ (required by `@directus/visual-editing` v2 and `@directus/sdk` v21)
 
-```typescript
-const { login, logout, user, loggedIn } = useDirectusAuth()
-await login('user@email.com', 'password')
-await loginWithProvider('google')
-```
+## SDK access
 
-### Realtime & WebSockets
-- Full WebSocket support with auto authentication
-- Live collection subscriptions
-- Dev proxy handles WebSocket connections at `/directus-ws`
+The module auto-imports every function exported by `@directus/sdk` at build time, so you can call `readItems`, `createItem`, `aggregate`, `customEndpoint`, etc. directly without importing. A small exclusion list covers client construction (`createDirectus`, `rest`, `realtime`, `staticToken`, `authentication`), auth internals (`auth`, `getAuthEndpoint`, `memoryStorage`), and GraphQL (`graphql`, `readGraphqlSdl`) — see the [Composables page](https://nuxt-directus-sdk.rolley.io/api/composables#functions-excluded-from-auto-import) for why each is excluded and how to import them manually when needed.
 
-```typescript
-await directus.connect()
-const { subscription } = await directus.subscribe('posts')
-for await (const message of subscription) {
-  console.log('Update:', message)
-}
-```
+The auto-import set tracks whichever version of `@directus/sdk` the user has installed, so new SDK functions are available automatically on upgrade. Disable or customise via `directus.autoImportSdk` in config.
 
-### File Management
-- Single and batch file uploads
-- Image transformations (resize, format, quality)
-- Smart URL generation
+## Type generation
 
-```typescript
-await uploadDirectusFile({ file: myFile })
-const url = getDirectusFileUrl(file, { width: 300, format: 'webp' })
-```
+Types are generated from the Directus schema at build time and made available globally (`DirectusSchema`, `CollectionNames`, one interface per collection). Enabled by default when `DIRECTUS_ADMIN_TOKEN` is set.
 
-### Visual Editor
-- Automatic iframe detection — no query parameters needed
-- Inline editing with drawer, modal, or popover modes
-- DirectusVisualEditor component wraps editable regions
-- Automatic data refresh on save (no full page reload)
-- Debug mode via `?debug` for troubleshooting
-- MutationObserver-based detection for reliable SSR hydration
+Options: `prefix` to namespace custom collection types, `include` / `exclude` to narrow what's emitted (references to missing collections collapse to `string` / `string[]`), `expandReferences` to auto-pull referenced collections when using `include`, and `verbose` for per-reference rewrite logs. See the [Type Generation guide](https://nuxt-directus-sdk.rolley.io/guide/type-generation) for the full story.
 
-```vue
-<DirectusVisualEditor collection="posts" :item="post.id">
-  <h1>{{ post.title }}</h1>
-</DirectusVisualEditor>
-```
+## Breaking changes in 6.0
 
-### TypeScript & Development
-- Auto-generated types from Directus schema
-- Auto-imports for 80+ Directus SDK functions
-- Dev proxy eliminates CORS issues
-- Directus admin in Nuxt DevTools
-- Split URL support for Docker/K8s (`{ client, server }`)
-
-## Key Composables
-
-### useDirectusAuth()
-```typescript
-const {
-  user,                 // Ref<DirectusUsers | null>
-  loggedIn,            // ComputedRef<boolean>
-  login,               // (email, password, options?) => Promise
-  loginWithProvider,   // (provider, redirect?) => Promise
-  logout,              // (redirect?) => Promise
-  register,            // (data) => Promise (alias: createUser)
-  readMe,              // () => Promise
-  updateMe,            // (data) => Promise
-  inviteUser,          // (email, role, inviteUrl?) => Promise
-  acceptUserInvite,    // (token, password) => Promise
-  passwordRequest,     // (email, resetUrl?) => Promise
-  passwordReset,       // (token, password) => Promise
-} = useDirectusAuth()
-```
-
-### useDirectus()
-Returns the full Directus SDK client with `request()`, `connect()`, `subscribe()`, and all SDK methods.
-
-### useDirectusUrl(path?)
-Context-aware URL generation (uses proxy in dev, direct in prod, prefers server URL during SSR).
-
-### useDirectusOriginUrl(path?)
-Always returns the public-facing Directus URL (ignores devProxy and server URL). Use for SSO redirects and admin links.
-
-### useDirectusVisualEditor()
-Returns `Ref<boolean>` — true when site is inside a Directus iframe. Set automatically.
-
-### useDirectusPreview()
-Returns `Ref<boolean>` — activated via `?preview=true`. Separate from visual editor mode.
-
-### Server-Side Utilities
-```typescript
-const directus = useServerDirectus(event)     // User's session
-const admin = useAdminDirectus()              // Admin token
-const custom = useTokenDirectus(token)        // Custom token
-const token = getDirectusSessionToken(event)  // Manual extraction
-```
-
-## Configuration
-
-```typescript
-export default defineNuxtConfig({
-  directus: {
-    // Core — simple string or split URLs for Docker/K8s
-    url: process.env.DIRECTUS_URL,
-    // url: { client: 'https://cms.example.com', server: 'http://directus:8055' },
-    adminToken: process.env.DIRECTUS_ADMIN_TOKEN,
-
-    auth: {
-      enabled: true,
-      autoRefresh: true,
-      credentials: 'include',
-      realtimeAuthMode: 'handshake',
-      enableGlobalAuthMiddleware: false,
-      readMeFields: ['id', 'email', 'first_name', 'last_name', 'avatar', 'role'],
-      redirect: { login: '/auth/login', home: '/', logout: '/' },
-    },
-
-    devProxy: { enabled: true, path: '/directus', wsPath: '/directus-ws' },
-    types: { enabled: true, prefix: '' },
-    image: true,         // @nuxt/image Directus provider
-    devtools: true,
-    visualEditor: true,
-  },
-})
-```
-
-## Components
-
-### DirectusVisualEditor
-Wrapper that marks content as editable via `data-directus` attributes (only inside Directus iframe).
-Props: `collection` (required), `item` (required), `fields` (optional: string | string[]), `mode` (optional: 'drawer' | 'modal' | 'popover')
-
-## Common Patterns
-
-### Protected Page
-```vue
-<script setup>
-definePageMeta({ middleware: 'auth' })
-</script>
-```
-
-### Fetch Data
-```typescript
-const directus = useDirectus()
-const { data } = await useAsyncData('posts', () =>
-  directus.request(readItems('posts', {
-    fields: ['*'],
-    filter: { status: { _eq: 'published' } }
-  }))
-)
-```
-
-### Server Route
-```typescript
-// server/api/data.ts
-export default defineEventHandler(async (event) => {
-  const directus = useServerDirectus(event)
-  return directus.request(readItems('posts'))
-})
-```
-
-## Auto-Imported SDK Functions
-
-All Directus SDK functions are auto-imported:
-- Items: readItems, readItem, createItem, createItems, updateItem, updateItems, deleteItem, deleteItems
-- Singletons: readSingleton, updateSingleton
-- Files: readFile, readFiles, updateFile, updateFiles, deleteFile, deleteFiles, uploadFiles
-- Users: readUser, readUsers, createUser, createUsers, updateUser, updateUsers, deleteUser, deleteUsers, readMe, updateMe
-- Collections: readCollection, readCollections, createCollection, updateCollection, deleteCollection
-- Fields: readField, readFields, readFieldsByCollection, createField, updateField, deleteField
-- Folders: readFolder, readFolders, updateFolder, updateFolders
-- Comments: createComment, updateComment, deleteComment
-- Activities: readActivity, readActivities
-- Auth: readProviders
-- Utilities: aggregate, generateUid, withToken, importFile
+- `@directus/sdk` peer dep bumped to `>=21`
+- `@directus/types` peer dep bumped to `>=15`
+- `@directus/visual-editing` peer dep bumped to `>=2.0` (requires Directus v11.16.0+)
+- `DirectusAddButton` and `DirectusEditButton` components removed; use `useDirectusVisualEditor()` or `@directus/visual-editing`'s `apply()` directly for custom UI
