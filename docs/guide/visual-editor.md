@@ -141,78 +141,6 @@ Control how the editor opens:
 </DirectusVisualEditor>
 ```
 
-## Edit Button
-
-The `DirectusEditButton` component renders a floating button that opens the Directus editor for a specific item. It only appears when inside the Directus iframe.
-
-```vue
-<template>
-  <article>
-    <h1>{{ article.title }}</h1>
-    <div v-html="article.content" />
-
-    <!-- Floating edit button - appears only inside Directus -->
-    <DirectusEditButton
-      collection="articles"
-      :item="article.id"
-    />
-  </article>
-</template>
-```
-
-### Edit Button Props
-
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| `collection` | `string` | Yes | — | The Directus collection name |
-| `item` | `string \| number` | Yes | — | The item ID (primary key) |
-| `mode` | `'drawer' \| 'modal' \| 'popover'` | No | `'drawer'` | How the editor opens |
-
-The button renders with default styling (purple, fixed bottom-right) and a pencil icon. You can customize it via the default slot:
-
-```vue
-<DirectusEditButton collection="articles" :item="article.id">
-  <span>Custom Edit Label</span>
-</DirectusEditButton>
-```
-
-## Add Button
-
-The `DirectusAddButton` component renders an inline button for adding items to a repeater/relationship field. It only appears when inside the Directus iframe.
-
-```vue
-<template>
-  <div>
-    <div v-for="block in page.blocks" :key="block.id">
-      <component :is="getBlockComponent(block.type)" :data="block" />
-    </div>
-
-    <!-- Add button for the blocks repeater field -->
-    <DirectusAddButton
-      collection="pages"
-      :item="page.id"
-      field="blocks"
-    />
-  </div>
-</template>
-```
-
-### Add Button Props
-
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| `collection` | `string` | Yes | — | The parent collection containing the repeater field |
-| `item` | `string \| number` | Yes | — | The parent item ID |
-| `field` | `string` | Yes | — | The field name of the repeater (e.g., `'blocks'`) |
-
-The button renders as a full-width dashed border area with a plus icon. You can customize it via the default slot:
-
-```vue
-<DirectusAddButton collection="pages" :item="page.id" field="blocks">
-  <span>+ Add new block</span>
-</DirectusAddButton>
-```
-
 ## Visual Editor State
 
 ### `useDirectusVisualEditor()`
@@ -330,9 +258,6 @@ const { data: article } = await useAsyncData('article', () =>
     >
       <div class="content" v-html="article.content" />
     </DirectusVisualEditor>
-
-    <!-- Edit button -->
-    <DirectusEditButton collection="articles" :item="article.id" />
   </article>
 </template>
 ```
@@ -371,16 +296,6 @@ const { data: page } = await useAsyncData('page', () =>
     >
       <component :is="getBlockComponent(block.type)" :data="block" />
     </DirectusVisualEditor>
-
-    <!-- Add new block button -->
-    <DirectusAddButton
-      collection="pages"
-      :item="page.id"
-      field="blocks"
-    />
-
-    <!-- Edit page button -->
-    <DirectusEditButton collection="pages" :item="page.id" />
   </div>
 </template>
 ```
@@ -480,9 +395,9 @@ const directusVisualEditor = useDirectusVisualEditor()
 
 <template>
   <div>
-    <!-- Show extra editing tools only inside Directus -->
-    <div v-if="directusVisualEditor" class="editor-toolbar">
-      <DirectusEditButton collection="articles" :item="article.id" />
+    <!-- Show an editor banner only inside Directus -->
+    <div v-if="directusVisualEditor" class="editor-banner">
+      Editing inside Directus — changes save automatically.
     </div>
 
     <DirectusVisualEditor
@@ -548,32 +463,6 @@ interface DirectusVisualEditorProps {
 }
 ```
 
-### `DirectusEditButton`
-
-A floating button that triggers the Directus editor for a specific item.
-
-**Props:**
-```typescript
-interface DirectusEditButtonProps {
-  collection: string // Directus collection name
-  item: string | number // Item ID (primary key)
-  mode?: 'drawer' | 'modal' | 'popover' // Editor display mode
-}
-```
-
-### `DirectusAddButton`
-
-An inline button that opens the editor for a repeater/relationship field.
-
-**Props:**
-```typescript
-interface DirectusAddButtonProps {
-  collection: string // Parent collection name
-  item: string | number // Parent item ID
-  field: string // Repeater field name
-}
-```
-
 ### `useDirectusVisualEditor()`
 
 Returns a ref indicating whether the visual editor is active.
@@ -606,4 +495,3 @@ directusPreview.value = true
 - [Directus Visual Editing Documentation](https://docs.directus.io/guides/headless-cms/live-preview-nuxt.html)
 - [Getting Started](/guide/getting-started)
 - [Configuration Reference](/api/configuration/)
-- [Components Reference](/api/components/)

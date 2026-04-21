@@ -21,7 +21,7 @@ nuxt-directus-sdk is a production-ready Nuxt module that provides complete integ
 
 - [Configuration](https://nuxt-directus-sdk.rolley.io/api/configuration) — Module options, env vars, Directus server config
 - [Composables](https://nuxt-directus-sdk.rolley.io/api/composables) — useDirectusAuth, useDirectus, file helpers, and more
-- [Components](https://nuxt-directus-sdk.rolley.io/api/components) — DirectusVisualEditor, DirectusEditButton, DirectusAddButton
+- [CLI](https://nuxt-directus-sdk.rolley.io/cli) — generate-types, rules sync
 
 ## Installation
 
@@ -84,7 +84,7 @@ const url = getDirectusFileUrl(file, { width: 300, format: 'webp' })
 ### Visual Editor
 - Automatic iframe detection — no query parameters needed
 - Inline editing with drawer, modal, or popover modes
-- DirectusVisualEditor, DirectusEditButton, and DirectusAddButton components
+- DirectusVisualEditor component wraps editable regions
 - Automatic data refresh on save (no full page reload)
 - Debug mode via `?debug` for troubleshooting
 - MutationObserver-based detection for reliable SSR hydration
@@ -93,9 +93,6 @@ const url = getDirectusFileUrl(file, { width: 300, format: 'webp' })
 <DirectusVisualEditor collection="posts" :item="post.id">
   <h1>{{ post.title }}</h1>
 </DirectusVisualEditor>
-
-<DirectusEditButton collection="posts" :item="post.id" />
-<DirectusAddButton collection="posts" :item="post.id" field="blocks" />
 ```
 
 ### TypeScript & Development
@@ -182,14 +179,6 @@ export default defineNuxtConfig({
 ### DirectusVisualEditor
 Wrapper that marks content as editable via `data-directus` attributes (only inside Directus iframe).
 Props: `collection` (required), `item` (required), `fields` (optional: string | string[]), `mode` (optional: 'drawer' | 'modal' | 'popover')
-
-### DirectusEditButton
-Floating fixed-position button (bottom-right) to open Directus editor. Only visible inside iframe.
-Props: `collection`, `item`, `mode`
-
-### DirectusAddButton
-Full-width dashed inline button for adding items to repeater/relationship fields. Only visible inside iframe.
-Props: `collection`, `item`, `field`
 
 ## Common Patterns
 
