@@ -41,8 +41,7 @@ export default defineNuxtConfig({
 const directus = useDirectus()
 
 const { data: article } = await useAsyncData('article', () =>
-  directus.request(readItem('articles', route.params.id))
-)
+  directus.request(readItem('articles', route.params.id)))
 </script>
 
 <template>
@@ -284,8 +283,7 @@ const directus = useDirectus()
 const { data: article } = await useAsyncData('article', () =>
   directus.request(readItem('articles', route.params.id, {
     fields: ['*', { author: ['*'] }]
-  }))
-)
+  })))
 </script>
 
 <template>
@@ -301,7 +299,7 @@ const { data: article } = await useAsyncData('article', () =>
         v-if="article.featured_image"
         :src="getDirectusFileUrl(article.featured_image, { width: 1200 })"
         :alt="article.title"
-      />
+      >
     </DirectusVisualEditor>
 
     <!-- Title -->
@@ -349,8 +347,7 @@ const directus = useDirectus()
 const { data: page } = await useAsyncData('page', () =>
   directus.request(readItem('pages', route.params.id, {
     fields: ['*', { blocks: ['*'] }]
-  }))
-)
+  })))
 </script>
 
 <template>
@@ -544,9 +541,9 @@ A component that wraps editable content with `data-directus` attributes.
 **Props:**
 ```typescript
 interface DirectusVisualEditorProps {
-  collection: string                    // Directus collection name
-  item: string | number                 // Item ID (primary key)
-  fields?: string | string[]            // Field(s) to edit
+  collection: string // Directus collection name
+  item: string | number // Item ID (primary key)
+  fields?: string | string[] // Field(s) to edit
   mode?: 'drawer' | 'modal' | 'popover' // Editor display mode
 }
 ```
@@ -558,8 +555,8 @@ A floating button that triggers the Directus editor for a specific item.
 **Props:**
 ```typescript
 interface DirectusEditButtonProps {
-  collection: string                    // Directus collection name
-  item: string | number                 // Item ID (primary key)
+  collection: string // Directus collection name
+  item: string | number // Item ID (primary key)
   mode?: 'drawer' | 'modal' | 'popover' // Editor display mode
 }
 ```
@@ -571,9 +568,9 @@ An inline button that opens the editor for a repeater/relationship field.
 **Props:**
 ```typescript
 interface DirectusAddButtonProps {
-  collection: string                    // Parent collection name
-  item: string | number                 // Parent item ID
-  field: string                         // Repeater field name
+  collection: string // Parent collection name
+  item: string | number // Parent item ID
+  field: string // Repeater field name
 }
 ```
 

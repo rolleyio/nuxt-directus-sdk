@@ -211,9 +211,9 @@ export default defineNuxtConfig({
   directus: {
     auth: {
       redirect: {
-        home: '/',          // Where to go after login
-        login: '/auth/login',    // Where to go when not logged in
-        logout: '/',                 // Where to go after logout
+        home: '/', // Where to go after login
+        login: '/auth/login', // Where to go when not logged in
+        logout: '/', // Where to go after logout
       },
     },
   },
@@ -260,12 +260,12 @@ export default defineNuxtConfig({
   directus: {
 
     auth: {
-      enabled: true,                    // default
-      autoRefresh: true,                // auto-refresh tokens
-      credentials: 'include',           // required for cross-domain
-      realtimeAuthMode: 'public',      // 'public', 'handshake', or 'strict'
+      enabled: true, // default
+      autoRefresh: true, // auto-refresh tokens
+      credentials: 'include', // required for cross-domain
+      realtimeAuthMode: 'public', // 'public', 'handshake', or 'strict'
       enableGlobalAuthMiddleware: false, // protect all routes
-      readMeFields: ['*'],              // fields to fetch for current user
+      readMeFields: ['*'], // fields to fetch for current user
       redirect: {
         home: '/',
         login: '/auth/login',
@@ -317,19 +317,19 @@ Returns an object with auth methods and state:
 
 ```typescript
 const {
-  user,                  // Ref<DirectusUser | null>
-  loggedIn,             // ComputedRef<boolean>
-  readMe,               // () => Promise<DirectusUser>
-  updateMe,             // (data) => Promise<DirectusUser>
-  login,                // (email, password, options?) => Promise<DirectusUser>
-  loginWithProvider,    // (provider, redirect?) => Promise<void>
-  logout,               // (redirect?) => Promise<void>
-  register,             // (data) => Promise<DirectusUser>
-  createUser,           // (data) => Promise<DirectusUser>
-  inviteUser,           // (email, role, inviteUrl?) => Promise<void>
-  acceptUserInvite,     // (token, password) => Promise<void>
-  passwordRequest,      // (email, resetUrl?) => Promise<void>
-  passwordReset,        // (token, password) => Promise<void>
+  user, // Ref<DirectusUser | null>
+  loggedIn, // ComputedRef<boolean>
+  readMe, // () => Promise<DirectusUser>
+  updateMe, // (data) => Promise<DirectusUser>
+  login, // (email, password, options?) => Promise<DirectusUser>
+  loginWithProvider, // (provider, redirect?) => Promise<void>
+  logout, // (redirect?) => Promise<void>
+  register, // (data) => Promise<DirectusUser>
+  createUser, // (data) => Promise<DirectusUser>
+  inviteUser, // (email, role, inviteUrl?) => Promise<void>
+  acceptUserInvite, // (token, password) => Promise<void>
+  passwordRequest, // (email, resetUrl?) => Promise<void>
+  passwordReset, // (token, password) => Promise<void>
 } = useDirectusAuth()
 ```
 
@@ -366,7 +366,8 @@ const user = await login('user@example.com', 'password', {
 
 if (user.role === 'admin') {
   await navigateTo('/admin')
-} else {
+}
+else {
   await navigateTo('/dashboard')
 }
 ```

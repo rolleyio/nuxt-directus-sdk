@@ -9,7 +9,6 @@ Complete reference for all nuxt-directus-sdk configuration options.
 ## Module Options
 <!--@include: ./module.md{7,}-->
 
-
 ## Environment Variables
 <!--@include: ./env.md{7,}-->
 

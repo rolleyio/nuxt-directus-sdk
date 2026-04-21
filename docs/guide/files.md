@@ -44,7 +44,8 @@ const uploadedFile = ref(null)
 
 async function handleFileUpload(event) {
   const file = event.target.files[0]
-  if (!file) return
+  if (!file)
+    return
 
   uploading.value = true
 
@@ -58,9 +59,11 @@ async function handleFileUpload(event) {
     })
 
     console.log('Upload successful:', uploadedFile.value)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Upload failed:', error)
-  } finally {
+  }
+  finally {
     uploading.value = false
   }
 }
@@ -68,7 +71,7 @@ async function handleFileUpload(event) {
 
 <template>
   <div>
-    <input type="file" @change="handleFileUpload" :disabled="uploading" />
+    <input type="file" :disabled="uploading" @change="handleFileUpload">
 
     <div v-if="uploading">
       Uploading...
@@ -76,7 +79,7 @@ async function handleFileUpload(event) {
 
     <div v-if="uploadedFile">
       <p>File uploaded successfully!</p>
-      <img :src="getDirectusFileUrl(uploadedFile.id, { width: 300 })" />
+      <img :src="getDirectusFileUrl(uploadedFile.id, { width: 300 })">
     </div>
   </div>
 </template>
@@ -228,7 +231,7 @@ const sizes = {
     `"
     sizes="(max-width: 640px) 400px, (max-width: 1024px) 800px, 1200px"
     :alt="alt"
-  />
+  >
 </template>
 ```
 
@@ -273,7 +276,7 @@ export default defineNuxtConfig({
       modifiers: {
         withoutEnlargement: 'true',
         // array of options from sharp api (https://sharp.pixelplumbing.com/api-operation/)
-        transforms: [['blur', 4], ['negate']] 
+        transforms: [['blur', 4], ['negate']]
       }
     },
   },
@@ -362,8 +365,7 @@ const { data: images } = await useAsyncData('gallery', () =>
   directus.request(readFiles({
     filter: { type: { _starts_with: 'image/' } },
     sort: ['-uploaded_on'],
-  }))
-)
+  })))
 
 async function handleUpload(event) {
   const files = Array.from(event.target.files).map(file => ({ file }))
@@ -375,7 +377,8 @@ async function handleUpload(event) {
       ...(Array.isArray(uploaded) ? uploaded : [uploaded]),
       ...(images.value || [])
     ]
-  } finally {
+  }
+  finally {
     uploading.value = false
   }
 }
@@ -387,9 +390,9 @@ async function handleUpload(event) {
       type="file"
       multiple
       accept="image/*"
-      @change="handleUpload"
       :disabled="uploading"
-    />
+      @change="handleUpload"
+    >
 
     <div class="gallery">
       <div v-for="image in images" :key="image.id" class="gallery-item">
@@ -399,10 +402,10 @@ async function handleUpload(event) {
             height: 300,
             fit: 'cover',
             format: 'webp',
-            quality: 80
+            quality: 80,
           })"
           :alt="image.title"
-        />
+        >
         <p>{{ image.title }}</p>
       </div>
     </div>
@@ -474,14 +477,14 @@ const sources = {
       :srcset="`${sources.avif.mobile} 768w, ${sources.avif.desktop} 1920w`"
       type="image/avif"
       sizes="100vw"
-    />
+    >
 
     <!-- WebP format (good compression) -->
     <source
       :srcset="`${sources.webp.mobile} 768w, ${sources.webp.desktop} 1920w`"
       type="image/webp"
       sizes="100vw"
-    />
+    >
 
     <!-- JPG fallback -->
     <img
@@ -490,7 +493,7 @@ const sources = {
       sizes="100vw"
       :alt="image.title"
       loading="lazy"
-    />
+    >
   </picture>
 </template>
 ```
@@ -528,15 +531,15 @@ Generate a URL for a Directus file with optional transformations.
 **Options:**
 ```typescript
 interface DirectusFileOptions {
-  filename?: string              // Custom filename for downloads
-  download?: boolean             // Force download
-  width?: number                 // Resize width
-  height?: number                // Resize height
-  quality?: number               // Image quality (1-100)
+  filename?: string // Custom filename for downloads
+  download?: boolean // Force download
+  width?: number // Resize width
+  height?: number // Resize height
+  quality?: number // Image quality (1-100)
   fit?: 'cover' | 'contain' | 'inside' | 'outside'
   format?: 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'
-  withoutEnlargement?: boolean   // Prevent upscaling
-  key?: string                   // Access key for private files
+  withoutEnlargement?: boolean // Prevent upscaling
+  key?: string // Access key for private files
 }
 ```
 

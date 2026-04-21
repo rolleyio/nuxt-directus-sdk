@@ -25,8 +25,7 @@ const route = useRoute()
 const directus = useDirectus()
 
 const { data: article } = await useAsyncData('article', () =>
-  directus.request(readItem('articles', route.params.id))
-)
+  directus.request(readItem('articles', route.params.id)))
 </script>
 
 <template>
@@ -48,7 +47,7 @@ const { data: article } = await useAsyncData('article', () =>
       <img
         v-if="article.featured_image"
         :src="getDirectusFileUrl(article.featured_image, { width: 1200 })"
-      />
+      >
     </DirectusVisualEditor>
 
     <DirectusVisualEditor
@@ -71,8 +70,7 @@ const { data: article } = await useAsyncData('article', () =>
 const { data: page } = await useAsyncData('page', () =>
   directus.request(readItem('pages', route.params.id, {
     fields: ['*', { blocks: ['*'] }]
-  }))
-)
+  })))
 </script>
 
 <template>

@@ -224,7 +224,7 @@ it('returns null when no presets configured', () => {
 Test validation rules against item data:
 
 ```typescript
-import { required, pattern, allOf } from 'nuxt-directus-sdk/rules'
+import { allOf, pattern, required } from 'nuxt-directus-sdk/rules'
 
 const rules = defineDirectusRules<DirectusSchema>({
   roles: [
@@ -294,8 +294,8 @@ expect.extend(matchers)
 Add the type declarations to your `vitest.d.ts`:
 
 ```typescript
-import 'vitest'
 import type { RulesMatcherExtensions } from 'nuxt-directus-sdk/rules'
+import 'vitest'
 
 declare module 'vitest' {
   interface Assertion<T> extends RulesMatcherExtensions<T> {}
@@ -320,10 +320,10 @@ A common pattern is loading rules from Directus, extending them, and testing the
 ```typescript
 import { readFileSync } from 'node:fs'
 import {
+  createAdminPolicy,
   createRulesTester,
   extendRules,
   loadRulesFromPayload,
-  createAdminPolicy,
 } from 'nuxt-directus-sdk/rules'
 
 // Load rules exported from Directus (via rules:pull CLI)
@@ -391,21 +391,21 @@ Creates a tester instance with the following methods:
 ### `PermissionTestResult`
 
 ```typescript
-{
+interface PermissionTestResult {
   allowed: boolean
-  permission?: PermissionConfig  // Present when conditionally allowed
-  reason?: string                // Human-readable explanation
+  permission?: PermissionConfig // Present when conditionally allowed
+  reason?: string // Human-readable explanation
 }
 ```
 
 ### `ValidationTestResult`
 
 ```typescript
-{
+interface ValidationTestResult {
   valid: boolean
   issues: Array<{
-    field: string    // Field that failed, or '*' for general errors
-    message: string  // Human-readable error
+    field: string // Field that failed, or '*' for general errors
+    message: string // Human-readable error
   }>
 }
 ```
