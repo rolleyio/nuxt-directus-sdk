@@ -5,19 +5,25 @@
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-> A Nuxt 4 Directus module that uses the Directus SDK to enhance your Nuxt application
+> A Nuxt module for Directus with built-in authentication, realtime, file management, type generation, and visual editor support.
 
-- [✨ &nbsp;Release Notes](/CHANGELOG.md)
+- [✨ &nbsp;Release Notes](https://github.com/rolleyio/nuxt-directus-sdk/releases)
 - [📚 &nbsp;Documentation](https://nuxt-directus-sdk.rolley.io)
 
 ## Features
 
 - 🔒 &nbsp;**Session-based authentication** with cross-domain support
-- ⛰ &nbsp;Authentication out of the box
-- 🚠 &nbsp;Type generation based on Directus collections
-- 🔥 &nbsp;Typesafe Client Websockets enabled
-- 🌉 &nbsp;Automatically configures Nuxt Image for directus
-- 🗂️ &nbsp;Directus Admin panel added to Devtools
+- ⚡ &nbsp;**Realtime** via typed WebSocket subscriptions
+- 📁 &nbsp;**File management** with `@nuxt/image` integration
+- ✏️ &nbsp;**Visual editor** support for `@directus/visual-editing`
+- 🧩 &nbsp;**Auto-generated types** from your Directus schema, plus a standalone CLI
+- 📐 &nbsp;**Rules DSL** for defining and syncing permissions in code
+- 🗂️ &nbsp;Directus admin panel embedded in Nuxt Devtools
+
+## Requirements
+
+- **Nuxt 4.0+**
+- **Directus v11.16.0+** (required by the bundled `@directus/visual-editing` v2 and `@directus/sdk` v21)
 
 ## Quick Setup
 
@@ -39,19 +45,12 @@ bun install --save-dev nuxt-directus-sdk
 
 2. Add `nuxt-directus-sdk` to the `modules` section of `nuxt.config.ts`
 
-```js
+```ts
 export default defineNuxtConfig({
-  modules: [
-    'nuxt-directus-sdk'
-  ],
+  modules: ['nuxt-directus-sdk'],
   directus: {
-    // Optional: customize authentication (defaults shown)
-    auth: {
-      autoRefresh: true,
-      credentials: 'include', // Required for cross-domain
-      realtimeAuthMode: 'public',
-    }
-  }
+    url: process.env.DIRECTUS_URL,
+  },
 })
 ```
 
@@ -59,18 +58,35 @@ export default defineNuxtConfig({
 
 ```dotenv
 DIRECTUS_URL=https://your-directus-url.com
-DIRECTUS_ADMIN_TOKEN=your_admin_token # Optional: for type generation
+DIRECTUS_ADMIN_TOKEN=your_admin_token # Optional: required for type generation
 ```
 
-4. **Configure your Directus backend** for cross-domain authentication (see [Authentication Guide](https://nuxt-directus-sdk.rolley.io/guide/authentication.html))
+4. **Configure your Directus backend** for cross-domain authentication (see the [Authentication Guide](https://nuxt-directus-sdk.rolley.io/guide/authentication.html))
 
 That's it! You can now use Directus within your Nuxt app ✨
 
-For cross-domain setups (e.g., `app.example.com` ↔ `api.example.com`), see the [Authentication Guide](https://nuxt-directus-sdk.rolley.io/guide/authentication.html).
+For cross-domain setups (e.g. `app.example.com` and `api.example.com`), see the [Authentication Guide](https://nuxt-directus-sdk.rolley.io/guide/authentication.html).
+
+## CLI
+
+The module ships with a CLI for type generation and permissions/rules sync that doesn't require a running Nuxt instance. Useful in CI, pre-commit hooks, or quick regeneration during development.
+
+```bash
+# Generate TypeScript types from a Directus schema
+npx nuxt-directus-sdk generate-types --prefix App -o types/directus.d.ts
+
+# Pull permissions/rules to a JSON file
+npx nuxt-directus-sdk rules:pull -o rules.json
+
+# See all commands
+npx nuxt-directus-sdk --help
+```
+
+See the [CLI documentation](https://nuxt-directus-sdk.rolley.io/api/configuration/module#types) for flags and examples.
 
 ## Development
 
-> [!IMPORTANT] The playground uses [directus-template-cli](https://github.com/directus-labs/directus-template-cli?tab=readme-ov-file#applying-a-template) `cms` template.
+> [!IMPORTANT] The playground uses the [directus-template-cli](https://github.com/directus-labs/directus-template-cli?tab=readme-ov-file#applying-a-template) `cms` template.
 > Apply the template with `npx directus-template-cli@latest apply` and follow the interactive prompts.
 
 ```bash
@@ -96,7 +112,7 @@ pnpm run lint
 pnpm run test
 pnpm run test:watch
 
-# Release new version
+# Release new version (see RELEASING.md)
 pnpm run release
 ```
 
