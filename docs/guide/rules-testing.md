@@ -7,7 +7,7 @@ The rules framework includes a full testing API for verifying permissions in you
 ```typescript
 import { createRulesTester, defineDirectusRules } from 'nuxt-directus-sdk/rules'
 
-const rules = defineDirectusRules<DirectusSchema>({
+const rules = defineDirectusRules <DirectusSchema> ({
   roles: [
     {
       name: 'Admin',
@@ -186,7 +186,7 @@ describe('field access', () => {
 Test default values applied when creating items:
 
 ```typescript
-const rules = defineDirectusRules<DirectusSchema>({
+const rules = defineDirectusRules <DirectusSchema> ({
   roles: [
     {
       name: 'Editor',
@@ -226,7 +226,7 @@ Test validation rules against item data:
 ```typescript
 import { allOf, pattern, required } from 'nuxt-directus-sdk/rules'
 
-const rules = defineDirectusRules<DirectusSchema>({
+const rules = defineDirectusRules <DirectusSchema> ({
   roles: [
     {
       name: 'Editor',
@@ -328,7 +328,7 @@ import {
 
 // Load rules exported from Directus (via rules:pull CLI)
 const payload = JSON.parse(readFileSync('rules.json', 'utf-8'))
-const remoteRules = loadRulesFromPayload<DirectusSchema>(payload)
+const remoteRules = loadRulesFromPayload <DirectusSchema> (payload)
 
 // Extend with your local additions
 const rules = extendRules(remoteRules, {

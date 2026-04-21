@@ -12,7 +12,7 @@ import {
 
 // Load rules pulled from Directus
 const payload = JSON.parse(readFileSync('./test/rules/fixtures/rules.json', 'utf-8'))
-const remoteRules = loadRulesFromPayload<DirectusSchema>(payload)
+const remoteRules = loadRulesFromPayload <DirectusSchema> (payload)
 
 // Extend with additional policies and roles
 const rules = extendRules(remoteRules, {
