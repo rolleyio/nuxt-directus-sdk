@@ -176,6 +176,16 @@ export interface ModuleOptions {
      */
     prefix?: string
     /**
+     * Collection names to include in the generated types. When non-empty,
+     * only these collections are emitted; references to collections not in
+     * the list are rewritten to `string` (M2O) or `string[]` (O2M).
+     *
+     * Takes precedence over `exclude` if both are set.
+     * @type string[]
+     * @default []
+     */
+    include?: string[]
+    /**
      * Collection names to exclude from generated types.
      * References to excluded collections are rewritten to `string` (M2O) or
      * `string[]` (O2M) so the generated types stay resolvable.
@@ -183,6 +193,14 @@ export interface ModuleOptions {
      * @default []
      */
     exclude?: string[]
+    /**
+     * When true, emit per-target warnings listing every field whose
+     * reference was collapsed to `string`/`string[]`. Field lists are
+     * capped at 5 per collection.
+     * @type boolean
+     * @default false
+     */
+    verbose?: boolean
   }
 }
 
@@ -516,7 +534,9 @@ export default defineNuxtModule<ModuleOptions>({
 
     const typesEnabled = (typeof options.types === 'boolean' && options.types) || (options.types && options.types.enabled === true)
     const typesPrefix = typeof options.types === 'object' ? options.types.prefix ?? '' : ''
+    const typesInclude = typeof options.types === 'object' ? options.types.include ?? [] : []
     const typesExclude = typeof options.types === 'object' ? options.types.exclude ?? [] : []
+    const typesVerbose = typeof options.types === 'object' ? options.types.verbose ?? false : false
 
     if (typesEnabled) {
       loggerMessage.push('📋 Directus Type Generator Enabled')
@@ -525,7 +545,11 @@ export default defineNuxtModule<ModuleOptions>({
       }
       else {
         try {
-          const { typeString, logs } = await generateTypesFromDirectus(directusUrl, options.adminToken!, typesPrefix, typesExclude)
+          const { typeString, logs } = await generateTypesFromDirectus(directusUrl, options.adminToken!, typesPrefix, {
+            include: typesInclude,
+            exclude: typesExclude,
+            verbose: typesVerbose,
+          })
           loggerMessage.push(...logs)
 
           addTypeTemplate({

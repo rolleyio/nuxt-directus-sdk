@@ -292,7 +292,7 @@ See the [File Management Guide](/guide/files#using-with-nuxt-image) for more det
 
 #### `types`
 
-- **Type:** `boolean | { enabled?: boolean, prefix?: string, exclude?: string[] }`
+- **Type:** `boolean | { enabled?: boolean, prefix?: string, include?: string[], exclude?: string[], verbose?: boolean }`
 - **Default:** `true`
 
 Enable/disable automatic type generation from your Directus schema.
@@ -421,13 +421,17 @@ interface DirectusUsers {
 
 ##### Excluding Collections
 
-Omit specific collections from the generated types using `exclude`:
+Two complementary options let you narrow what ends up in the generated types:
+
+- **`exclude`** — drop specific collections (deny-list).
+- **`include`** — emit only specific collections (allow-list). Takes precedence over `exclude` if both are set (a warning is logged).
+
+**Exclude** — drop the listed collections:
 
 ```typescript
 export default defineNuxtConfig({
   directus: {
     types: {
-      enabled: true,
       prefix: 'App',
       exclude: ['directus_activity', 'directus_revisions'],
     },
@@ -435,19 +439,69 @@ export default defineNuxtConfig({
 })
 ```
 
-References to excluded collections are rewritten so the generated types stay resolvable:
-- **M2O** references (e.g. `user_created: DirectusUser | string`) collapse to `string`
-- **O2M** references (e.g. `revisions: DirectusRevision[] | string[]`) collapse to `string[]`
-- **M2A** (polymorphic) references filter out excluded collections from the union; if the whole union becomes empty, the field type collapses to `string`
+**Include** — emit only the listed collections. Everything else is dropped:
 
-The same behaviour is available from the CLI via `--exclude`:
-
-```bash
-npx nuxt-directus-sdk generate-types --exclude directus_activity,directus_revisions
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    types: {
+      prefix: 'App',
+      include: ['posts', 'pages', 'directus_users'],
+    },
+  },
+})
 ```
 
-::: tip When to use exclude
-Useful for keeping generated types focused on your application schema. Excluding things like `directus_activity`, `directus_revisions`, and `directus_sessions` — which your app code rarely touches — can materially shrink the generated `.d.ts` and reduce TypeScript compile time in large projects.
+In both cases, when a field on an emitted collection references a missing collection, the generator rewrites the reference so the emitted types stay resolvable:
+
+- **M2O** references (e.g. `user_created: DirectusUser | string`) collapse to `string`
+- **O2M** references (e.g. `revisions: DirectusRevision[] | string[]`) collapse to `string[]`
+- **M2A** (polymorphic) references filter out missing collections from the union; if the whole union becomes empty, the field type collapses to `string`
+
+After generation, a summary log line reports how many fields were rewritten and why:
+
+```
+ - 14 field references across 3 targets collapsed to string (excluded)
+```
+
+Enable `verbose: true` to see each rewritten target grouped and listed (capped at 5 fields per collection):
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    types: {
+      prefix: 'App',
+      exclude: ['directus_users'],
+      verbose: true,
+    },
+  },
+})
+```
+
+Produces:
+
+```
+ - 92 field references across 1 target collapsed to string (excluded)
+   · directus_users (excluded) — referenced by 92 fields across 45 collections
+     posts.user_created, posts.user_updated, pages.user_created, pages.user_updated, blocks.user_created, …and 87 more
+```
+
+The same options are available on the CLI via `--include`, `--exclude`, and `--verbose`:
+
+```bash
+# Exclude
+npx nuxt-directus-sdk generate-types --exclude directus_activity,directus_revisions
+
+# Include only specific collections
+npx nuxt-directus-sdk generate-types --include posts,pages,directus_users
+
+# Verbose warnings
+npx nuxt-directus-sdk generate-types --exclude directus_users --verbose
+```
+
+::: tip When to use each
+- **`exclude`** — most common. Keeps most of your types, drops a handful of collections you don't care about (`directus_activity`, `directus_revisions`, `directus_sessions`). Smaller `.d.ts`, faster TypeScript compile.
+- **`include`** — when you have a large Directus instance but your app touches only a narrow subset. More restrictive but produces the smallest possible `.d.ts`.
 :::
 
 ### Authentication Options

@@ -116,8 +116,14 @@ Options:
   --add-only                Only add new items, don't modify or delete existing (rules:push)
   --skip-deletes            Skip deleting items that exist remotely but not locally (rules:push)
   --prefix <prefix>         Prefix for custom collection type names (generate-types)
+  --include <names>         Comma-separated collection names to include (generate-types).
+                            When set, only these collections are emitted; references to
+                            collections not in the list are rewritten to \`string\`.
+                            Takes precedence over --exclude if both are set.
   --exclude <names>         Comma-separated collection names to exclude (generate-types).
                             References to excluded types are rewritten to \`string\`.
+  --verbose                 Show per-target warnings listing every field whose reference
+                            was collapsed to \`string\` (generate-types).
   --no-declare-global       Emit types without the \`declare global\` wrapper (generate-types)
 
   Connection options (override DIRECTUS_URL / DIRECTUS_ADMIN_TOKEN):
@@ -170,6 +176,12 @@ Examples:
 
   # Exclude specific collections — references to them become \`string\`
   npx nuxt-directus-sdk generate-types --exclude directus_activity,directus_revisions
+
+  # Include only specific collections (allow-list; references to others collapse to \`string\`)
+  npx nuxt-directus-sdk generate-types --include posts,pages,directus_users
+
+  # Verbose — show every field whose reference was collapsed, grouped by target
+  npx nuxt-directus-sdk generate-types --exclude directus_users --verbose
 `)
 }
 
@@ -320,10 +332,20 @@ async function commandPush(
 
 async function commandGenerateTypes(
   connection: ConnectionConfig,
-  options: { prefix: string, output: string | undefined, declareGlobal: boolean, exclude: string[] },
+  options: {
+    prefix: string
+    output: string | undefined
+    declareGlobal: boolean
+    include: string[]
+    exclude: string[]
+    verbose: boolean
+  },
 ): Promise<void> {
   // Informational logs go to stderr so they don't pollute stdout when piping
   console.error(`Generating types from ${connection.url}...`)
+  if (options.include.length > 0) {
+    console.error(`Including collections: ${options.include.join(', ')}`)
+  }
   if (options.exclude.length > 0) {
     console.error(`Excluding collections: ${options.exclude.join(', ')}`)
   }
@@ -332,7 +354,11 @@ async function commandGenerateTypes(
     connection.url,
     connection.token,
     options.prefix,
-    options.exclude,
+    {
+      include: options.include,
+      exclude: options.exclude,
+      verbose: options.verbose,
+    },
   )
 
   // Surface the generator's own logs (e.g. fetch counts, errors) to stderr
@@ -380,7 +406,9 @@ async function main(): Promise<void> {
       'add-only': { type: 'boolean', default: false },
       'skip-deletes': { type: 'boolean', default: false },
       'prefix': { type: 'string', default: '' },
+      'include': { type: 'string' },
       'exclude': { type: 'string' },
+      'verbose': { type: 'boolean', default: false },
       'declare-global': { type: 'boolean', default: true },
       'url': { type: 'string' },
       'token': { type: 'string' },
@@ -477,14 +505,15 @@ async function main(): Promise<void> {
           values.token ?? values['source-token'],
           'Source',
         )
-        const exclude = values.exclude
-          ? values.exclude.split(',').map(s => s.trim()).filter(Boolean)
-          : []
+        const parseCsv = (raw: string | undefined) =>
+          raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : []
         await commandGenerateTypes(connection, {
           prefix: values.prefix ?? '',
           output: values.output,
           declareGlobal: values['declare-global']!,
-          exclude,
+          include: parseCsv(values.include),
+          exclude: parseCsv(values.exclude),
+          verbose: values.verbose!,
         })
         break
       }
