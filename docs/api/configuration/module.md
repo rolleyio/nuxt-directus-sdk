@@ -330,6 +330,43 @@ export default defineNuxtConfig({
 })
 ```
 
+##### Generating types from the CLI
+
+In addition to generating types automatically during `nuxt dev` / `nuxt build`, you can generate them on demand using the CLI. Useful for CI pipelines, pre-commit hooks, or any workflow where you want `.d.ts` output without a Nuxt build.
+
+```bash
+# Pipe to a file (uses DIRECTUS_URL + DIRECTUS_ADMIN_TOKEN from .env)
+npx nuxt-directus-sdk generate-types > types/directus.d.ts
+
+# Inline env vars — useful for one-off runs against a specific instance
+DIRECTUS_URL=https://my-directus.com \
+DIRECTUS_ADMIN_TOKEN=my-token \
+  npx nuxt-directus-sdk generate-types > types/directus.d.ts
+
+# Write directly to a file
+npx nuxt-directus-sdk generate-types -o types/directus.d.ts
+
+# Add a prefix to custom collection type names
+npx nuxt-directus-sdk generate-types --prefix App -o types/directus.d.ts
+
+# Flags override env vars
+npx nuxt-directus-sdk generate-types \
+  --url https://my-directus.com \
+  --token $DIRECTUS_ADMIN_TOKEN \
+  -o types/directus.d.ts
+
+# Emit without the `declare global { ... }` wrapper (non-Nuxt consumers)
+npx nuxt-directus-sdk generate-types --no-declare-global -o types/directus.d.ts
+```
+
+By default the CLI writes to stdout, so you can pipe the output anywhere. The `-o` flag writes to a file and creates parent directories if they don't exist. Informational logs (e.g. "Fetched 42 collections...") go to stderr so they don't pollute piped output.
+
+Precedence for URL and token: CLI flag → exported/inline env var → `.env` file in the current directory.
+
+::: tip Keeping types in version control
+Running `generate-types` in CI and committing the output is a common pattern — it keeps your team working with consistent types without requiring each developer to have their own admin token or a local Nuxt build. Just make sure the CI job has access to the Directus instance and an admin token.
+:::
+
 ##### Type Prefix
 
 Add a prefix to your custom collection types to avoid naming conflicts:
