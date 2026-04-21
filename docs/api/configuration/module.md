@@ -292,7 +292,7 @@ See the [File Management Guide](/guide/files#using-with-nuxt-image) for more det
 
 #### `types`
 
-- **Type:** `boolean | { enabled?: boolean, prefix?: string, include?: string[], exclude?: string[], verbose?: boolean }`
+- **Type:** `boolean | { enabled?: boolean, prefix?: string, include?: string[], expandReferences?: boolean, exclude?: string[], verbose?: boolean }`
 - **Default:** `true`
 
 Enable/disable automatic type generation from your Directus schema.
@@ -439,20 +439,41 @@ export default defineNuxtConfig({
 })
 ```
 
-**Include** — emit only the listed collections. Everything else is dropped:
+**Include** — emit only the listed collections plus anything they reference. References are followed transitively, so you typically only need to list the collections your app code directly interacts with:
 
 ```typescript
 export default defineNuxtConfig({
   directus: {
     types: {
       prefix: 'App',
-      include: ['posts', 'pages', 'directus_users'],
+      include: ['posts', 'pages'],
+      // expandReferences defaults to true — pulls in directus_users, directus_files, etc.
     },
   },
 })
 ```
 
-In both cases, when a field on an emitted collection references a missing collection, the generator rewrites the reference so the emitted types stay resolvable:
+Disable expansion with `expandReferences: false` if you want a strict allow-list where references to collections not in the list collapse to `string`:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    types: {
+      prefix: 'App',
+      include: ['posts'],
+      expandReferences: false, // strict — posts.author becomes string, not DirectusUser | string
+    },
+  },
+})
+```
+
+When expansion is on and collections are pulled in, a log line reports the delta:
+
+```
+ - Expanded include from 2 → 7 collections (+5 via references)
+```
+
+In all cases, when a field on an emitted collection references a missing collection (not in the include list and not pulled in by expansion, or explicitly excluded), the generator rewrites the reference so the emitted types stay resolvable:
 
 - **M2O** references (e.g. `user_created: DirectusUser | string`) collapse to `string`
 - **O2M** references (e.g. `revisions: DirectusRevision[] | string[]`) collapse to `string[]`
@@ -486,14 +507,17 @@ Produces:
      posts.user_created, posts.user_updated, pages.user_created, pages.user_updated, blocks.user_created, …and 87 more
 ```
 
-The same options are available on the CLI via `--include`, `--exclude`, and `--verbose`:
+The same options are available on the CLI via `--include`, `--exclude`, `--verbose`, and `--no-expand-references`:
 
 ```bash
 # Exclude
 npx nuxt-directus-sdk generate-types --exclude directus_activity,directus_revisions
 
-# Include only specific collections
-npx nuxt-directus-sdk generate-types --include posts,pages,directus_users
+# Include only specific collections (referenced collections auto-included)
+npx nuxt-directus-sdk generate-types --include posts
+
+# Strict include — only the listed collections; references collapse to `string`
+npx nuxt-directus-sdk generate-types --include posts --no-expand-references
 
 # Verbose warnings
 npx nuxt-directus-sdk generate-types --exclude directus_users --verbose

@@ -117,9 +117,12 @@ Options:
   --skip-deletes            Skip deleting items that exist remotely but not locally (rules:push)
   --prefix <prefix>         Prefix for custom collection type names (generate-types)
   --include <names>         Comma-separated collection names to include (generate-types).
-                            When set, only these collections are emitted; references to
-                            collections not in the list are rewritten to \`string\`.
+                            When set, only these collections (plus any they reference
+                            via --expand-references, default on) are emitted.
                             Takes precedence over --exclude if both are set.
+  --no-expand-references    When --include is set, do NOT follow references to other
+                            collections. Strict include mode — references to collections
+                            not in the list collapse to \`string\`. (generate-types)
   --exclude <names>         Comma-separated collection names to exclude (generate-types).
                             References to excluded types are rewritten to \`string\`.
   --verbose                 Show per-target warnings listing every field whose reference
@@ -177,8 +180,11 @@ Examples:
   # Exclude specific collections — references to them become \`string\`
   npx nuxt-directus-sdk generate-types --exclude directus_activity,directus_revisions
 
-  # Include only specific collections (allow-list; references to others collapse to \`string\`)
-  npx nuxt-directus-sdk generate-types --include posts,pages,directus_users
+  # Include only specific collections (referenced collections auto-included)
+  npx nuxt-directus-sdk generate-types --include posts
+
+  # Strict include — only the listed collections, references collapse to \`string\`
+  npx nuxt-directus-sdk generate-types --include posts --no-expand-references
 
   # Verbose — show every field whose reference was collapsed, grouped by target
   npx nuxt-directus-sdk generate-types --exclude directus_users --verbose
@@ -338,6 +344,7 @@ async function commandGenerateTypes(
     declareGlobal: boolean
     include: string[]
     exclude: string[]
+    expandReferences: boolean
     verbose: boolean
   },
 ): Promise<void> {
@@ -357,6 +364,7 @@ async function commandGenerateTypes(
     {
       include: options.include,
       exclude: options.exclude,
+      expandReferences: options.expandReferences,
       verbose: options.verbose,
     },
   )
@@ -408,8 +416,13 @@ async function main(): Promise<void> {
       'prefix': { type: 'string', default: '' },
       'include': { type: 'string' },
       'exclude': { type: 'string' },
+      // Node's parseArgs doesn't support `--no-X` syntax natively, so we
+      // register both forms. Negation wins if both are passed.
+      'expand-references': { type: 'boolean', default: true },
+      'no-expand-references': { type: 'boolean' },
       'verbose': { type: 'boolean', default: false },
       'declare-global': { type: 'boolean', default: true },
+      'no-declare-global': { type: 'boolean' },
       'url': { type: 'string' },
       'token': { type: 'string' },
       'source-url': { type: 'string' },
@@ -507,12 +520,16 @@ async function main(): Promise<void> {
         )
         const parseCsv = (raw: string | undefined) =>
           raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : []
+        // --no-X negation wins over --X for boolean flags that default to true
+        const declareGlobal = values['no-declare-global'] ? false : values['declare-global']!
+        const expandReferences = values['no-expand-references'] ? false : values['expand-references']!
         await commandGenerateTypes(connection, {
           prefix: values.prefix ?? '',
           output: values.output,
-          declareGlobal: values['declare-global']!,
+          declareGlobal,
           include: parseCsv(values.include),
           exclude: parseCsv(values.exclude),
+          expandReferences,
           verbose: values.verbose!,
         })
         break

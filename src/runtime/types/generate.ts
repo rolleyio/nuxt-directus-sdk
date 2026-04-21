@@ -43,10 +43,18 @@ interface InterfaceField {
 export interface GenerateTypesOptions {
   /**
    * Collection names to include. When non-empty, only these collections
-   * are emitted; references to collections not in the list collapse to
-   * `string` / `string[]` the same way as `exclude` does.
+   * (plus any collections they reference — see `expandReferences`) are
+   * emitted. References to collections not in the resolved set collapse
+   * to `string` / `string[]`.
    */
   include?: string[]
+  /**
+   * When `include` is set, also pull in any collections referenced by
+   * the included collections (transitively). Follows M2O, O2M, M2A, and
+   * translations relations. No-op when `include` is empty.
+   * @default true
+   */
+  expandReferences?: boolean
   /**
    * Collection names to exclude from the generated types. References to
    * excluded collections are rewritten to `string` (M2O), `string[]` (O2M),
@@ -114,6 +122,25 @@ export async function generateTypesFromDirectus(
   if (resolvedOptions.include.length > 0 && resolvedOptions.exclude.length > 0) {
     logs.push('  - Warning: both include and exclude were set; exclude is ignored because include takes precedence')
     resolvedOptions.exclude = []
+  }
+
+  // When `expandReferences` is on (default) and `include` is set, walk the
+  // relation graph from the user's include list and pull in every referenced
+  // collection transitively. Follows M2O, O2M, and M2A. Users typically want
+  // this — including `posts` without expansion would strip the type from
+  // `posts.author` even though `directus_users` is almost certainly needed.
+  const expandReferences = options.expandReferences ?? true
+  if (resolvedOptions.include.length === 0 && options.expandReferences !== undefined) {
+    logs.push('  - Warning: expandReferences was set but include is empty; ignoring')
+  }
+  if (expandReferences && resolvedOptions.include.length > 0) {
+    const originalSize = resolvedOptions.include.length
+    const expanded = expandIncludeViaReferences(resolvedOptions.include, result[2])
+    if (expanded.size > originalSize) {
+      resolvedOptions.include = Array.from(expanded)
+      const added = expanded.size - originalSize
+      logs.push(`  - Expanded include from ${originalSize} → ${expanded.size} collection${expanded.size === 1 ? '' : 's'} (+${added} via references)`)
+    }
   }
 
   const { typeString, rewrites, emittedCount } = transformSnapshotToTypeString(...result, prefix, undefined, resolvedOptions)
@@ -381,6 +408,52 @@ function resolveExtensionForField(
  * @param relations - Array of snapshot relations as returned by the Directus schema snapshot.
  * @returns A {@link RelationMap} where each collection maps to its categorized relations.
  */
+/**
+ * Walk the relation graph from the user's include seeds and return the
+ * transitive closure of collections that should be emitted. Follows M2O,
+ * O2M, and M2A edges; cycle-safe via a visited set.
+ *
+ * @param seeds - Collection names the user explicitly included.
+ * @param relations - All relations from the Directus snapshot.
+ * @returns Set of every collection name reachable from the seeds.
+ */
+function expandIncludeViaReferences(seeds: string[], relations: SnapshotRelation[]): Set<string> {
+  const relationMap = buildRelationMapFromSnapshot(relations)
+  const visited = new Set<string>()
+  const queue: string[] = [...seeds]
+
+  while (queue.length > 0) {
+    const current = queue.shift()!
+    if (visited.has(current))
+      continue
+    visited.add(current)
+
+    const rels = relationMap.get(current)
+    if (!rels)
+      continue
+
+    // Follow M2O (this collection → related collection)
+    for (const { relatedCollection } of rels.m2o.values()) {
+      if (!visited.has(relatedCollection))
+        queue.push(relatedCollection)
+    }
+    // Follow O2M (virtual field here → collection holding the FK)
+    for (const { relatedCollection } of rels.o2m.values()) {
+      if (!visited.has(relatedCollection))
+        queue.push(relatedCollection)
+    }
+    // Follow M2A (polymorphic — all allowed collections)
+    for (const allowed of rels.m2a.values()) {
+      for (const name of allowed) {
+        if (!visited.has(name))
+          queue.push(name)
+      }
+    }
+  }
+
+  return visited
+}
+
 function buildRelationMapFromSnapshot(relations: SnapshotRelation[]): RelationMap {
   const relationMap: RelationMap = new Map()
 
