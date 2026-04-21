@@ -1,14 +1,30 @@
 {
   "name": "nuxt-directus-sdk",
   "type": "module",
-  "version": "5.0.2",
-  "description": "A Directus nuxt module that uses the Directus SDK",
+  "version": "5.0.3",
+  "description": "A Nuxt module for Directus with built-in authentication, realtime, file management, type generation, and visual editor support.",
   "author": "Matthew Rollinson <matt@rolley.io>",
   "license": "MIT",
+  "homepage": "https://nuxt-directus-sdk.rolley.io",
   "repository": {
     "type": "git",
     "url": "https://github.com/rolleyio/nuxt-directus-sdk"
   },
+  "bugs": {
+    "url": "https://github.com/rolleyio/nuxt-directus-sdk/issues"
+  },
+  "keywords": [
+    "nuxt",
+    "nuxt-module",
+    "directus",
+    "cms",
+    "headless-cms",
+    "sdk",
+    "ssr",
+    "realtime",
+    "authentication",
+    "visual-editor"
+  ],
   "exports": {
     ".": {
       "types": "./dist/module.d.mts",
@@ -90,5 +106,8 @@
     "externals": [
       "consola/utils"
     ]
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
