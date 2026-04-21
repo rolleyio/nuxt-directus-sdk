@@ -379,6 +379,41 @@ interface DirectusUsers {
 - Directus system collections (e.g., `DirectusUsers`, `DirectusFiles`) are NOT prefixed
 - All type references are updated to use the prefixed names
 
+### SDK Auto-Imports
+
+#### `autoImportSdk`
+
+- **Type:** `boolean | { exclude?: string[] }`
+- **Default:** `true`
+
+Controls whether the module auto-imports functions from `@directus/sdk`. By default every SDK function is auto-imported (minus a small list the module wraps or explicitly doesn't support — see [Composables > Auto-Imported Directus SDK Functions](/api/composables/#auto-imported-directus-sdk-functions)).
+
+**Disable entirely** — you'll need to `import { ... } from '@directus/sdk'` wherever you use them:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    autoImportSdk: false,
+  },
+})
+```
+
+**Exclude specific functions** — useful if an SDK function name collides with something else in your app:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    autoImportSdk: {
+      exclude: ['aggregate', 'customEndpoint'],
+    },
+  },
+})
+```
+
+Your `exclude` list is added to the module's built-in exclusions; you don't need to repeat `createDirectus`, `rest`, etc.
+
+Tree-shaking means disabling auto-imports has no bundle-size benefit for end users — unused SDK functions don't ship regardless. The option exists for collisions and for teams that prefer explicit imports.
+
 ### Authentication Options
 
 #### `auth`

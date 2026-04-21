@@ -2,6 +2,7 @@ import type { Query } from '@directus/sdk'
 import type { ImageModifiers, ImageProviders } from '@nuxt/image'
 import type { InlinePreset } from 'unimport'
 
+import * as directusSdk from '@directus/sdk'
 import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, hasNuxtModule, installModule, tryResolveModule, useLogger } from '@nuxt/kit'
 import { colors } from 'consola/utils'
 import { defu } from 'defu'
@@ -176,6 +177,27 @@ export interface ModuleOptions {
      */
     prefix?: string
   }
+
+  /**
+   * Auto-import functions from `@directus/sdk`.
+   *
+   * - `true` (default) — auto-imports every SDK function except those wrapped by
+   *   this module (e.g. `createDirectus`, `rest`, `authentication`) or explicitly
+   *   unsupported (e.g. `graphql`, `readGraphqlSdl`).
+   * - `false` — disables auto-imports entirely. You import from `@directus/sdk`
+   *   manually wherever you use SDK functions.
+   * - `{ exclude: [...] }` — auto-imports with additional functions excluded.
+   *   Useful if an SDK function name collides with something else in your app.
+   *
+   * @default true
+   */
+  autoImportSdk?: boolean | {
+    /**
+     * Additional SDK function names to exclude from auto-import.
+     * Added on top of the module's built-in exclusions.
+     */
+    exclude?: string[]
+  }
 }
 
 const configKey = 'directus'
@@ -201,6 +223,7 @@ export default defineNuxtModule<ModuleOptions>({
       enabled: true,
       prefix: '',
     },
+    autoImportSdk: true,
     auth: {
       enabled: true,
       enableGlobalAuthMiddleware: false,
@@ -413,72 +436,64 @@ export default defineNuxtModule<ModuleOptions>({
     // Add composables
     addImportsDir(resolver.resolve('./runtime/composables'))
 
-    const directusSdkImports: InlinePreset = {
-      from: '@directus/sdk',
-      imports: [
-        'aggregate',
-        'generateUid',
-        'createComment',
-        'updateComment',
-        'deleteComment',
-        'createField',
-        'createItem',
-        'createItems',
-        'deleteField',
-        'deleteFile',
-        'deleteFiles',
-        'readActivities',
-        'readActivity',
-        'deleteItem',
-        'deleteItems',
-        'deleteUser',
-        'deleteUsers',
-        'importFile',
-        'readCollection',
-        'readCollections',
-        'createCollection',
-        'updateCollection',
-        'deleteCollection',
-        'readField',
-        'readFieldsByCollection',
-        'readFields',
-        'readFile',
-        'readFiles',
-        'readItem',
-        'readItems',
-        'readSingleton',
-        'readMe',
-        'createUser',
-        'createUsers',
-        'readUser',
-        'readUsers',
-        'readProviders',
-        'readFolder',
-        'readFolders',
-        'uploadFiles',
-        'updateField',
-        'updateFile',
-        'updateFiles',
-        'updateFolder',
-        'updateFolders',
-        'updateItem',
-        'updateItems',
-        'updateSingleton',
-        'updateMe',
-        'updateUser',
-        'updateUsers',
-        'withToken',
-      ],
-    }
+    // Auto-import every function @directus/sdk exports, except for the
+    // following which the module either wraps, provides a composable for,
+    // or explicitly does not support. Users can still import them manually
+    // from '@directus/sdk' when they have a deliberate reason to.
+    //
+    // Keep MANUAL_IMPORT_ONLY in sync with docs/api/composables/index.md.
+    const MANUAL_IMPORT_ONLY = new Set([
+      // Client construction — useDirectus() returns a fully-configured
+      // singleton with auth, rest, realtime, and SSR cookie forwarding.
+      'createDirectus',
+      'rest',
+      'realtime',
+      'staticToken',
+      'authentication',
+      // Auth internals — use the auth composables (useDirectusAuth, etc.)
+      'auth',
+      'getAuthEndpoint',
+      // Storage primitive — use useDirectusStorage()
+      'memoryStorage',
+      // GraphQL — the module does not wrap or support GraphQL. Imported
+      // manually to keep users' expectations explicit about what this
+      // module covers.
+      'graphql',
+      'readGraphqlSdl',
+    ])
 
-    addImportsSources(directusSdkImports)
+    // autoImportSdk=false disables auto-imports entirely; the { exclude }
+    // shape adds user-provided names on top of the built-in exclusions.
+    const autoImportSdk = options.autoImportSdk ?? true
+    const userExclude = new Set(
+      typeof autoImportSdk === 'object' && autoImportSdk?.exclude
+        ? autoImportSdk.exclude
+        : [],
+    )
+
+    const directusSdkImports: InlinePreset | null = autoImportSdk === false
+      ? null
+      : {
+          from: '@directus/sdk',
+          imports: Object.keys(directusSdk).filter(name =>
+            typeof (directusSdk as Record<string, unknown>)[name] === 'function'
+            && !MANUAL_IMPORT_ONLY.has(name)
+            && !userExclude.has(name),
+          ),
+        }
+
+    if (directusSdkImports) {
+      addImportsSources(directusSdkImports)
+    }
 
     nuxtApp.hook('nitro:config', (nitroConfig) => {
       nitroConfig.alias = nitroConfig.alias || {}
 
       nitroConfig.imports = nitroConfig.imports || {}
       nitroConfig.imports.presets = nitroConfig.imports.presets || []
-      nitroConfig.imports.presets.push(directusSdkImports)
+      if (directusSdkImports) {
+        nitroConfig.imports.presets.push(directusSdkImports)
+      }
       nitroConfig.imports.presets.push({
         from: resolver.resolve('./runtime/server/services'),
         imports: [
