@@ -75,29 +75,29 @@ For cross-domain setups (e.g., `app.example.com` ↔ `api.example.com`), see the
 
 ```bash
 # Install dependencies
-bun install
+pnpm install
 
 # Add DIRECTUS_ADMIN_TOKEN to playground .env (don't forget to update your token)
 cp ./playground/.env.example ./playground/.env
 
 # Generate type stubs
-bun run dev:prepare
+pnpm run dev:prepare
 
 # Develop with the playground
-bun run dev
+pnpm run dev
 
 # Build the playground
-bun run dev:build
+pnpm run dev:build
 
 # Run ESLint
-bun run lint
+pnpm run lint
 
 # Run Vitest
-bun run test
-bun run test:watch
+pnpm run test
+pnpm run test:watch
 
 # Release new version
-bun run release
+pnpm run release
 ```
 
 <!-- Badges -->
