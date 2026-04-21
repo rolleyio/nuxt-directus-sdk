@@ -175,6 +175,14 @@ export interface ModuleOptions {
      * @default ''
      */
     prefix?: string
+    /**
+     * Collection names to exclude from generated types.
+     * References to excluded collections are rewritten to `string` (M2O) or
+     * `string[]` (O2M) so the generated types stay resolvable.
+     * @type string[]
+     * @default []
+     */
+    exclude?: string[]
   }
 }
 
@@ -508,6 +516,7 @@ export default defineNuxtModule<ModuleOptions>({
 
     const typesEnabled = (typeof options.types === 'boolean' && options.types) || (options.types && options.types.enabled === true)
     const typesPrefix = typeof options.types === 'object' ? options.types.prefix ?? '' : ''
+    const typesExclude = typeof options.types === 'object' ? options.types.exclude ?? [] : []
 
     if (typesEnabled) {
       loggerMessage.push('📋 Directus Type Generator Enabled')
@@ -516,7 +525,7 @@ export default defineNuxtModule<ModuleOptions>({
       }
       else {
         try {
-          const { typeString, logs } = await generateTypesFromDirectus(directusUrl, options.adminToken!, typesPrefix)
+          const { typeString, logs } = await generateTypesFromDirectus(directusUrl, options.adminToken!, typesPrefix, typesExclude)
           loggerMessage.push(...logs)
 
           addTypeTemplate({

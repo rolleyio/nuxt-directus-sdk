@@ -116,6 +116,8 @@ Options:
   --add-only                Only add new items, don't modify or delete existing (rules:push)
   --skip-deletes            Skip deleting items that exist remotely but not locally (rules:push)
   --prefix <prefix>         Prefix for custom collection type names (generate-types)
+  --exclude <names>         Comma-separated collection names to exclude (generate-types).
+                            References to excluded types are rewritten to \`string\`.
   --no-declare-global       Emit types without the \`declare global\` wrapper (generate-types)
 
   Connection options (override DIRECTUS_URL / DIRECTUS_ADMIN_TOKEN):
@@ -165,6 +167,9 @@ Examples:
 
   # Generate types from a specific instance
   npx nuxt-directus-sdk generate-types --url https://my-directus.com --token my-token
+
+  # Exclude specific collections — references to them become \`string\`
+  npx nuxt-directus-sdk generate-types --exclude directus_activity,directus_revisions
 `)
 }
 
@@ -315,15 +320,19 @@ async function commandPush(
 
 async function commandGenerateTypes(
   connection: ConnectionConfig,
-  options: { prefix: string, output: string | undefined, declareGlobal: boolean },
+  options: { prefix: string, output: string | undefined, declareGlobal: boolean, exclude: string[] },
 ): Promise<void> {
   // Informational logs go to stderr so they don't pollute stdout when piping
   console.error(`Generating types from ${connection.url}...`)
+  if (options.exclude.length > 0) {
+    console.error(`Excluding collections: ${options.exclude.join(', ')}`)
+  }
 
   const { typeString, logs } = await generateTypesFromDirectus(
     connection.url,
     connection.token,
     options.prefix,
+    options.exclude,
   )
 
   // Surface the generator's own logs (e.g. fetch counts, errors) to stderr
@@ -371,6 +380,7 @@ async function main(): Promise<void> {
       'add-only': { type: 'boolean', default: false },
       'skip-deletes': { type: 'boolean', default: false },
       'prefix': { type: 'string', default: '' },
+      'exclude': { type: 'string' },
       'declare-global': { type: 'boolean', default: true },
       'url': { type: 'string' },
       'token': { type: 'string' },
@@ -467,10 +477,14 @@ async function main(): Promise<void> {
           values.token ?? values['source-token'],
           'Source',
         )
+        const exclude = values.exclude
+          ? values.exclude.split(',').map(s => s.trim()).filter(Boolean)
+          : []
         await commandGenerateTypes(connection, {
           prefix: values.prefix ?? '',
           output: values.output,
           declareGlobal: values['declare-global']!,
+          exclude,
         })
         break
       }

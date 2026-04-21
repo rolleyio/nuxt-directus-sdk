@@ -130,4 +130,67 @@ describe('generateTypesFromDirectus()', () => {
       })
     })
   })
+
+  describe('with exclude', () => {
+    it('omits the excluded collection interface', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App', ['ai_prompts'])
+      expect(result.typeString).not.toContain('interface AppAiPrompt ')
+    })
+
+    it('omits the excluded collection from DirectusSchema', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App', ['ai_prompts'])
+      expect(result.typeString).not.toMatch(/ai_prompts: AppAiPrompt\[\]/)
+    })
+
+    it('omits the excluded collection from the CollectionNames enum', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App', ['ai_prompts'])
+      expect(result.typeString).not.toContain(`ai_prompts = 'ai_prompts'`)
+    })
+
+    it('rewrites M2O references to excluded types as `string`', async () => {
+      // directus_users is referenced by user_created / user_updated on many collections;
+      // when excluded, those fields should become `string | null`, not `DirectusUser | string | null`
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App', ['directus_users'])
+      expect(result.typeString).not.toContain('DirectusUser')
+    })
+
+    it('rewrites O2M references to excluded types as `string[]`', async () => {
+      // directus_files is referenced by file/files fields on several collections;
+      // excluding it should keep the generated types valid (no dangling DirectusFile references)
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App', ['directus_files'])
+      expect(result.typeString).not.toContain('DirectusFile ')
+      expect(result.typeString).not.toContain('DirectusFile[]')
+      expect(result.typeString).not.toContain('DirectusFile | ')
+    })
+
+    it('excluding multiple collections removes all of them', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App', ['ai_prompts', 'directus_users'])
+      expect(result.typeString).not.toContain('interface AppAiPrompt ')
+      expect(result.typeString).not.toContain('DirectusUser')
+    })
+
+    it('empty exclude array matches default behaviour', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const [withEmpty, withDefault] = await Promise.all([
+        generateTypesFromDirectus('http://localhost', 'admin', 'App', []),
+        generateTypesFromDirectus('http://localhost', 'admin', 'App'),
+      ])
+      expect(withEmpty.typeString).toBe(withDefault.typeString)
+    })
+
+    it('excluding an unknown collection is a no-op', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const [withUnknown, withoutUnknown] = await Promise.all([
+        generateTypesFromDirectus('http://localhost', 'admin', 'App', ['collection_that_does_not_exist']),
+        generateTypesFromDirectus('http://localhost', 'admin', 'App'),
+      ])
+      expect(withUnknown.typeString).toBe(withoutUnknown.typeString)
+    })
+  })
 })

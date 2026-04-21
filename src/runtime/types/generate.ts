@@ -38,6 +38,7 @@ export async function generateTypesFromDirectus(
   url: string,
   token: string,
   prefix: string,
+  exclude: string[] = [],
 ): Promise<{ typeString: string, logs: string[] }> {
   const logs: string[] = []
   const client = createDirectus(url).with(rest()).with(staticToken(token))
@@ -72,7 +73,7 @@ export async function generateTypesFromDirectus(
     return { typeString: FALLBACK_TYPE_STRING, logs }
   }
 
-  const typeString = transformSnapshotToTypeString(...result, prefix)
+  const typeString = transformSnapshotToTypeString(...result, prefix, undefined, exclude)
 
   return { typeString, logs }
 }
@@ -94,11 +95,14 @@ export async function generateTypesFromDirectus(
  * @param extensions - Optional type generation extensions.
  * @returns A TypeScript declaration file as a string.
  */
-export function transformSnapshotToTypeString(collections: SnapshotCollection[], fields: SnapshotField[], relations: SnapshotRelation[], prefix: string, extensions: TypegenExtension[] = typegenExtensions): string {
+export function transformSnapshotToTypeString(collections: SnapshotCollection[], fields: SnapshotField[], relations: SnapshotRelation[], prefix: string, extensions: TypegenExtension[] = typegenExtensions, exclude: string[] = []): string {
+  const excludedCollections = new Set(exclude)
+  const isExcluded = (name: string) => excludedCollections.has(name)
+
   const relationMap = buildRelationMapFromSnapshot(relations)
 
   const collectionsWithDatabaseTables = collections.filter(
-    c => c.schema !== null,
+    c => c.schema !== null && !isExcluded(c.collection),
   )
 
   const customCollections = collectionsWithDatabaseTables.filter(
@@ -121,7 +125,8 @@ export function transformSnapshotToTypeString(collections: SnapshotCollection[],
         .filter(
           name =>
             collectionIsDirectusSystem(name)
-            && !systemCollectionNamesAlreadyPresent.has(name),
+            && !systemCollectionNamesAlreadyPresent.has(name)
+            && !isExcluded(name),
         ),
     ),
   ].map(name => ({ collection: name, schema: { name }, meta: null as null }))
@@ -140,7 +145,7 @@ export function transformSnapshotToTypeString(collections: SnapshotCollection[],
     ...customCollections,
     ...systemCollectionsFromSnapshot,
   ].map(collection =>
-    generateInterfaceForCollection(collection, fields, relationMap, prefix, extensions, singletonCollectionNames),
+    generateInterfaceForCollection(collection, fields, relationMap, prefix, extensions, singletonCollectionNames, excludedCollections),
   )
 
   // Deduplicate extension interface outputs by their content — an extension like seo-plugin
@@ -322,11 +327,19 @@ function resolveFieldTypeString(
   prefix: string,
   extensions: TypegenExtension[],
   singletons: Set<string> = new Set(),
+  excluded: Set<string> = new Set(),
 ): ResolvedFieldType {
-  // Resolve relation info from the pre-built map using prefix-aware interface names
+  // Resolve relation info from the pre-built map using prefix-aware interface names.
+  // When a related collection is excluded, references to it collapse to the
+  // primitive-key form (`string` / `string[]`) so the emitted types stay
+  // resolvable without the excluded interface.
   if (collectionRelations?.m2a.has(snapshotField.field)) {
     const allowedCollections = collectionRelations.m2a.get(snapshotField.field)!
-    const unionTypes = allowedCollections
+    const includedCollections = allowedCollections.filter(c => !excluded.has(c))
+    if (includedCollections.length === 0) {
+      return { tsType: 'string', extensionOutput: null }
+    }
+    const unionTypes = includedCollections
       .map(c => collectionNameToInterfaceName(c, prefix, singletons))
       .join(' | ')
     return { tsType: `${unionTypes} | string`, extensionOutput: null }
@@ -334,11 +347,17 @@ function resolveFieldTypeString(
 
   if (collectionRelations?.m2o.has(snapshotField.field)) {
     const related = collectionRelations.m2o.get(snapshotField.field)!
+    if (excluded.has(related.relatedCollection)) {
+      return { tsType: 'string', extensionOutput: null }
+    }
     return { tsType: `${collectionNameToInterfaceName(related.relatedCollection, prefix, singletons)} | string`, extensionOutput: null }
   }
 
   if (collectionRelations?.o2m.has(snapshotField.field)) {
     const related = collectionRelations.o2m.get(snapshotField.field)!
+    if (excluded.has(related.relatedCollection)) {
+      return { tsType: 'string[]', extensionOutput: null }
+    }
     return { tsType: `${collectionNameToInterfaceName(related.relatedCollection, prefix, singletons)}[] | string[]`, extensionOutput: null }
   }
 
@@ -406,6 +425,7 @@ function buildInterfaceField(
   prefix: string,
   extensions: TypegenExtension[],
   singletons: Set<string> = new Set(),
+  excluded: Set<string> = new Set(),
 ): BuiltField | null {
   if (fieldIsUiOnlyAlias(snapshotField))
     return null
@@ -414,7 +434,7 @@ function buildInterfaceField(
   const isRequired = snapshotField.meta?.required === true
   const isNullable = snapshotField.schema?.is_nullable !== false
 
-  const { tsType, extensionOutput } = resolveFieldTypeString(snapshotField, collectionRelations, prefix, extensions, singletons)
+  const { tsType, extensionOutput } = resolveFieldTypeString(snapshotField, collectionRelations, prefix, extensions, singletons, excluded)
 
   const shouldAppendNull = isNullable && !isRequired && !isPrimaryKey
   const finalType = shouldAppendNull ? `${tsType} | null` : tsType
@@ -459,6 +479,7 @@ function generateInterfaceForCollection(
   prefix: string,
   extensions: TypegenExtension[],
   singletons: Set<string> = new Set(),
+  excluded: Set<string> = new Set(),
 ): GeneratedInterface {
   const collectionName = collection.collection
   const interfaceName = collectionNameToInterfaceName(collectionName, prefix, singletons)
@@ -466,7 +487,7 @@ function generateInterfaceForCollection(
 
   const builtFields = allFields
     .filter(f => f.collection === collectionName)
-    .map(f => buildInterfaceField(f, collectionRelations, prefix, extensions, singletons))
+    .map(f => buildInterfaceField(f, collectionRelations, prefix, extensions, singletons, excluded))
     .filter((f): f is BuiltField => f !== null)
     .sort((a, b) => a.interfaceField.sortOrder - b.interfaceField.sortOrder)
 

@@ -292,7 +292,7 @@ See the [File Management Guide](/guide/files#using-with-nuxt-image) for more det
 
 #### `types`
 
-- **Type:** `boolean | { enabled?: boolean, prefix?: string }`
+- **Type:** `boolean | { enabled?: boolean, prefix?: string, exclude?: string[] }`
 - **Default:** `true`
 
 Enable/disable automatic type generation from your Directus schema.
@@ -355,6 +355,9 @@ npx nuxt-directus-sdk generate-types \
   --token $DIRECTUS_ADMIN_TOKEN \
   -o types/directus.d.ts
 
+# Exclude specific collections (references to them become `string`)
+npx nuxt-directus-sdk generate-types --exclude directus_activity,directus_revisions
+
 # Emit without the `declare global { ... }` wrapper (non-Nuxt consumers)
 npx nuxt-directus-sdk generate-types --no-declare-global -o types/directus.d.ts
 ```
@@ -415,6 +418,37 @@ interface DirectusUsers {
 - DirectusSchema keys stay unchanged (e.g., `blogs`, `authors`) to match API endpoints
 - Directus system collections (e.g., `DirectusUsers`, `DirectusFiles`) are NOT prefixed
 - All type references are updated to use the prefixed names
+
+##### Excluding Collections
+
+Omit specific collections from the generated types using `exclude`:
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    types: {
+      enabled: true,
+      prefix: 'App',
+      exclude: ['directus_activity', 'directus_revisions'],
+    },
+  },
+})
+```
+
+References to excluded collections are rewritten so the generated types stay resolvable:
+- **M2O** references (e.g. `user_created: DirectusUser | string`) collapse to `string`
+- **O2M** references (e.g. `revisions: DirectusRevision[] | string[]`) collapse to `string[]`
+- **M2A** (polymorphic) references filter out excluded collections from the union; if the whole union becomes empty, the field type collapses to `string`
+
+The same behaviour is available from the CLI via `--exclude`:
+
+```bash
+npx nuxt-directus-sdk generate-types --exclude directus_activity,directus_revisions
+```
+
+::: tip When to use exclude
+Useful for keeping generated types focused on your application schema. Excluding things like `directus_activity`, `directus_revisions`, and `directus_sessions` — which your app code rarely touches — can materially shrink the generated `.d.ts` and reduce TypeScript compile time in large projects.
+:::
 
 ### Authentication Options
 
