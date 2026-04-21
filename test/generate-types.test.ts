@@ -234,16 +234,43 @@ describe('generateTypesFromDirectus()', () => {
       expect(result.typeString).not.toContain('interface AppAiPrompt')
       expect(result.typeString).not.toContain('interface AppPost')
     })
+  })
 
-    it('when both include and exclude are set, include wins and a warning is logged', async () => {
+  describe('include and exclude together', () => {
+    it('include wins over exclude and logs an "exclude ignored" warning (strict mode)', async () => {
       mockDirectusRequest().directusVersion('latest')
       const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App', {
         include: ['ai_prompts'],
-        exclude: ['ai_prompts'], // would normally cancel the include
-        ...strict,
+        exclude: ['ai_prompts'], // would cancel the include if it weren't ignored
+        expandReferences: false,
       })
       expect(result.typeString).toContain('interface AppAiPrompt')
       expect(result.logs.some(log => log.toLowerCase().includes('exclude is ignored'))).toBe(true)
+    })
+
+    it('include wins over exclude and logs an "exclude ignored" warning (expand mode)', async () => {
+      // Same precedence rule applies whether or not expansion is on.
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App', {
+        include: ['posts'],
+        exclude: ['directus_users'],
+      })
+      // posts stays; directus_users should have been pulled in by expansion,
+      // and the exclude is ignored so it's kept too.
+      expect(result.typeString).toContain('interface AppPost')
+      expect(result.typeString).toContain('interface DirectusUser')
+      expect(result.logs.some(log => log.toLowerCase().includes('exclude is ignored'))).toBe(true)
+    })
+
+    it('empty arrays for both include and exclude is equivalent to the defaults', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const [withBothEmpty, withDefaults] = await Promise.all([
+        generateTypesFromDirectus('http://localhost', 'admin', 'App', { include: [], exclude: [] }),
+        generateTypesFromDirectus('http://localhost', 'admin', 'App'),
+      ])
+      expect(withBothEmpty.typeString).toBe(withDefaults.typeString)
+      // No exclude-ignored warning because neither was actually set
+      expect(withBothEmpty.logs.some(log => log.toLowerCase().includes('exclude is ignored'))).toBe(false)
     })
   })
 
@@ -295,10 +322,12 @@ describe('generateTypesFromDirectus()', () => {
       expect(result.typeString).not.toContain('DirectusUser')
     })
 
-    it('logs a warning when expandReferences is set but include is empty', async () => {
+    it('does not log anything about expandReferences when include is empty', async () => {
+      // Module callers pass a default `expandReferences` value on every run,
+      // so warning here would mean every vanilla build prints a useless line.
       mockDirectusRequest().directusVersion('latest')
       const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App', { expandReferences: false })
-      expect(result.logs.some(log => /expandReferences.*ignor/i.test(log))).toBe(true)
+      expect(result.logs.some(log => /expandReferences/i.test(log))).toBe(false)
     })
   })
 

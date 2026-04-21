@@ -84,5 +84,5 @@ const created = await directus.request(createItem('articles', {
 
 - [Server-Side Utilities](/guide/server-side)
 - [Configuration Reference](/api/configuration/)
-- [Components Reference](/api/components/)
+- [Visual Editor Guide](/guide/visual-editor)
 - [Directus SDK Documentation](https://docs.directus.io/reference/sdk.html)

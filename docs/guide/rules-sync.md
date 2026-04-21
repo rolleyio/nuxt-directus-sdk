@@ -4,7 +4,7 @@ Sync your locally-defined rules with remote Directus instances. Pull existing ru
 
 ## CLI
 
-The CLI is the quickest way to manage rules sync.
+The CLI is the quickest way to manage rules sync. What follows is a workflow walkthrough; see the [`rules:*` CLI reference](/cli/rules) for the full flag list on each command.
 
 ### Pull Rules
 

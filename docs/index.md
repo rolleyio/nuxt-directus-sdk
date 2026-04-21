@@ -26,7 +26,7 @@ features:
 
   - icon: 🛠️
     title: Zero-Config Development
-    details: Auto-imports, dev proxy (no CORS), auto-generated TypeScript types, Directus admin in DevTools - everything just works
+    details: Auto-imports, dev proxy (no CORS), Directus admin in DevTools - everything just works
     link: /guide/getting-started
 
   - icon: 📁
@@ -51,7 +51,7 @@ features:
 
   - icon: ⚙️
     title: Flexible Configuration
-    details: Comprehensive configuration options for auth, proxy, types, devtools, and more - customize everything to your needs
+    details: Comprehensive configuration options for auth, proxy, devtools, and more - customize everything to your needs
     link: /api/configuration
 ---
 
@@ -75,7 +75,6 @@ DIRECTUS_ADMIN_TOKEN=your_admin_token
 ```
 
 That's it! The module handles:
-- ✅ Auto-generated TypeScript types
 - ✅ Auto-imports for all functions
 - ✅ Development proxy (no CORS issues)
 - ✅ WebSocket proxy with authentication
@@ -131,7 +130,6 @@ const { subscription } = await directus.subscribe('posts')
 - **Session-based auth** (more secure) - httpOnly cookies vs. exposed tokens
 - **Full WebSocket support** - Dev proxy with cookie forwarding
 - **Visual editor** - Integrated live preview mode
-- **Auto-generated types** - Always in sync with your Directus schema
 - **Active maintenance** - Regular updates and community support
 
 ## License

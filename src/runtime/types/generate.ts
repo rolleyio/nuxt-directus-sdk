@@ -129,10 +129,9 @@ export async function generateTypesFromDirectus(
   // collection transitively. Follows M2O, O2M, and M2A. Users typically want
   // this — including `posts` without expansion would strip the type from
   // `posts.author` even though `directus_users` is almost certainly needed.
+  // expandReferences only applies when `include` is set. No warning when
+  // `include` is empty — it's just a no-op and logging about it is noise.
   const expandReferences = options.expandReferences ?? true
-  if (resolvedOptions.include.length === 0 && options.expandReferences !== undefined) {
-    logs.push('  - Warning: expandReferences was set but include is empty; ignoring')
-  }
   if (expandReferences && resolvedOptions.include.length > 0) {
     const originalSize = resolvedOptions.include.length
     const expanded = expandIncludeViaReferences(resolvedOptions.include, result[2])

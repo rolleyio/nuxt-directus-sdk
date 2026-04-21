@@ -214,7 +214,6 @@ Enable visual editor capabilities. When enabled, the module:
 - Automatically detects when your site is loaded inside a Directus admin iframe
 - Renders `data-directus` attributes on `DirectusVisualEditor` components (only inside the iframe)
 - Applies the `@directus/visual-editing` SDK to enable inline editing
-- Shows `DirectusEditButton` and `DirectusAddButton` components (only inside the iframe)
 - Calls `refreshNuxtData()` when content is saved (no full page reload)
 
 ```typescript
@@ -225,7 +224,7 @@ export default defineNuxtConfig({
 })
 ```
 
-When disabled, `DirectusVisualEditor` renders as a pass-through wrapper with no attributes, and `DirectusEditButton`/`DirectusAddButton` are hidden.
+When disabled, `DirectusVisualEditor` renders as a pass-through wrapper with no attributes.
 
 Add `?debug` to any page URL to enable debug logging for the visual editor in the browser console. This is useful for diagnosing CSP issues, URL mismatches, and iframe detection on staging/production deployments.
 
@@ -290,6 +289,10 @@ See the [File Management Guide](/guide/files#using-with-nuxt-image) for more det
 
 ### Type Generation
 
+The module generates TypeScript types from your Directus schema at build time. Enabled by default when `DIRECTUS_ADMIN_TOKEN` is set.
+
+See the [Type Generation guide](/guide/type-generation) for what gets generated, the `prefix` option, and advanced filtering (`include` / `exclude` / `expandReferences` / `verbose`). The standalone CLI is documented on the [`generate-types` CLI page](/cli/generate-types).
+
 #### `types`
 
 - **Type:** `boolean | { enabled?: boolean, prefix?: string, include?: string[], expandReferences?: boolean, exclude?: string[], verbose?: boolean }`
@@ -330,203 +333,11 @@ export default defineNuxtConfig({
 })
 ```
 
-##### Generating types from the CLI
+See the [Type Generation guide](/guide/type-generation) for:
 
-In addition to generating types automatically during `nuxt dev` / `nuxt build`, you can generate them on demand using the CLI. Useful for CI pipelines, pre-commit hooks, or any workflow where you want `.d.ts` output without a Nuxt build.
-
-```bash
-# Pipe to a file (uses DIRECTUS_URL + DIRECTUS_ADMIN_TOKEN from .env)
-npx nuxt-directus-sdk generate-types > types/directus.d.ts
-
-# Inline env vars — useful for one-off runs against a specific instance
-DIRECTUS_URL=https://my-directus.com \
-DIRECTUS_ADMIN_TOKEN=my-token \
-  npx nuxt-directus-sdk generate-types > types/directus.d.ts
-
-# Write directly to a file
-npx nuxt-directus-sdk generate-types -o types/directus.d.ts
-
-# Add a prefix to custom collection type names
-npx nuxt-directus-sdk generate-types --prefix App -o types/directus.d.ts
-
-# Flags override env vars
-npx nuxt-directus-sdk generate-types \
-  --url https://my-directus.com \
-  --token $DIRECTUS_ADMIN_TOKEN \
-  -o types/directus.d.ts
-
-# Exclude specific collections (references to them become `string`)
-npx nuxt-directus-sdk generate-types --exclude directus_activity,directus_revisions
-
-# Emit without the `declare global { ... }` wrapper (non-Nuxt consumers)
-npx nuxt-directus-sdk generate-types --no-declare-global -o types/directus.d.ts
-```
-
-By default the CLI writes to stdout, so you can pipe the output anywhere. The `-o` flag writes to a file and creates parent directories if they don't exist. Informational logs (e.g. "Fetched 42 collections...") go to stderr so they don't pollute piped output.
-
-Precedence for URL and token: CLI flag → exported/inline env var → `.env` file in the current directory.
-
-::: tip Keeping types in version control
-Running `generate-types` in CI and committing the output is a common pattern — it keeps your team working with consistent types without requiring each developer to have their own admin token or a local Nuxt build. Just make sure the CI job has access to the Directus instance and an admin token.
-:::
-
-##### Type Prefix
-
-Add a prefix to your custom collection types to avoid naming conflicts:
-
-```typescript
-export default defineNuxtConfig({
-  directus: {
-    types: {
-      enabled: true,
-      prefix: 'App', // Prefix custom collection types
-    },
-  },
-})
-```
-
-With a prefix, your generated types will be:
-
-```typescript
-// Custom collections are prefixed
-interface AppBlog {
-  id: string
-  title: string
-  content: string
-}
-
-interface AppAuthor {
-  id: string
-  name: string
-}
-
-// DirectusSchema keys remain unchanged (match API endpoints)
-interface DirectusSchema {
-  blogs: AppBlog[]
-  authors: AppAuthor[]
-}
-
-// Directus system collections are NOT prefixed
-interface DirectusUsers {
-  id: string
-  email: string
-}
-```
-
-**How it works:**
-- Custom collection interface names get prefixed (e.g., `Blog` → `AppBlog`)
-- DirectusSchema keys stay unchanged (e.g., `blogs`, `authors`) to match API endpoints
-- Directus system collections (e.g., `DirectusUsers`, `DirectusFiles`) are NOT prefixed
-- All type references are updated to use the prefixed names
-
-##### Excluding Collections
-
-Two complementary options let you narrow what ends up in the generated types:
-
-- **`exclude`** — drop specific collections (deny-list).
-- **`include`** — emit only specific collections (allow-list). Takes precedence over `exclude` if both are set (a warning is logged).
-
-**Exclude** — drop the listed collections:
-
-```typescript
-export default defineNuxtConfig({
-  directus: {
-    types: {
-      prefix: 'App',
-      exclude: ['directus_activity', 'directus_revisions'],
-    },
-  },
-})
-```
-
-**Include** — emit only the listed collections plus anything they reference. References are followed transitively, so you typically only need to list the collections your app code directly interacts with:
-
-```typescript
-export default defineNuxtConfig({
-  directus: {
-    types: {
-      prefix: 'App',
-      include: ['posts', 'pages'],
-      // expandReferences defaults to true — pulls in directus_users, directus_files, etc.
-    },
-  },
-})
-```
-
-Disable expansion with `expandReferences: false` if you want a strict allow-list where references to collections not in the list collapse to `string`:
-
-```typescript
-export default defineNuxtConfig({
-  directus: {
-    types: {
-      prefix: 'App',
-      include: ['posts'],
-      expandReferences: false, // strict — posts.author becomes string, not DirectusUser | string
-    },
-  },
-})
-```
-
-When expansion is on and collections are pulled in, a log line reports the delta:
-
-```
- - Expanded include from 2 → 7 collections (+5 via references)
-```
-
-In all cases, when a field on an emitted collection references a missing collection (not in the include list and not pulled in by expansion, or explicitly excluded), the generator rewrites the reference so the emitted types stay resolvable:
-
-- **M2O** references (e.g. `user_created: DirectusUser | string`) collapse to `string`
-- **O2M** references (e.g. `revisions: DirectusRevision[] | string[]`) collapse to `string[]`
-- **M2A** (polymorphic) references filter out missing collections from the union; if the whole union becomes empty, the field type collapses to `string`
-
-After generation, a summary log line reports how many fields were rewritten and why:
-
-```
- - 14 field references across 3 targets collapsed to string (excluded)
-```
-
-Enable `verbose: true` to see each rewritten target grouped and listed (capped at 5 fields per collection):
-
-```typescript
-export default defineNuxtConfig({
-  directus: {
-    types: {
-      prefix: 'App',
-      exclude: ['directus_users'],
-      verbose: true,
-    },
-  },
-})
-```
-
-Produces:
-
-```
- - 92 field references across 1 target collapsed to string (excluded)
-   · directus_users (excluded) — referenced by 92 fields across 45 collections
-     posts.user_created, posts.user_updated, pages.user_created, pages.user_updated, blocks.user_created, …and 87 more
-```
-
-The same options are available on the CLI via `--include`, `--exclude`, `--verbose`, and `--no-expand-references`:
-
-```bash
-# Exclude
-npx nuxt-directus-sdk generate-types --exclude directus_activity,directus_revisions
-
-# Include only specific collections (referenced collections auto-included)
-npx nuxt-directus-sdk generate-types --include posts
-
-# Strict include — only the listed collections; references collapse to `string`
-npx nuxt-directus-sdk generate-types --include posts --no-expand-references
-
-# Verbose warnings
-npx nuxt-directus-sdk generate-types --exclude directus_users --verbose
-```
-
-::: tip When to use each
-- **`exclude`** — most common. Keeps most of your types, drops a handful of collections you don't care about (`directus_activity`, `directus_revisions`, `directus_sessions`). Smaller `.d.ts`, faster TypeScript compile.
-- **`include`** — when you have a large Directus instance but your app touches only a narrow subset. More restrictive but produces the smallest possible `.d.ts`.
-:::
+- [Type prefix](/guide/type-generation#type-prefix) to avoid naming conflicts
+- [Advanced: filtering collections](/guide/type-generation#advanced-filtering-collections) with `include` / `exclude` / `expandReferences` / `verbose`
+- [Using the CLI](/guide/type-generation#generating-types-outside-a-nuxt-build) for on-demand generation
 
 ### Authentication Options
 

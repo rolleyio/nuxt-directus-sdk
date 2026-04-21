@@ -29,6 +29,7 @@ import {
   pushRules,
 } from '../rules/sync'
 import { generateTypesFromDirectus } from '../runtime/types/generate'
+import { parseCsv, resolveNegatableBoolean } from './helpers'
 
 interface ConnectionConfig {
   url: string
@@ -518,18 +519,13 @@ async function main(): Promise<void> {
           values.token ?? values['source-token'],
           'Source',
         )
-        const parseCsv = (raw: string | undefined) =>
-          raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : []
-        // --no-X negation wins over --X for boolean flags that default to true
-        const declareGlobal = values['no-declare-global'] ? false : values['declare-global']!
-        const expandReferences = values['no-expand-references'] ? false : values['expand-references']!
         await commandGenerateTypes(connection, {
           prefix: values.prefix ?? '',
           output: values.output,
-          declareGlobal,
+          declareGlobal: resolveNegatableBoolean(values['declare-global'], values['no-declare-global'], true),
           include: parseCsv(values.include),
           exclude: parseCsv(values.exclude),
-          expandReferences,
+          expandReferences: resolveNegatableBoolean(values['expand-references'], values['no-expand-references'], true),
           verbose: values.verbose!,
         })
         break
