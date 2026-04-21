@@ -1,5 +1,6 @@
 export default defineNuxtConfig({
   modules: ['../src/module'],
+  css: ['~/assets/playground.css'],
   devtools: {
     enabled: true,
   },
