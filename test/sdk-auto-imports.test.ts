@@ -6,7 +6,7 @@ const sdkFunctions = new Set(
   Object.keys(sdkModule).filter(key => typeof (sdkModule as any)[key] === 'function'),
 )
 
-describe('SDK_COMPOSABLE_WRAPPED stays in sync with @directus/sdk', () => {
+describe('ensure SDK_COMPOSABLE_WRAPPED stays in sync with @directus/sdk', () => {
   it('every entry exists as a function in @directus/sdk', () => {
     // If this fails, the SDK renamed or removed a wrapped function.
     // Update SDK_COMPOSABLE_WRAPPED in src/sdk-imports.ts and the denylist table in docs/api/composables/index.md.
@@ -15,7 +15,7 @@ describe('SDK_COMPOSABLE_WRAPPED stays in sync with @directus/sdk', () => {
   })
 })
 
-describe('SDK_DENYLIST stays in sync with @directus/sdk', () => {
+describe('ensure SDK_DENYLIST stays in sync with @directus/sdk', () => {
   it('every entry exists as a function in @directus/sdk', () => {
     // If this fails, the SDK renamed or removed a blocked function.
     // A renamed function would slip through the denylist as a new auto-import.
