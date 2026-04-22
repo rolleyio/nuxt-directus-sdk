@@ -48,14 +48,14 @@
     <h2>Data</h2>
     <ul class="demo-list">
       <li>
+        <NuxtLink to="/data/auto-import">
+          Auto-Import
+        </NuxtLink> - <code>readSingleton()</code> vs. <code></code>
+      </li>
+      <li>
         <NuxtLink to="/blog">
           Blog
         </NuxtLink> - <code>useDirectus()</code> + <code>readItems()</code> with filter &amp; sort
-      </li>
-      <li>
-        <NuxtLink to="/data/singleton">
-          Singleton
-        </NuxtLink> - <code>readSingleton()</code>
       </li>
     </ul>
 

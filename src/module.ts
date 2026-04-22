@@ -402,7 +402,7 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     (options as any).directusUrl = clientUrl
-    ; (options as any).serverDirectusUrl = serverUrl || clientUrl
+      ; (options as any).serverDirectusUrl = serverUrl || clientUrl
 
     nuxtApp.options.runtimeConfig[configKey] = options as any
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
@@ -451,7 +451,7 @@ export default defineNuxtModule<ModuleOptions>({
         prefix: '',
         global: true,
       })
-      loggerMessage.push('📝 Visual Editor Components Added', '')
+      loggerMessage.push('📝 Visual Editor Component Added', '')
     }
 
     // Add route middleware
@@ -484,9 +484,9 @@ export default defineNuxtModule<ModuleOptions>({
     const directusSdkImports: InlinePreset | null = autoImportSdk === false
       ? null
       : {
-          from: '@directus/sdk',
-          imports: discoverSdkImports(directusSdk as Record<string, unknown>, userExclude),
-        }
+        from: '@directus/sdk',
+        imports: discoverSdkImports(directusSdk as Record<string, unknown>, userExclude),
+      }
 
     if (directusSdkImports) {
       addImportsSources(directusSdkImports)

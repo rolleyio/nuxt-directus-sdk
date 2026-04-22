@@ -11,7 +11,6 @@ const { data: post } = await useAsyncData('ve-post', () =>
       limit: 1,
       fields: ['id', 'title', 'slug', 'content', 'image', 'published_at', { author: ['id', 'first_name', 'last_name'] }],
       sort: '-published_at',
-      filter: { status: { _eq: 'published' } },
     }),
   ), { transform: data => data[0] })
 </script>
@@ -20,15 +19,17 @@ const { data: post } = await useAsyncData('ve-post', () =>
   <div>
     <h1>Visual Editor</h1>
     <p>
-      Demonstrates <code>DirectusVisualEditor</code>, <code>DirectusEditButton</code>, and <code>DirectusAddButton</code>.
-      These components only activate when your site is loaded inside the Directus admin iframe (they render as pass-through wrappers for normal visitors).
+      Demonstrates <code>DirectusVisualEditor</code>(component) and <code>useDirectusVisualEditor()</code>(composable).
+      Both only activate when your site is loaded inside the Directus admin iframe; for normal visitors they render as transparent pass-throughs.
     </p>
 
     <div class="ve-status" :class="visualEditor ? 've-status--active' : 've-status--inactive'">
       <strong>Visual editor:</strong>
-      {{ visualEditor ? 'Active - inside Directus iframe' : 'Inactive - open this URL inside Directus Live Preview to activate' }}
+      {{ visualEditor
+        ? 'Active. You are running inside the Directus admin iframe.'
+        : 'Not detected. To demo these features, open this page inside the Directus Visual Editor.'
+      }}
     </div>
-
     <div v-if="preview" class="ve-banner">
       Preview mode active - showing draft content
     </div>
@@ -51,8 +52,7 @@ const { data: post } = await useAsyncData('ve-post', () =>
       </ol>
       <p class="note">
         Add <code>?debug</code> to the URL to see connection logs in the browser console.
-        The module detects the visual editor purely by iframe context (<code>window.parent !== window</code>)
-        - the <code>?visual-editing=true</code> query param is informational only.
+        The module detects the visual editor purely by iframe context (<code>window.parent !== window</code>) - the <code>?visual-editing=true</code> query param is informational only.
       </p>
     </div>
 
@@ -139,58 +139,41 @@ const { data: post } = await useAsyncData('ve-post', () =>
     </div>
 
     <div class="demo-section">
-      <h2>
-        <code>DirectusEditButton</code>
-        <span class="ve-status" :class="visualEditor ? 've-status--active' : 've-status--inactive'">
-          <strong>Directus iFrame:</strong>
-          {{ visualEditor ? 'Active' : 'Not Detected - To use this feature you must be in a Directus iFrame.' }}
-        </span>
-      </h2>
+      <h2><code>useDirectusVisualEditor()</code> composable</h2>
       <p>
-        A floating button (fixed bottom-right) that opens the full item editor in Directus.
-        Only rendered inside the iframe.
+        <code>useDirectusVisualEditor()</code> returns a <code>Ref&lt;boolean&gt;</code> that is <code>true</code>
+        when the page is running inside the Directus admin iframe. It is the same reactive value the
+        <code>DirectusVisualEditor</code> component uses internally.
       </p>
-      <p class="note">
-        The DirectusEditButton slot has customized text passed to it in this example, refer to
-        <NuxtLink v-if="post?.slug" :to="`/blog/${post.slug}`">
-          the blog post shown above
-        </NuxtLink>
-        <NuxtLink v-else to="/blog">
-          a blog post
-        </NuxtLink>
-        for the default slot example.
+      <p>
+        Use it directly when you need custom behavior beyond a field wrapper: conditionally rendering a
+        toolbar, lazy-loading editing scripts, or applying editor-only styles.
       </p>
-      <DirectusEditButton
-        v-if="post"
-        collection="posts"
-        :item="post?.id"
-        mode="modal"
-      >
-        ⚙️ Customized Edit Button
-      </DirectusEditButton>
-    </div>
 
-    <div class="demo-section">
-      <h2>
-        <code>DirectusAddButton</code>
-        <span class="ve-status" :class="visualEditor ? 've-status--active' : 've-status--inactive'">
-          <strong>Directus iFrame:</strong>
-          {{ visualEditor ? 'Active' : 'Not Detected - To use this feature you must be in a Directus iFrame.' }}
-        </span>
-      </h2>
+      <pre>
+const visualEditor = useDirectusVisualEditor()
+
+// Drive any conditional logic from this boolean:
+// v-if="visualEditor"       only visible inside the Directus iframe
+// :class="{ 'edit-mode': visualEditor }"  apply editor styles</pre>
+
       <p>
-        An button for adding items to a repeater or relationship field.
-        Shown below is the <code>social_links</code> repeater on a parent
-        <code>globals</code> singleton.
+        <strong>Difference from <code>DirectusVisualEditor</code>:</strong>
+        the component wraps an element and adds <code>data-directus</code> attributes so Directus knows
+        which collection/item/field to open when clicked. The composable gives you the raw boolean for
+        anything the wrapper component does not cover.
       </p>
-      <DirectusAddButton
-        collection="globals"
-        item="ab89c489-faea-4310-8b59-7ddb3caf279a"
-        field="social_links"
-      />
-      <p class="note">
-        The <code>directus-template-cli</code> <code>cms</code> hardcoded for this example. If you are not using the template this will throw a 403 Forbidden Error.
-      </p>
+
+      <div class="ve-composable-demo">
+        <p v-if="visualEditor" class="ve-composable-active">
+          Visual editor is active. This paragraph is only rendered inside the Directus iframe
+          (<code>useDirectusVisualEditor()</code> is <code>true</code>).
+        </p>
+        <p v-else class="ve-composable-inactive">
+          Visual editor is not active (<code>useDirectusVisualEditor()</code> is <code>false</code>).
+          Load this URL inside Directus Live Preview to see the above message appear.
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -273,5 +256,30 @@ const { data: post } = await useAsyncData('ve-post', () =>
   padding: 0;
   background: transparent;
   white-space: pre-wrap;
+}
+
+.ve-composable-demo {
+  margin-top: 12px;
+}
+
+.ve-composable-active {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin: 0;
+}
+
+.ve-composable-inactive {
+  background: #f5f5f5;
+  color: #777;
+  border: 1px solid #e0e0e0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin: 0;
+  font-style: italic;
 }
 </style>

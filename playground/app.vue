@@ -24,8 +24,8 @@ const nav = [
   {
     label: 'Data',
     links: [
+      { label: 'Auto-Imports', to: '/data/auto-import' },
       { label: 'Blog (readItems)', to: '/blog' },
-      { label: 'Singleton', to: '/data/singleton' },
     ],
   },
   {
