@@ -2,6 +2,8 @@
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![CI][ci-src]][ci-href]
+[![Install size][install-size-src]][install-size-href]
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
@@ -116,12 +118,22 @@ pnpm run test:watch
 pnpm run release
 ```
 
+## Contributing
+
+Contributions are welcome. Please target the `next` branch for new features and fixes; `main` is reserved for stable releases and hotfixes. See [RELEASING.md](./RELEASING.md) for the release process.
+
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/nuxt-directus-sdk/latest.svg?style=flat&colorA=18181B&colorB=28CF8D
 [npm-version-href]: https://npmjs.com/package/nuxt-directus-sdk
 
 [npm-downloads-src]: https://img.shields.io/npm/dm/nuxt-directus-sdk.svg?style=flat&colorA=18181B&colorB=28CF8D
 [npm-downloads-href]: https://npmjs.com/package/nuxt-directus-sdk
+
+[ci-src]: https://github.com/rolleyio/nuxt-directus-sdk/actions/workflows/ci.yml/badge.svg?branch=main
+[ci-href]: https://github.com/rolleyio/nuxt-directus-sdk/actions/workflows/ci.yml
+
+[install-size-src]: https://packagephobia.com/badge?p=nuxt-directus-sdk
+[install-size-href]: https://packagephobia.com/result?p=nuxt-directus-sdk
 
 [license-src]: https://img.shields.io/npm/l/nuxt-directus-sdk.svg?style=flat&colorA=18181B&colorB=28CF8D
 [license-href]: https://npmjs.com/package/nuxt-directus-sdk

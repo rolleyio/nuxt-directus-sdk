@@ -214,7 +214,6 @@ Enable visual editor capabilities. When enabled, the module:
 - Automatically detects when your site is loaded inside a Directus admin iframe
 - Renders `data-directus` attributes on `DirectusVisualEditor` components (only inside the iframe)
 - Applies the `@directus/visual-editing` SDK to enable inline editing
-- Shows `DirectusEditButton` and `DirectusAddButton` components (only inside the iframe)
 - Calls `refreshNuxtData()` when content is saved (no full page reload)
 
 ```typescript
@@ -225,7 +224,7 @@ export default defineNuxtConfig({
 })
 ```
 
-When disabled, `DirectusVisualEditor` renders as a pass-through wrapper with no attributes, and `DirectusEditButton`/`DirectusAddButton` are hidden.
+When disabled, `DirectusVisualEditor` renders as a pass-through wrapper with no attributes.
 
 Add `?debug` to any page URL to enable debug logging for the visual editor in the browser console. This is useful for diagnosing CSP issues, URL mismatches, and iframe detection on staging/production deployments.
 
@@ -290,9 +289,13 @@ See the [File Management Guide](/guide/files#using-with-nuxt-image) for more det
 
 ### Type Generation
 
+The module generates TypeScript types from your Directus schema at build time. Enabled by default when `DIRECTUS_ADMIN_TOKEN` is set.
+
+See the [Type Generation guide](/guide/type-generation) for what gets generated, the `prefix` option, and advanced filtering (`include` / `exclude` / `expandReferences` / `verbose`). The standalone CLI is documented on the [`generate-types` CLI page](/cli/generate-types).
+
 #### `types`
 
-- **Type:** `boolean | { enabled?: boolean, prefix?: string }`
+- **Type:** `boolean | { enabled?: boolean, prefix?: string, include?: string[], expandReferences?: boolean, exclude?: string[], verbose?: boolean }`
 - **Default:** `true`
 
 Enable/disable automatic type generation from your Directus schema.
@@ -330,54 +333,11 @@ export default defineNuxtConfig({
 })
 ```
 
-##### Type Prefix
+See the [Type Generation guide](/guide/type-generation) for:
 
-Add a prefix to your custom collection types to avoid naming conflicts:
-
-```typescript
-export default defineNuxtConfig({
-  directus: {
-    types: {
-      enabled: true,
-      prefix: 'App', // Prefix custom collection types
-    },
-  },
-})
-```
-
-With a prefix, your generated types will be:
-
-```typescript
-// Custom collections are prefixed
-interface AppBlog {
-  id: string
-  title: string
-  content: string
-}
-
-interface AppAuthor {
-  id: string
-  name: string
-}
-
-// DirectusSchema keys remain unchanged (match API endpoints)
-interface DirectusSchema {
-  blogs: AppBlog[]
-  authors: AppAuthor[]
-}
-
-// Directus system collections are NOT prefixed
-interface DirectusUsers {
-  id: string
-  email: string
-}
-```
-
-**How it works:**
-- Custom collection interface names get prefixed (e.g., `Blog` → `AppBlog`)
-- DirectusSchema keys stay unchanged (e.g., `blogs`, `authors`) to match API endpoints
-- Directus system collections (e.g., `DirectusUsers`, `DirectusFiles`) are NOT prefixed
-- All type references are updated to use the prefixed names
+- [Type prefix](/guide/type-generation#type-prefix) to avoid naming conflicts
+- [Advanced: filtering collections](/guide/type-generation#advanced-filtering-collections) with `include` / `exclude` / `expandReferences` / `verbose`
+- [Using the CLI](/guide/type-generation#generating-types-outside-a-nuxt-build) for on-demand generation
 
 ### Authentication Options
 

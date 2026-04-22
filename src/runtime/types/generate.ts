@@ -5,6 +5,12 @@ import { typegenExtensions } from './extensions'
 
 export const FALLBACK_TYPE_STRING = 'declare global {\n\ninterface DirectusFile {\n\tid: string;\n}\ninterface DirectusUser {\n\tid: string;\n}\ninterface DirectusSchema { }\n}\n\nexport {};'
 
+interface RewriteRecord {
+  fromCollection: string
+  fromField: string
+  target: string
+}
+
 type RelationMap = Map<string, CollectionRelations>
 
 interface CollectionRelations {
@@ -34,10 +40,44 @@ interface InterfaceField {
  * @param prefix - Prefix used when generating interface names.
  * @returns The generated TypeScript string and an array of log messages.
  */
+export interface GenerateTypesOptions {
+  /**
+   * Collection names to include. When non-empty, only these collections
+   * (plus any collections they reference — see `expandReferences`) are
+   * emitted. References to collections not in the resolved set collapse
+   * to `string` / `string[]`.
+   */
+  include?: string[]
+  /**
+   * When `include` is set, also pull in any collections referenced by
+   * the included collections (transitively). Follows M2O, O2M, M2A, and
+   * translations relations. No-op when `include` is empty.
+   * @default true
+   */
+  expandReferences?: boolean
+  /**
+   * Collection names to exclude from the generated types. References to
+   * excluded collections are rewritten to `string` (M2O), `string[]` (O2M),
+   * or a filtered union (M2A).
+   *
+   * When both `include` and `exclude` are set, `include` wins and `exclude`
+   * is ignored with a warning.
+   */
+  exclude?: string[]
+  /**
+   * When true, emit per-reference warnings for every field whose target
+   * collection was collapsed to `string` / `string[]`. Grouped by target
+   * collection to keep the output readable.
+   * @default false
+   */
+  verbose?: boolean
+}
+
 export async function generateTypesFromDirectus(
   url: string,
   token: string,
   prefix: string,
+  options: GenerateTypesOptions = {},
 ): Promise<{ typeString: string, logs: string[] }> {
   const logs: string[] = []
   const client = createDirectus(url).with(rest()).with(staticToken(token))
@@ -72,7 +112,74 @@ export async function generateTypesFromDirectus(
     return { typeString: FALLBACK_TYPE_STRING, logs }
   }
 
-  const typeString = transformSnapshotToTypeString(...result, prefix)
+  // Validate option interaction: include wins, with a warning if exclude was
+  // also set. This is almost certainly user confusion rather than intent.
+  const resolvedOptions: { include: string[], exclude: string[], verbose: boolean } = {
+    include: options.include ?? [],
+    exclude: options.exclude ?? [],
+    verbose: options.verbose ?? false,
+  }
+  if (resolvedOptions.include.length > 0 && resolvedOptions.exclude.length > 0) {
+    logs.push('  - Warning: both include and exclude were set; exclude is ignored because include takes precedence')
+    resolvedOptions.exclude = []
+  }
+
+  // When `expandReferences` is on (default) and `include` is set, walk the
+  // relation graph from the user's include list and pull in every referenced
+  // collection transitively. Follows M2O, O2M, and M2A. Users typically want
+  // this — including `posts` without expansion would strip the type from
+  // `posts.author` even though `directus_users` is almost certainly needed.
+  // expandReferences only applies when `include` is set. No warning when
+  // `include` is empty — it's just a no-op and logging about it is noise.
+  const expandReferences = options.expandReferences ?? true
+  if (expandReferences && resolvedOptions.include.length > 0) {
+    const originalSize = resolvedOptions.include.length
+    const expanded = expandIncludeViaReferences(resolvedOptions.include, result[2])
+    if (expanded.size > originalSize) {
+      resolvedOptions.include = Array.from(expanded)
+      const added = expanded.size - originalSize
+      logs.push(`  - Expanded include from ${originalSize} → ${expanded.size} collection${expanded.size === 1 ? '' : 's'} (+${added} via references)`)
+    }
+  }
+
+  const { typeString, rewrites, emittedCount } = transformSnapshotToTypeString(...result, prefix, undefined, resolvedOptions)
+
+  // If an include/exclude filter is active, report what made it through. We
+  // don't log this when no filter is set — folder-type collections (with
+  // `schema: null`) are always dropped and would otherwise create a
+  // confusing "N filtered out" line on every run.
+  const filterActive = resolvedOptions.include.length > 0 || resolvedOptions.exclude.length > 0
+  if (filterActive) {
+    const fetchedCount = result[0].length
+    const filteredOut = fetchedCount - emittedCount
+    logs.push(`  - Emitting ${emittedCount} collection${emittedCount === 1 ? '' : 's'} (${filteredOut} filtered out)`)
+  }
+
+  // Summarise reference rewrites so users can see what collapsed to `string`.
+  // In verbose mode, emit grouped per-target warnings (field names shown,
+  // capped at 5 per collection to avoid flooding). Otherwise a single
+  // summary line.
+  if (rewrites.length > 0) {
+    const totalFields = rewrites.length
+    const byTarget = new Map<string, RewriteRecord[]>()
+    for (const rec of rewrites) {
+      const list = byTarget.get(rec.target) ?? []
+      list.push(rec)
+      byTarget.set(rec.target, list)
+    }
+    const reason = resolvedOptions.include.length > 0 ? 'not in include list' : 'excluded'
+    logs.push(`  - ${totalFields} field reference${totalFields === 1 ? '' : 's'} across ${byTarget.size} target${byTarget.size === 1 ? '' : 's'} collapsed to string (${reason})`)
+
+    if (resolvedOptions.verbose) {
+      for (const [target, recs] of byTarget) {
+        const collectionCount = new Set(recs.map(r => r.fromCollection)).size
+        logs.push(`    · ${target} (${reason}) — referenced by ${recs.length} field${recs.length === 1 ? '' : 's'} across ${collectionCount} collection${collectionCount === 1 ? '' : 's'}`)
+        const preview = recs.slice(0, 5).map(r => `${r.fromCollection}.${r.fromField}`)
+        const suffix = recs.length > 5 ? `, …and ${recs.length - 5} more` : ''
+        logs.push(`      ${preview.join(', ')}${suffix}`)
+      }
+    }
+  }
 
   return { typeString, logs }
 }
@@ -94,11 +201,36 @@ export async function generateTypesFromDirectus(
  * @param extensions - Optional type generation extensions.
  * @returns A TypeScript declaration file as a string.
  */
-export function transformSnapshotToTypeString(collections: SnapshotCollection[], fields: SnapshotField[], relations: SnapshotRelation[], prefix: string, extensions: TypegenExtension[] = typegenExtensions): string {
+export function transformSnapshotToTypeString(
+  collections: SnapshotCollection[],
+  fields: SnapshotField[],
+  relations: SnapshotRelation[],
+  prefix: string,
+  extensions: TypegenExtension[] = typegenExtensions,
+  filter: { include?: string[], exclude?: string[] } = {},
+): { typeString: string, rewrites: RewriteRecord[], emittedCount: number } {
+  // Resolve the allow-list once. When `include` is non-empty the allow-list
+  // is that set; otherwise it's every known collection minus `exclude`.
+  const includeList = filter.include ?? []
+  const excludeList = filter.exclude ?? []
+  const useInclude = includeList.length > 0
+  const includeSet = new Set(includeList)
+  const excludeSet = new Set(excludeList)
+
+  const isCollectionAllowed = (name: string): boolean => {
+    if (useInclude)
+      return includeSet.has(name)
+    return !excludeSet.has(name)
+  }
+
+  // The set of "missing" collection names — those a field might reference
+  // that won't be emitted. We collect rewrite records for reporting.
+  const rewrites: RewriteRecord[] = []
+
   const relationMap = buildRelationMapFromSnapshot(relations)
 
   const collectionsWithDatabaseTables = collections.filter(
-    c => c.schema !== null,
+    c => c.schema !== null && isCollectionAllowed(c.collection),
   )
 
   const customCollections = collectionsWithDatabaseTables.filter(
@@ -121,7 +253,8 @@ export function transformSnapshotToTypeString(collections: SnapshotCollection[],
         .filter(
           name =>
             collectionIsDirectusSystem(name)
-            && !systemCollectionNamesAlreadyPresent.has(name),
+            && !systemCollectionNamesAlreadyPresent.has(name)
+            && isCollectionAllowed(name),
         ),
     ),
   ].map(name => ({ collection: name, schema: { name }, meta: null as null }))
@@ -129,6 +262,12 @@ export function transformSnapshotToTypeString(collections: SnapshotCollection[],
     ...collectionsWithDatabaseTables,
     ...impliedSystemCollections,
   ]
+
+  // "Missing" = any collection that another collection's field references
+  // but which we're not emitting. We track these for reference rewriting
+  // and for the user-facing summary.
+  const allCollectionNamesInSchema = new Set(allCollectionsForSchema.map(c => c.collection))
+  const isMissing = (name: string): boolean => !allCollectionNamesInSchema.has(name)
 
   const singletonCollectionNames = new Set(
     allCollectionsForSchema
@@ -140,7 +279,7 @@ export function transformSnapshotToTypeString(collections: SnapshotCollection[],
     ...customCollections,
     ...systemCollectionsFromSnapshot,
   ].map(collection =>
-    generateInterfaceForCollection(collection, fields, relationMap, prefix, extensions, singletonCollectionNames),
+    generateInterfaceForCollection(collection, fields, relationMap, prefix, extensions, singletonCollectionNames, isMissing, rewrites),
   )
 
   // Deduplicate extension interface outputs by their content — an extension like seo-plugin
@@ -171,7 +310,7 @@ export function transformSnapshotToTypeString(collections: SnapshotCollection[],
     enumBlock,
   ]
 
-  return [
+  const typeString = [
     'declare global {',
     '',
     bodyParts.join('\n\n'),
@@ -179,6 +318,12 @@ export function transformSnapshotToTypeString(collections: SnapshotCollection[],
     '',
     'export {};',
   ].join('\n')
+
+  // `emittedCount` reports how many collections from the Directus response
+  // survived filtering (include/exclude). Implied system collections are
+  // deliberately excluded from this count so it compares apples-to-apples
+  // with the raw fetch count in the caller's log.
+  return { typeString, rewrites, emittedCount: collectionsWithDatabaseTables.length }
 }
 
 /**
@@ -262,6 +407,52 @@ function resolveExtensionForField(
  * @param relations - Array of snapshot relations as returned by the Directus schema snapshot.
  * @returns A {@link RelationMap} where each collection maps to its categorized relations.
  */
+/**
+ * Walk the relation graph from the user's include seeds and return the
+ * transitive closure of collections that should be emitted. Follows M2O,
+ * O2M, and M2A edges; cycle-safe via a visited set.
+ *
+ * @param seeds - Collection names the user explicitly included.
+ * @param relations - All relations from the Directus snapshot.
+ * @returns Set of every collection name reachable from the seeds.
+ */
+function expandIncludeViaReferences(seeds: string[], relations: SnapshotRelation[]): Set<string> {
+  const relationMap = buildRelationMapFromSnapshot(relations)
+  const visited = new Set<string>()
+  const queue: string[] = [...seeds]
+
+  while (queue.length > 0) {
+    const current = queue.shift()!
+    if (visited.has(current))
+      continue
+    visited.add(current)
+
+    const rels = relationMap.get(current)
+    if (!rels)
+      continue
+
+    // Follow M2O (this collection → related collection)
+    for (const { relatedCollection } of rels.m2o.values()) {
+      if (!visited.has(relatedCollection))
+        queue.push(relatedCollection)
+    }
+    // Follow O2M (virtual field here → collection holding the FK)
+    for (const { relatedCollection } of rels.o2m.values()) {
+      if (!visited.has(relatedCollection))
+        queue.push(relatedCollection)
+    }
+    // Follow M2A (polymorphic — all allowed collections)
+    for (const allowed of rels.m2a.values()) {
+      for (const name of allowed) {
+        if (!visited.has(name))
+          queue.push(name)
+      }
+    }
+  }
+
+  return visited
+}
+
 function buildRelationMapFromSnapshot(relations: SnapshotRelation[]): RelationMap {
   const relationMap: RelationMap = new Map()
 
@@ -322,11 +513,25 @@ function resolveFieldTypeString(
   prefix: string,
   extensions: TypegenExtension[],
   singletons: Set<string> = new Set(),
+  isMissing: (name: string) => boolean = () => false,
+  rewrites: RewriteRecord[] = [],
 ): ResolvedFieldType {
-  // Resolve relation info from the pre-built map using prefix-aware interface names
+  // Resolve relation info from the pre-built map using prefix-aware interface names.
+  // When a related collection is "missing" (not in the emitted set — either
+  // excluded or outside the include allow-list), references to it collapse
+  // to the primitive-key form (`string` / `string[]`) so the emitted types
+  // stay resolvable.
   if (collectionRelations?.m2a.has(snapshotField.field)) {
     const allowedCollections = collectionRelations.m2a.get(snapshotField.field)!
-    const unionTypes = allowedCollections
+    const included = allowedCollections.filter(c => !isMissing(c))
+    // Record the missing targets so the generator can summarise/log them.
+    for (const missing of allowedCollections.filter(c => isMissing(c))) {
+      rewrites.push({ fromCollection: snapshotField.collection, fromField: snapshotField.field, target: missing })
+    }
+    if (included.length === 0) {
+      return { tsType: 'string', extensionOutput: null }
+    }
+    const unionTypes = included
       .map(c => collectionNameToInterfaceName(c, prefix, singletons))
       .join(' | ')
     return { tsType: `${unionTypes} | string`, extensionOutput: null }
@@ -334,11 +539,19 @@ function resolveFieldTypeString(
 
   if (collectionRelations?.m2o.has(snapshotField.field)) {
     const related = collectionRelations.m2o.get(snapshotField.field)!
+    if (isMissing(related.relatedCollection)) {
+      rewrites.push({ fromCollection: snapshotField.collection, fromField: snapshotField.field, target: related.relatedCollection })
+      return { tsType: 'string', extensionOutput: null }
+    }
     return { tsType: `${collectionNameToInterfaceName(related.relatedCollection, prefix, singletons)} | string`, extensionOutput: null }
   }
 
   if (collectionRelations?.o2m.has(snapshotField.field)) {
     const related = collectionRelations.o2m.get(snapshotField.field)!
+    if (isMissing(related.relatedCollection)) {
+      rewrites.push({ fromCollection: snapshotField.collection, fromField: snapshotField.field, target: related.relatedCollection })
+      return { tsType: 'string[]', extensionOutput: null }
+    }
     return { tsType: `${collectionNameToInterfaceName(related.relatedCollection, prefix, singletons)}[] | string[]`, extensionOutput: null }
   }
 
@@ -406,6 +619,8 @@ function buildInterfaceField(
   prefix: string,
   extensions: TypegenExtension[],
   singletons: Set<string> = new Set(),
+  isMissing: (name: string) => boolean = () => false,
+  rewrites: RewriteRecord[] = [],
 ): BuiltField | null {
   if (fieldIsUiOnlyAlias(snapshotField))
     return null
@@ -414,7 +629,7 @@ function buildInterfaceField(
   const isRequired = snapshotField.meta?.required === true
   const isNullable = snapshotField.schema?.is_nullable !== false
 
-  const { tsType, extensionOutput } = resolveFieldTypeString(snapshotField, collectionRelations, prefix, extensions, singletons)
+  const { tsType, extensionOutput } = resolveFieldTypeString(snapshotField, collectionRelations, prefix, extensions, singletons, isMissing, rewrites)
 
   const shouldAppendNull = isNullable && !isRequired && !isPrimaryKey
   const finalType = shouldAppendNull ? `${tsType} | null` : tsType
@@ -459,6 +674,8 @@ function generateInterfaceForCollection(
   prefix: string,
   extensions: TypegenExtension[],
   singletons: Set<string> = new Set(),
+  isMissing: (name: string) => boolean = () => false,
+  rewrites: RewriteRecord[] = [],
 ): GeneratedInterface {
   const collectionName = collection.collection
   const interfaceName = collectionNameToInterfaceName(collectionName, prefix, singletons)
@@ -466,7 +683,7 @@ function generateInterfaceForCollection(
 
   const builtFields = allFields
     .filter(f => f.collection === collectionName)
-    .map(f => buildInterfaceField(f, collectionRelations, prefix, extensions, singletons))
+    .map(f => buildInterfaceField(f, collectionRelations, prefix, extensions, singletons, isMissing, rewrites))
     .filter((f): f is BuiltField => f !== null)
     .sort((a, b) => a.interfaceField.sortOrder - b.interfaceField.sortOrder)
 

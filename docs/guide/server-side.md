@@ -6,21 +6,21 @@ nuxt-directus-sdk provides server-side utilities for authenticating Directus req
 
 The module provides several server utilities:
 
-- **`useServerDirectus(event)`** - Authenticated requests using user session
+- **`useSessionDirectus(event)`** - Authenticated requests using user session
 - **`useAdminDirectus()`** - Admin requests using admin token
 - **`useTokenDirectus(token)`** - Custom token authentication
 - **`getDirectusSessionToken(event)`** - Manual token extraction
 
 ## User Authentication
 
-### `useServerDirectus(event)`
+### `useSessionDirectus(event)`
 
 Use the current user's session token for authenticated requests:
 
 ```typescript
 // server/api/profile.ts
 export default defineEventHandler(async (event) => {
-  const directus = useServerDirectus(event)
+  const directus = useSessionDirectus(event)
 
   // This request uses the user's session token
   const user = await directus.request(readMe())
@@ -39,7 +39,7 @@ This automatically:
 ```typescript
 // server/api/my-articles.ts
 export default defineEventHandler(async (event) => {
-  const directus = useServerDirectus(event)
+  const directus = useSessionDirectus(event)
 
   try {
     // Get current user
@@ -216,7 +216,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const directus = useServerDirectus(event)
+  const directus = useSessionDirectus(event)
 
   // Get user data
   const user = await directus.request(readMe())
@@ -251,7 +251,7 @@ export default defineEventHandler(async (event) => {
   let scope = 'public'
 
   if (userToken) {
-    directus = useServerDirectus(event)
+    directus = useSessionDirectus(event)
     const user = await directus.request(readMe())
 
     // Admins get full data
@@ -308,7 +308,7 @@ export default defineEventHandler(async (event) => {
 ```typescript
 // server/api/upload.ts
 export default defineEventHandler(async (event) => {
-  const directus = useServerDirectus(event)
+  const directus = useSessionDirectus(event)
 
   // Read multipart form data
   const files = await readFiles(event)
@@ -384,7 +384,7 @@ export async function fetchWithAuth<T>(
   collection: string,
   query?: Query<DirectusSchema, any>
 ) {
-  const directus = useServerDirectus(event)
+  const directus = useSessionDirectus(event)
   return directus.request(readItems(collection, query))
 }
 
@@ -405,7 +405,7 @@ export default defineEventHandler(async (event) => {
 ```typescript
 // server/utils/auth.ts
 export async function requireRole(event: H3Event, requiredRole: string) {
-  const directus = useServerDirectus(event)
+  const directus = useSessionDirectus(event)
 
   const user = await directus.request(readMe({
     fields: ['id', 'email', 'role.*'],
@@ -473,7 +473,7 @@ Get your admin token from Directus:
        throw createError({ status: 400, statusText: 'Invalid email' })
      }
 
-     const directus = useServerDirectus(event)
+     const directus = useSessionDirectus(event)
      // Proceed with validated data
    })
    ```
@@ -481,7 +481,7 @@ Get your admin token from Directus:
 3. **Use appropriate authentication level**
    ```typescript
    // User operations - use user session
-   const directus = useServerDirectus(event)
+   const directus = useSessionDirectus(event)
 
    // Admin operations - use admin token
    const directus = useAdminDirectus()
@@ -489,7 +489,7 @@ Get your admin token from Directus:
 
 ## API Reference
 
-### `useServerDirectus(event)`
+### `useSessionDirectus(event)`
 
 Create a Directus client authenticated with the user's session token.
 
@@ -500,7 +500,7 @@ Create a Directus client authenticated with the user's session token.
 
 **Example:**
 ```typescript
-const directus = useServerDirectus(event)
+const directus = useSessionDirectus(event)
 const user = await directus.request(readMe())
 ```
 

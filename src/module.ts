@@ -175,6 +175,41 @@ export interface ModuleOptions {
      * @default ''
      */
     prefix?: string
+    /**
+     * Collection names to include in the generated types. When non-empty,
+     * only these collections (plus any they reference — see
+     * `expandReferences`) are emitted. References to collections not in
+     * the resolved set collapse to `string` (M2O) or `string[]` (O2M).
+     *
+     * Takes precedence over `exclude` if both are set.
+     * @type string[]
+     * @default []
+     */
+    include?: string[]
+    /**
+     * When `include` is set, also pull in any collections referenced by
+     * the included collections (transitively). Follows M2O, O2M, and M2A.
+     * No-op when `include` is empty.
+     * @type boolean
+     * @default true
+     */
+    expandReferences?: boolean
+    /**
+     * Collection names to exclude from generated types.
+     * References to excluded collections are rewritten to `string` (M2O) or
+     * `string[]` (O2M) so the generated types stay resolvable.
+     * @type string[]
+     * @default []
+     */
+    exclude?: string[]
+    /**
+     * When true, emit per-target warnings listing every field whose
+     * reference was collapsed to `string`/`string[]`. Field lists are
+     * capped at 5 per collection.
+     * @type boolean
+     * @default false
+     */
+    verbose?: boolean
   }
 }
 
@@ -484,7 +519,7 @@ export default defineNuxtModule<ModuleOptions>({
         imports: [
           'getDirectusSessionToken',
           'useAdminDirectus',
-          'useServerDirectus',
+          'useSessionDirectus',
           'useDirectusUrl',
           'useTokenDirectus',
         ],
@@ -508,6 +543,10 @@ export default defineNuxtModule<ModuleOptions>({
 
     const typesEnabled = (typeof options.types === 'boolean' && options.types) || (options.types && options.types.enabled === true)
     const typesPrefix = typeof options.types === 'object' ? options.types.prefix ?? '' : ''
+    const typesInclude = typeof options.types === 'object' ? options.types.include ?? [] : []
+    const typesExpandReferences = typeof options.types === 'object' ? options.types.expandReferences ?? true : true
+    const typesExclude = typeof options.types === 'object' ? options.types.exclude ?? [] : []
+    const typesVerbose = typeof options.types === 'object' ? options.types.verbose ?? false : false
 
     if (typesEnabled) {
       loggerMessage.push('📋 Directus Type Generator Enabled')
@@ -516,7 +555,12 @@ export default defineNuxtModule<ModuleOptions>({
       }
       else {
         try {
-          const { typeString, logs } = await generateTypesFromDirectus(directusUrl, options.adminToken!, typesPrefix)
+          const { typeString, logs } = await generateTypesFromDirectus(directusUrl, options.adminToken!, typesPrefix, {
+            include: typesInclude,
+            expandReferences: typesExpandReferences,
+            exclude: typesExclude,
+            verbose: typesVerbose,
+          })
           loggerMessage.push(...logs)
 
           addTypeTemplate({
