@@ -29,8 +29,8 @@ export function useTokenDirectus(token?: string) {
   return directus
 }
 
-export function useServerDirectus(event: H3Event) {
-  // Get cookie header from the incoming request
+export function useSessionDirectus(event: H3Event) {
+  // Derive the client's auth from the session cookie on the incoming request.
   return useTokenDirectus(getDirectusSessionToken(event))
 }
 

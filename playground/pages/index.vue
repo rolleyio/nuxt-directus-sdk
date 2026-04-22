@@ -12,7 +12,7 @@
     <h2>Playground To Do's:</h2>
     <ul>
       <li>Visual Editor Example</li>
-      <li>useServerDirectus</li>
+      <li>useSessionDirectus</li>
       <li>useAdminDirectus</li>
       <li>useTokenDirectus</li>
       <li>loginWithProvider</li>

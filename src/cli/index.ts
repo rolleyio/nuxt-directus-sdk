@@ -1,18 +1,21 @@
 #!/usr/bin/env node
 /**
- * Directus Rules CLI
+ * nuxt-directus-sdk CLI
  *
  * Commands:
- *   rules:pull   - Download rules from Directus and save as JSON
- *   rules:diff   - Compare local rules with remote Directus
- *   rules:diff-remote - Compare two remote Directus instances
+ *   rules:pull         - Download rules from Directus and save as JSON
+ *   rules:push         - Push local JSON rules to remote Directus
+ *   rules:diff         - Compare local rules with remote Directus
+ *   rules:diff-files   - Compare two local JSON files
+ *   rules:diff-remote  - Compare two remote Directus instances
+ *   generate-types     - Generate TypeScript types from a Directus schema
  */
 
 /* eslint-disable node/prefer-global/process */
 
 import type { DirectusRulesPayload } from '../rules/types/directus-api'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { createDirectus, rest, staticToken } from '@directus/sdk'
 import { loadRulesFromPayload } from '../rules/loaders'
@@ -25,6 +28,8 @@ import {
   formatPushResult,
   pushRules,
 } from '../rules/sync'
+import { generateTypesFromDirectus } from '../runtime/types/generate'
+import { parseCsv, resolveNegatableBoolean } from './helpers'
 
 interface ConnectionConfig {
   url: string
@@ -64,13 +69,19 @@ function getConnectionConfig(
 
   if (!url) {
     console.error(`Error: ${label} URL is required`)
-    console.error(`Provide --${label.toLowerCase()}-url or set DIRECTUS_URL in your .env file`)
+    const flagHint = label === 'Source'
+      ? '--url (or --source-url)'
+      : `--${label.toLowerCase()}-url`
+    console.error(`Provide ${flagHint} or set DIRECTUS_URL in your .env file`)
     process.exit(1)
   }
 
   if (!token) {
     console.error(`Error: ${label} token is required`)
-    console.error(`Provide --${label.toLowerCase()}-token or set DIRECTUS_ADMIN_TOKEN in your .env file`)
+    const flagHint = label === 'Source'
+      ? '--token (or --source-token)'
+      : `--${label.toLowerCase()}-token`
+    console.error(`Provide ${flagHint} or set DIRECTUS_ADMIN_TOKEN in your .env file`)
     process.exit(1)
   }
 
@@ -85,7 +96,7 @@ function createClient(url: string, token: string) {
 
 function printHelp(): void {
   console.log(`
-Directus Rules CLI
+nuxt-directus-sdk CLI
 
 Usage:
   npx nuxt-directus-sdk <command> [options]
@@ -96,24 +107,40 @@ Commands:
   rules:diff <file>         Compare local JSON file with remote Directus
   rules:diff-files <a> <b>  Compare two local JSON files
   rules:diff-remote         Compare two remote Directus instances
+  generate-types            Generate TypeScript types from a Directus schema
 
 Options:
   -h, --help                Show this help message
-  -o, --output <file>       Output file path (default: rules.json)
+  -o, --output <file>       Output file path (default: stdout for generate-types, rules.json for rules:pull)
   --compact                 Output compact JSON (no pretty-print)
   --dry-run                 Show what would be changed without making changes (rules:push)
   --add-only                Only add new items, don't modify or delete existing (rules:push)
   --skip-deletes            Skip deleting items that exist remotely but not locally (rules:push)
+  --prefix <prefix>         Prefix for custom collection type names (generate-types)
+  --include <names>         Comma-separated collection names to include (generate-types).
+                            When set, only these collections (plus any they reference
+                            via --expand-references, default on) are emitted.
+                            Takes precedence over --exclude if both are set.
+  --no-expand-references    When --include is set, do NOT follow references to other
+                            collections. Strict include mode — references to collections
+                            not in the list collapse to \`string\`. (generate-types)
+  --exclude <names>         Comma-separated collection names to exclude (generate-types).
+                            References to excluded types are rewritten to \`string\`.
+  --verbose                 Show per-target warnings listing every field whose reference
+                            was collapsed to \`string\` (generate-types).
+  --no-declare-global       Emit types without the \`declare global\` wrapper (generate-types)
 
   Connection options (override DIRECTUS_URL / DIRECTUS_ADMIN_TOKEN):
+  --url <url>               Directus URL (alias of --source-url)
+  --token <token>           Admin token (alias of --source-token)
   --source-url <url>        Source Directus URL
   --source-token <token>    Source admin token
   --target-url <url>        Target Directus URL (for rules:diff-remote)
   --target-token <token>    Target admin token (for rules:diff-remote)
 
 Environment Variables:
-  DIRECTUS_URL              Default Directus URL (used if --source-url not provided)
-  DIRECTUS_ADMIN_TOKEN      Default admin token (used if --source-token not provided)
+  DIRECTUS_URL              Default Directus URL (used if --url / --source-url not provided)
+  DIRECTUS_ADMIN_TOKEN      Default admin token (used if --token / --source-token not provided)
 
 Examples:
   # Pull rules from Directus (uses env vars)
@@ -141,6 +168,27 @@ Examples:
   npx nuxt-directus-sdk rules:diff-remote \\
     --source-url https://staging.example.com --source-token staging-token \\
     --target-url https://production.example.com --target-token production-token
+
+  # Generate TypeScript types, pipe to a file
+  npx nuxt-directus-sdk generate-types > types/directus.d.ts
+
+  # Generate types with a prefix, write directly to a file
+  npx nuxt-directus-sdk generate-types --prefix App -o types/directus.d.ts
+
+  # Generate types from a specific instance
+  npx nuxt-directus-sdk generate-types --url https://my-directus.com --token my-token
+
+  # Exclude specific collections — references to them become \`string\`
+  npx nuxt-directus-sdk generate-types --exclude directus_activity,directus_revisions
+
+  # Include only specific collections (referenced collections auto-included)
+  npx nuxt-directus-sdk generate-types --include posts
+
+  # Strict include — only the listed collections, references collapse to \`string\`
+  npx nuxt-directus-sdk generate-types --include posts --no-expand-references
+
+  # Verbose — show every field whose reference was collapsed, grouped by target
+  npx nuxt-directus-sdk generate-types --exclude directus_users --verbose
 `)
 }
 
@@ -289,6 +337,69 @@ async function commandPush(
   }
 }
 
+async function commandGenerateTypes(
+  connection: ConnectionConfig,
+  options: {
+    prefix: string
+    output: string | undefined
+    declareGlobal: boolean
+    include: string[]
+    exclude: string[]
+    expandReferences: boolean
+    verbose: boolean
+  },
+): Promise<void> {
+  // Informational logs go to stderr so they don't pollute stdout when piping
+  console.error(`Generating types from ${connection.url}...`)
+  if (options.include.length > 0) {
+    console.error(`Including collections: ${options.include.join(', ')}`)
+  }
+  if (options.exclude.length > 0) {
+    console.error(`Excluding collections: ${options.exclude.join(', ')}`)
+  }
+
+  const { typeString, logs } = await generateTypesFromDirectus(
+    connection.url,
+    connection.token,
+    options.prefix,
+    {
+      include: options.include,
+      exclude: options.exclude,
+      expandReferences: options.expandReferences,
+      verbose: options.verbose,
+    },
+  )
+
+  // Surface the generator's own logs (e.g. fetch counts, errors) to stderr
+  for (const line of logs) {
+    console.error(line)
+  }
+
+  if (!typeString) {
+    console.error('Error: Type generation returned empty output.')
+    process.exit(1)
+  }
+
+  // Strip the `declare global { ... }` wrapper for non-Nuxt consumers.
+  // The wrapper spans the entire file: first line `declare global {`, last
+  // body line `}`, followed by `export {};` which we also drop.
+  const output = options.declareGlobal
+    ? typeString
+    : typeString
+        .replace(/^declare global \{\n\n/, '')
+        .replace(/\n\}\n\nexport \{\};?\n?$/, '\n')
+
+  if (options.output) {
+    const outputPath = resolve(process.cwd(), options.output)
+    mkdirSync(dirname(outputPath), { recursive: true })
+    writeFileSync(outputPath, output, 'utf-8')
+    console.error(`Types written to ${outputPath}`)
+  }
+  else {
+    process.stdout.write(output)
+  }
+}
+
 async function main(): Promise<void> {
   loadEnv()
 
@@ -296,11 +407,25 @@ async function main(): Promise<void> {
     allowPositionals: true,
     options: {
       'help': { type: 'boolean', short: 'h' },
-      'output': { type: 'string', short: 'o', default: 'rules.json' },
+      // `output` has no default here — each command applies its own fallback
+      // (rules:pull defaults to rules.json, generate-types defaults to stdout).
+      'output': { type: 'string', short: 'o' },
       'compact': { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
       'add-only': { type: 'boolean', default: false },
       'skip-deletes': { type: 'boolean', default: false },
+      'prefix': { type: 'string', default: '' },
+      'include': { type: 'string' },
+      'exclude': { type: 'string' },
+      // Node's parseArgs doesn't support `--no-X` syntax natively, so we
+      // register both forms. Negation wins if both are passed.
+      'expand-references': { type: 'boolean', default: true },
+      'no-expand-references': { type: 'boolean' },
+      'verbose': { type: 'boolean', default: false },
+      'declare-global': { type: 'boolean', default: true },
+      'no-declare-global': { type: 'boolean' },
+      'url': { type: 'string' },
+      'token': { type: 'string' },
       'source-url': { type: 'string' },
       'source-token': { type: 'string' },
       'target-url': { type: 'string' },
@@ -319,12 +444,12 @@ async function main(): Promise<void> {
     switch (command) {
       case 'rules:pull': {
         const connection = getConnectionConfig(
-          values['source-url'],
-          values['source-token'],
+          values['source-url'] ?? values.url,
+          values['source-token'] ?? values.token,
           'Source',
         )
         await commandPull({
-          output: values.output!,
+          output: values.output ?? 'rules.json',
           compact: values.compact!,
         }, connection)
         break
@@ -337,8 +462,8 @@ async function main(): Promise<void> {
           process.exit(1)
         }
         const connection = getConnectionConfig(
-          values['source-url'],
-          values['source-token'],
+          values['source-url'] ?? values.url,
+          values['source-token'] ?? values.token,
           'Source',
         )
         await commandPush(positionals[1], connection, {
@@ -356,8 +481,8 @@ async function main(): Promise<void> {
           process.exit(1)
         }
         const connection = getConnectionConfig(
-          values['source-url'],
-          values['source-token'],
+          values['source-url'] ?? values.url,
+          values['source-token'] ?? values.token,
           'Source',
         )
         await commandDiff(positionals[1], connection)
@@ -375,8 +500,8 @@ async function main(): Promise<void> {
 
       case 'rules:diff-remote': {
         const source = getConnectionConfig(
-          values['source-url'],
-          values['source-token'],
+          values['source-url'] ?? values.url,
+          values['source-token'] ?? values.token,
           'Source',
         )
         const target = getConnectionConfig(
@@ -385,6 +510,24 @@ async function main(): Promise<void> {
           'Target',
         )
         await commandDiffRemote(source, target)
+        break
+      }
+
+      case 'generate-types': {
+        const connection = getConnectionConfig(
+          values.url ?? values['source-url'],
+          values.token ?? values['source-token'],
+          'Source',
+        )
+        await commandGenerateTypes(connection, {
+          prefix: values.prefix ?? '',
+          output: values.output,
+          declareGlobal: resolveNegatableBoolean(values['declare-global'], values['no-declare-global'], true),
+          include: parseCsv(values.include),
+          exclude: parseCsv(values.exclude),
+          expandReferences: resolveNegatableBoolean(values['expand-references'], values['no-expand-references'], true),
+          verbose: values.verbose!,
+        })
         break
       }
 

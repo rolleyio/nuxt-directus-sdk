@@ -1,5 +1,47 @@
 # Changelog
 
+## v6.0.0-beta.1
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v6.0.0-beta.0...v6.0.0-beta.1)
+
+### 🚀 Enhancements
+
+- **cli:** Add generate-types subcommand ([1a261f2](https://github.com/rolleyio/nuxt-directus-sdk/commit/1a261f2))
+- **types:** Add exclude option for generated types ([63a9e0b](https://github.com/rolleyio/nuxt-directus-sdk/commit/63a9e0b))
+- **types:** Add include option, verbose rewrite warnings, and emit count ([fcd37c8](https://github.com/rolleyio/nuxt-directus-sdk/commit/fcd37c8))
+- **types:** Expand include via references, fix --no-X flag parsing ([2cb33ea](https://github.com/rolleyio/nuxt-directus-sdk/commit/2cb33ea))
+- **visual-editor:** ⚠️  Remove DirectusAddButton and DirectusEditButton ([51f313a](https://github.com/rolleyio/nuxt-directus-sdk/commit/51f313a))
+- ⚠️  Rename useServerDirectus → useSessionDirectus ([79542a3](https://github.com/rolleyio/nuxt-directus-sdk/commit/79542a3))
+
+### 🩹 Fixes
+
+- **files:** Support uploading multiple files ([dc97745](https://github.com/rolleyio/nuxt-directus-sdk/commit/dc97745))
+
+### 📖 Documentation
+
+- Update development instructions for pnpm ([c887504](https://github.com/rolleyio/nuxt-directus-sdk/commit/c887504))
+- Refresh README with current feature surface ([722ae31](https://github.com/rolleyio/nuxt-directus-sdk/commit/722ae31))
+- **llms:** Slim and refresh for the new doc structure ([d53e257](https://github.com/rolleyio/nuxt-directus-sdk/commit/d53e257))
+- Add CI and install-size badges to README ([cf468a6](https://github.com/rolleyio/nuxt-directus-sdk/commit/cf468a6))
+
+### 🏡 Chore
+
+- **pkg:** Add homepage, bugs, keywords and sharpen description ([7c32174](https://github.com/rolleyio/nuxt-directus-sdk/commit/7c32174))
+
+### ✅ Tests
+
+- Add test and mock data for files ([5d0aad8](https://github.com/rolleyio/nuxt-directus-sdk/commit/5d0aad8))
+
+#### ⚠️ Breaking Changes
+
+- **visual-editor:** ⚠️  Remove DirectusAddButton and DirectusEditButton ([51f313a](https://github.com/rolleyio/nuxt-directus-sdk/commit/51f313a))
+- ⚠️  Rename useServerDirectus → useSessionDirectus ([79542a3](https://github.com/rolleyio/nuxt-directus-sdk/commit/79542a3))
+
+### ❤️ Contributors
+
+- Matthew Rollinson <matt@rolley.io>
+- Kevin Heiner <kheiner@gmail.com>
+
 ## v6.0.0-beta.0
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v5.0.1...v6.0.0-beta.0)
