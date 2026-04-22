@@ -241,6 +241,7 @@ button.secondary {
 
 .demo-list li {
   font-size: 14px;
+  padding-left: 8px;
 }
 
 .demo-list a {
