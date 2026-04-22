@@ -25,7 +25,7 @@ export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Q
       })
     }
 
-    formData.set('file', file)
+    formData.append('file', file)
   })
 
   return directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFile[] | DirectusFile
