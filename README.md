@@ -2,6 +2,8 @@
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![CI][ci-src]][ci-href]
+[![Install size][install-size-src]][install-size-href]
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
@@ -106,6 +108,12 @@ bun run release
 
 [npm-downloads-src]: https://img.shields.io/npm/dm/nuxt-directus-sdk.svg?style=flat&colorA=18181B&colorB=28CF8D
 [npm-downloads-href]: https://npmjs.com/package/nuxt-directus-sdk
+
+[ci-src]: https://github.com/rolleyio/nuxt-directus-sdk/actions/workflows/ci.yml/badge.svg?branch=main
+[ci-href]: https://github.com/rolleyio/nuxt-directus-sdk/actions/workflows/ci.yml
+
+[install-size-src]: https://packagephobia.com/badge?p=nuxt-directus-sdk
+[install-size-href]: https://packagephobia.com/result?p=nuxt-directus-sdk
 
 [license-src]: https://img.shields.io/npm/l/nuxt-directus-sdk.svg?style=flat&colorA=18181B&colorB=28CF8D
 [license-href]: https://npmjs.com/package/nuxt-directus-sdk
