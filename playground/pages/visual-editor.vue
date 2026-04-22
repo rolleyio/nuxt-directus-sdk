@@ -11,7 +11,7 @@ const { data: post } = await useAsyncData('ve-post', () =>
       limit: 1,
       fields: ['id', 'title', 'slug', 'content', 'image', 'published_at', { author: ['id', 'first_name', 'last_name'] }],
       sort: '-published_at',
-      filter: {status: {_eq: 'published'}}
+      filter: { status: { _eq: 'published' } },
     }),
   ), { transform: data => data[0] })
 </script>
@@ -150,15 +150,22 @@ const { data: post } = await useAsyncData('ve-post', () =>
         A floating button (fixed bottom-right) that opens the full item editor in Directus.
         Only rendered inside the iframe.
       </p>
-      <p class="note">The DirectusEditButton slot has customized text passed to it in this example, refer to
-        <NuxtLink v-if="post?.slug" :to="`/blog/${post.slug}`">the blog post shown above</NuxtLink>
-        <NuxtLink v-else to="/blog">a blog post</NuxtLink>
-        for the default slot example.</p>
+      <p class="note">
+        The DirectusEditButton slot has customized text passed to it in this example, refer to
+        <NuxtLink v-if="post?.slug" :to="`/blog/${post.slug}`">
+          the blog post shown above
+        </NuxtLink>
+        <NuxtLink v-else to="/blog">
+          a blog post
+        </NuxtLink>
+        for the default slot example.
+      </p>
       <DirectusEditButton
         v-if="post"
         collection="posts"
         :item="post?.id"
-        mode="modal">
+        mode="modal"
+      >
         ⚙️ Customized Edit Button
       </DirectusEditButton>
     </div>

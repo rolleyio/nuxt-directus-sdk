@@ -43,7 +43,7 @@ async function fetchToken() {
     </div>
 
     <div class="demo-section">
-      <h2><code>useServerDirectus(event)</code></h2>
+      <h2><code>useSessionDirectus(event)</code></h2>
       <p>
         Creates a Directus client that forwards the current user's session cookie.
         Requests run with that user's permissions - not admin privileges.

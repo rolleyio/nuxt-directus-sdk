@@ -4,7 +4,6 @@ import { definePageMeta } from '#imports'
 definePageMeta({
   middleware: ['guest'],
 })
-
 </script>
 
 <template>

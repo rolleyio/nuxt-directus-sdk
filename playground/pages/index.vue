@@ -88,7 +88,7 @@
         <NuxtLink to="/server">
           Server Composables
         </NuxtLink> -
-        <code>useAdminDirectus()</code>, <code>useServerDirectus()</code>, <code>useTokenDirectus()</code>
+        <code>useAdminDirectus()</code>, <code>useSessionDirectus()</code>, <code>useTokenDirectus()</code>
       </li>
     </ul>
 

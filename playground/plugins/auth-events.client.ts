@@ -1,4 +1,4 @@
-import { defineNuxtPlugin, useState, useDirectusAuth } from '#imports'
+import { defineNuxtPlugin, useDirectusAuth, useState } from '#imports'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const lastEvent = useState<{ user: any, firedAt: string } | null>('directus.lastLoginEvent', () => null)

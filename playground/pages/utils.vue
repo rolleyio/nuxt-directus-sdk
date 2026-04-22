@@ -54,7 +54,7 @@ const visualEditor = useDirectusVisualEditor()
     <div class="demo-section">
       <h2><code>useDirectusPreview()</code></h2>
       <p>
-        A <code>{{`Ref\<boolean\>`}}</code> that is <code>true</code> when the page was loaded
+        A <code>{{ `Ref\<boolean\>` }}</code> that is <code>true</code> when the page was loaded
         with <code>?preview=true</code> in the URL. Set automatically by the module plugin —
         use it to show draft/unpublished content.
       </p>
@@ -69,7 +69,7 @@ const visualEditor = useDirectusVisualEditor()
     <div class="demo-section">
       <h2><code>useDirectusVisualEditor()</code></h2>
       <p>
-        A <code>{{`Ref\<boolean\>`}}</code> that is <code>true</code> when the page is loaded
+        A <code>{{ `Ref\<boolean\>` }}</code> that is <code>true</code> when the page is loaded
         inside a Directus iframe (the visual editor). Set automatically — use it to
         conditionally render editing UI.
       </p>
