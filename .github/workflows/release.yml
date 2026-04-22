@@ -34,10 +34,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Required before prepack — nuxt-module-build extends playground/.nuxt/tsconfig.json
+      # Required before publish — nuxt-module-build (invoked by npm's prepack
+      # lifecycle hook during publish) extends playground/.nuxt/tsconfig.json
       - run: pnpm run dev:prepare
-
-      - run: pnpm run prepack
 
       - name: Determine npm tag
         id: npm-tag
