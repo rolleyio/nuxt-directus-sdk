@@ -1,5 +1,21 @@
 # Changelog
 
+## v5.0.2...v5.0.3
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v5.0.2...v5.0.3)
+
+### 📖 Documentation
+
+- Update changelog for v5.0.2 ([6a0362b](https://github.com/rolleyio/nuxt-directus-sdk/commit/6a0362b))
+
+### 🏡 Chore
+
+- Bump version to 5.0.3 ([8beb89a](https://github.com/rolleyio/nuxt-directus-sdk/commit/8beb89a))
+
+### ❤️ Contributors
+
+- Matthew Rollinson <matt@rolley.io>
+
 ## v5.0.1...v5.0.2
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v5.0.1...v5.0.2)
