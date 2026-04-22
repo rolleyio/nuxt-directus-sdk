@@ -1,5 +1,30 @@
 # Changelog
 
+## v5.0.1...v5.0.2
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v5.0.1...v5.0.2)
+
+### 🩹 Fixes
+
+- **files:** Support uploading multiple files ([d96e4bf](https://github.com/rolleyio/nuxt-directus-sdk/commit/d96e4bf))
+
+### 📖 Documentation
+
+- Update changelog for v5.0.1 ([b8d5580](https://github.com/rolleyio/nuxt-directus-sdk/commit/b8d5580))
+
+### 🏡 Chore
+
+- Bump version to 5.0.2 ([24e9c7f](https://github.com/rolleyio/nuxt-directus-sdk/commit/24e9c7f))
+
+### ✅ Tests
+
+- Add test and mock data for files ([4e6a96e](https://github.com/rolleyio/nuxt-directus-sdk/commit/4e6a96e))
+
+### ❤️ Contributors
+
+- Matthew Rollinson <matt@rolley.io>
+- Kevin Heiner <kheiner@gmail.com>
+
 ## v5.0.0...v5.0.1
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v5.0.0...v5.0.1)
