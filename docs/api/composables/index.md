@@ -56,20 +56,28 @@ const created = await directus.request(createItem('articles', {
 
 ### Functions excluded from auto-import
 
-A small number of SDK functions are intentionally **not** auto-imported. Most are wrapped by this module's own composables — using them directly bypasses features like SSR cookie forwarding or devProxy handling, which typically isn't what you want. They can still be imported manually from `@directus/sdk` when you have a specific reason.
+A small number of SDK functions are intentionally not auto-imported — either because this module provides a composable wrapper, or because the function is an internal SDK detail. All of them can still be imported manually from `@directus/sdk` when you have a specific reason.
 
-| Function | Why it's excluded |
-| --- | --- |
-| `createDirectus()` | Use [`useDirectus()`](#directus-client-composables) — returns a fully-configured singleton with auth, rest, realtime, and SSR cookie forwarding already attached. |
-| `rest()` | Transport plugin; already attached by `useDirectus()`. |
-| `realtime()` | Realtime/WebSocket plugin; already attached by `useDirectus()`. |
-| `authentication()` | Auth plugin; already attached by `useDirectus()`. |
-| `staticToken()` | Static-token auth plugin. The module uses this internally via the `adminToken` config for type generation and server-only tasks. If you need a one-off authenticated client (e.g. a server handler calling Directus with a service token), import it manually alongside `createDirectus()` and `rest()`. |
-| `auth()` | Low-level auth handler. Use the auth composables ([`useDirectusAuth`](#authentication-composables), etc.) for normal login/logout/refresh flows. Import manually only if you're building a custom auth pipeline outside the module. |
-| `getAuthEndpoint()` | Auth endpoint path helper (e.g. resolves the correct `/auth/login` route for a flow). Only useful if you're hand-rolling auth requests outside the module's composables — rare. |
-| `memoryStorage()` | Storage primitive — use [`useDirectusStorage()`](#storage-composables) instead. |
-| `graphql()` | This module does not wrap or support GraphQL. If you need it, import consciously so expectations are explicit. |
-| `readGraphqlSdl()` | GraphQL-specific; kept as a manual import for the same reason. |
+| Category | Function | Use instead |
+| --- | --- | --- |
+| Client setup | `createDirectus()` | Use [`useDirectus()`](#directus-client-composables) — pre-configured with `auth()`, `rest()`, `realtime()`, and SSR cookie forwarding. |
+| Client setup | `authentication()` | Already configured by `useDirectus()`. |
+| Client setup | `rest()` | Already configured by `useDirectus()`. |
+| Client setup | `realtime()` | Already configured by `useDirectus()`. |
+| Client setup | `staticToken()` | Used internally for `adminToken`. Import manually if you need a one-off static-token client alongside `createDirectus()`. |
+| Auth | `auth()` | Low-level realtime auth handler. Use [`useDirectusAuth()`](#authentication-composables) for normal flows. |
+| Auth | `getAuthEndpoint()` | Internal SDK auth routing helper. |
+| Auth | `acceptUserInvite()` | Use [`useDirectusAuth().acceptUserInvite()`](#authentication-composables). |
+| Auth | `createUser()` | Use [`useDirectusAuth().createUser()`](#authentication-composables). |
+| Auth | `inviteUser()` | Use [`useDirectusAuth().inviteUser()`](#authentication-composables). |
+| Auth | `passwordRequest()` | Use [`useDirectusAuth().passwordRequest()`](#authentication-composables). |
+| Auth | `passwordReset()` | Use [`useDirectusAuth().passwordReset()`](#authentication-composables). |
+| Auth | `readMe()` | Use [`useDirectusAuth().readMe()`](#authentication-composables) — manages shared user state. |
+| Auth | `updateMe()` | Use [`useDirectusAuth().updateMe()`](#authentication-composables) — manages shared user state. |
+| Files | `uploadFiles()` | Use [`uploadDirectusFiles()`](#file-composables) — handles `FormData` construction. |
+| Storage | `memoryStorage()` | Use [`useDirectusStorage()`](#storage-composables). |
+| GraphQL | `graphql()` | Not supported by this module. Import manually if needed. |
+| GraphQL | `readGraphqlSdl()` | Not supported by this module. Import manually if needed. |
 
 If you need one of these, import it directly:
 
