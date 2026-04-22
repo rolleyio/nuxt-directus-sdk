@@ -228,6 +228,61 @@ button.secondary {
 }
 
 /* ============================================================
+   Config notices — Directus instance vs nuxt.config.ts
+   ============================================================ */
+
+.config-notice {
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #555;
+}
+
+.config-notice-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  border-radius: 3px;
+  padding: 2px 7px;
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+
+.config-notice-badge svg,
+.config-notice-badge img {
+  flex-shrink: 0;
+}
+
+.config-notice--directus .config-notice-badge img {
+  filter: brightness(0) invert(1);
+}
+
+.config-notice--directus {
+  background: #f5f0ff;
+  border-left: 3px solid #6644ff;
+}
+
+.config-notice--directus .config-notice-badge {
+  background: #6644ff;
+  color: #fff;
+}
+
+.config-notice--nuxt {
+  background: #f0fff9;
+  border-left: 3px solid #00dc82;
+}
+
+.config-notice--nuxt .config-notice-badge {
+  background: #00dc82;
+  color: #003a22;
+}
+
+/* ============================================================
    Index page — demo link list
    ============================================================ */
 

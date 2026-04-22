@@ -46,10 +46,14 @@ async function submitReset() {
       Demonstrates <code>useDirectusAuth().passwordRequest(email)</code> and
       <code>passwordReset(token, newPassword)</code>.
     </p>
-    <p class="note">
-      Requires a environment variable <code>PASSWORD_RESET_URL_ALLOW_LIST</code> to be configured in your Directus instance.
+    <div class="config-notice config-notice--directus">
+      <span class="config-notice-badge">
+        <img src="~/assets/directus-logo.svg" width="12" height="12" alt="">
+        Directus Config Required
+      </span>
+      Requires the <code>PASSWORD_RESET_URL_ALLOW_LIST</code> environment variable to be set in your Directus instance.
       The URL receives the reset token as a query param.
-    </p>
+    </div>
 
     <template v-if="step === 'request'">
       <h2>Step 1 - Request reset email</h2>
@@ -92,8 +96,12 @@ async function submitReset() {
     <p v-if="error" class="error">
       {{ error }}
     </p>
-    <p class="note">
-      The <code>directus-template-cli</code> <code>cms</code> example template uses a dummy email address, and therefore you'll need to register a new user and ensure your directus instance is configured with a mail sender to test this feature.
-    </p>
+    <div class="config-notice config-notice--directus">
+      <span class="config-notice-badge">
+        <img src="~/assets/directus-logo.svg" width="12" height="12" alt="">
+        Directus Config Required
+      </span>
+      The <code>directus-template-cli</code> <code>cms</code> example template uses a dummy email address, and therefore you'll need to register a new user and ensure your Directus instance is configured with a mail sender to test this feature.
+    </div>
   </div>
 </template>

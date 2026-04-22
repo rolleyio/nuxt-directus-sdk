@@ -82,11 +82,15 @@ const lastEvent = useState<{ user: any, firedAt: string } | null>('directus.last
 
       <div class="demo-section">
         <h2>Login with Providers - <code>loginWithProvider()</code></h2>
-        <p v-if="!ssoProviders?.length" class="note">
+        <div v-if="!ssoProviders?.length" class="config-notice config-notice--directus">
+          <span class="config-notice-badge">
+            <img src="~/assets/directus-logo.svg" width="12" height="12" alt="">
+            Directus Config Required
+          </span>
           No SSO providers are configured.
           The <code>directus-template-cli</code> <code>cms</code> example template does not include any SSO providers by default.
           To test <code>loginWithProvider()</code>, add an OAuth provider in your Directus instance under Settings → Authentication.
-        </p>
+        </div>
         <div v-for="provider in ssoProviders" :key="provider.name">
           <button @click="providerLogin(provider.name)">
             Log in with {{ provider.name }}

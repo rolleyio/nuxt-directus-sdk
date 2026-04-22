@@ -37,11 +37,12 @@ directus: {
 
 // any public page
 definePageMeta({ middleware: 'guest' })</pre>
-      <p class="note">
+      <div class="config-notice config-notice--nuxt">
+        <span class="config-notice-badge">nuxt.config.ts</span>
         This playground has <code>enableGlobalAuthMiddleware: false</code> (the default), so
         <code>guest</code> is declared here for demonstration purposes only - it has no
         effect in the current configuration.
-      </p>
+      </div>
     </div>
 
     <div class="demo-section">

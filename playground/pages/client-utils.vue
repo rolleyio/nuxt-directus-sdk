@@ -74,12 +74,13 @@ const visualEditor = useDirectusVisualEditor()
         conditionally render editing UI.
       </p>
       <p>Current value: <strong>{{ visualEditor }}</strong></p>
-      <p class="note">
+      <div class="config-notice config-notice--nuxt">
+        <span class="config-notice-badge">nuxt.config.ts</span>
         This will be <code>true</code> only when your site is embedded inside the Directus
         admin panel via the Visual Editor module. Requires
         <code>visualEditor: true</code> in your module config (already enabled in this
         playground's <code>nuxt.config.ts</code>).
-      </p>
+      </div>
     </div>
   </div>
 </template>

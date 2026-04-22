@@ -22,8 +22,8 @@ export const useNav = (): NavGroup[] => [
   {
     label: 'Composables',
     links: [
-      { label: 'Server Side', to: '/server', description: '<code>useAdminDirectus()</code>, <code>useSessionDirectus()</code>, <code>useTokenDirectus()</code>' },
-      { label: 'Client Side', to: '/utils', description: '<code>useDirectusUrl()</code>, <code>useDirectusOriginUrl()</code>, <code>useDirectusPreview()</code>, <code>useDirectusVisualEditor()</code>' },
+      { label: 'Server Side', to: '/server-utils', description: '<code>useAdminDirectus()</code>, <code>useSessionDirectus()</code>, <code>useTokenDirectus()</code>' },
+      { label: 'Client Side', to: '/client-utils', description: '<code>useDirectusUrl()</code>, <code>useDirectusOriginUrl()</code>, <code>useDirectusPreview()</code>, <code>useDirectusVisualEditor()</code>' },
     ],
   },
   {

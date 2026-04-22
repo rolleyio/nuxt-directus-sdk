@@ -36,20 +36,24 @@ const { data: post } = await useAsyncData('ve-post', () =>
 
     <div class="demo-section">
       <h2>Setup</h2>
-      <p>
-        Two places need to be configured in Directus:
-      </p>
-      <ol style="margin: 0 0 12px 20px; color: #555; font-size: 13px; line-height: 2">
-        <li>
-          <strong>Collection preview URL</strong> In the <code>posts</code> collection settings, set the Preview URL to <code>http://localhost:3000/blog/<span v-pre>{{slug}}</span>?visual-editing=true</code>.
-          Directus substitutes <code><span v-pre>{{slug}}</span></code> with the item's actual value when you open the visual editor for a specific post.
-        </li>
-        <li>
-          <strong>Live Preview sidebar URLs</strong> In <em>Settings → Live Preview</em>, add
-          <code>http://localhost:3000/blog?visual-editing=true</code> (and this page's URL) for the
-          preview sidebar that appears while editing.
-        </li>
-      </ol>
+      <div class="config-notice config-notice--directus">
+        <span class="config-notice-badge">
+          <img src="~/assets/directus-logo.svg" width="12" height="12" alt="">
+          Directus Config Required
+        </span>
+        Two places need to be configured in your Directus instance:
+        <ol style="margin: 4px 0 0 20px; font-size: 13px; line-height: 2">
+          <li>
+            <strong>Collection preview URL</strong> In the <code>posts</code> collection settings, set the Preview URL to <code>http://localhost:3000/blog/<span v-pre>{{slug}}</span>?visual-editing=true</code>.
+            Directus substitutes <code><span v-pre>{{slug}}</span></code> with the item's actual value when you open the visual editor for a specific post.
+          </li>
+          <li>
+            <strong>Live Preview sidebar URLs</strong> In <em>Settings → Live Preview</em>, add
+            <code>http://localhost:3000/blog?visual-editing=true</code> (and this page's URL) for the
+            preview sidebar that appears while editing.
+          </li>
+        </ol>
+      </div>
       <p class="note">
         Add <code>?debug</code> to the URL to see connection logs in the browser console.
         The module detects the visual editor purely by iframe context (<code>window.parent !== window</code>) - the <code>?visual-editing=true</code> query param is informational only.

@@ -22,10 +22,14 @@ async function registerForm() {
   <div>
     <h1>Middleware</h1>
     <p>Demonstrates <code>useDirectusAuth().register()</code>.</p>
-    <p class="note">
+    <div class="config-notice config-notice--directus">
+      <span class="config-notice-badge">
+        <img src="~/assets/directus-logo.svg" width="12" height="12" alt="">
+        Directus Config Required
+      </span>
       The <code>directus-template-cli</code> <code>cms</code> is not configured for public registration by default.
-      You can login as an administrator to register a new user or configure your directus instance to enable public registration to use this playground page.
-    </p>
+      You can login as an administrator to register a new user or configure your Directus instance to enable public registration to use this playground page.
+    </div>
     <form @submit.prevent="registerForm">
       <div>
         <label for="first_name-input">First Name</label>

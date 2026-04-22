@@ -45,8 +45,8 @@ const { data: blog } = await useAsyncData(
         v-if="blog.image"
         provider="directus"
         fit="cover"
-        height="200"
-        width="800"
+        height="250"
+        width="600"
         :src="blog.image"
       />
     </DirectusVisualEditor>
@@ -77,7 +77,7 @@ const { data: blog } = await useAsyncData(
       :item="blog.id"
       fields="content"
     >
-      <pre>{{ blog.content }}</pre>
+      <pre style="white-space: pre-wrap; word-break: break-word;">{{ blog.content }}</pre>
     </DirectusVisualEditor>
 
     <DirectusEditButton collection="posts" :item="blog.id" />
