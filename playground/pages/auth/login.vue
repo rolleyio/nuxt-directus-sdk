@@ -12,6 +12,12 @@ const form = reactive({
 const redirectMode = ref<'default' | 'false' | 'custom'>('default')
 const customRedirect = ref('/dashboard')
 
+const redirectOptions = [
+  { label: 'Default (home from config)', value: 'default' },
+  { label: 'false - stay on this page', value: 'false' },
+  { label: 'Custom path', value: 'custom' },
+]
+
 async function loginForm() {
   const redirect
     = redirectMode.value === 'false'
@@ -34,88 +40,101 @@ const lastEvent = useState<{ user: any, firedAt: string } | null>('directus.last
 </script>
 
 <template>
-  <div>
+  <div class="space-y-8">
     <div v-if="!loggedIn">
-      <h1>Login</h1>
-      <p>Demonstrates <code>useDirectusAuth().login()</code> with redirect control.</p>
+      <div class="mb-6">
+        <h1 class="text-3xl font-bold mb-2">
+          Login
+        </h1>
+        <p class="text-muted">
+          Demonstrates <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">useDirectusAuth().login()</code> with redirect control.
+        </p>
+      </div>
 
-      <form @submit.prevent="loginForm">
-        <label for="email-input">
-          Email
-          <input
-            id="email-input"
+      <UForm :state="form" class="space-y-4 max-w-sm" @submit="loginForm">
+        <UFormField label="Email" name="email" required>
+          <UInput
             v-model="form.email"
             type="email"
             autocomplete="email"
             required
-          >
-        </label>
-        <label for="password-input">
-          Password
-          <input
-            id="password-input"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="Password" name="password" required>
+          <UInput
             v-model="form.password"
             type="password"
             autocomplete="current-password"
             required
-          >
-        </label>
+            class="w-full"
+          />
+        </UFormField>
 
-        <label>
-          Redirect after login
-          <select v-model="redirectMode">
-            <option value="default">Default (home from config)</option>
-            <option value="false">false - stay on this page</option>
-            <option value="custom">Custom path</option>
-          </select>
-        </label>
+        <UFormField label="Redirect after login" name="redirect">
+          <USelect
+            v-model="redirectMode"
+            :items="redirectOptions"
+            class="w-full"
+          />
+        </UFormField>
 
-        <label v-if="redirectMode === 'custom'">
-          Custom path
-          <input v-model="customRedirect" type="text" placeholder="/dashboard">
-        </label>
+        <UFormField v-if="redirectMode === 'custom'" label="Custom path" name="customRedirect">
+          <UInput v-model="customRedirect" placeholder="/dashboard" class="w-full" />
+        </UFormField>
 
-        <button type="submit">
+        <UButton type="submit" color="primary">
           Login
-        </button>
-      </form>
+        </UButton>
+      </UForm>
 
-      <div class="demo-section">
-        <h2>Login with Providers - <code>loginWithProvider()</code></h2>
-        <div v-if="!ssoProviders?.length" class="config-notice config-notice--directus">
-          <span class="config-notice-badge">
-            <img src="~/assets/directus-logo.svg" width="12" height="12" alt="">
-            Directus Config Required
-          </span>
+      <div class="mt-8 pt-6 border-t border-default">
+        <h2 class="text-base font-semibold mb-2">
+          Login with Providers - <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">loginWithProvider()</code>
+        </h2>
+        <ConfigNotice v-if="!ssoProviders?.length">
           No SSO providers are configured.
           The <code>directus-template-cli</code> <code>cms</code> example template does not include any SSO providers by default.
           To test <code>loginWithProvider()</code>, add an OAuth provider in your Directus instance under Settings → Authentication.
-        </div>
-        <div v-for="provider in ssoProviders" :key="provider.name">
-          <button @click="providerLogin(provider.name)">
+        </ConfigNotice>
+        <div class="flex flex-col gap-2">
+          <UButton
+            v-for="provider in ssoProviders"
+            :key="provider.name"
+            color="neutral"
+            variant="outline"
+            class="w-fit"
+            @click="providerLogin(provider.name)"
+          >
             Log in with {{ provider.name }}
-          </button>
+          </UButton>
         </div>
       </div>
     </div>
 
     <div v-else>
-      <h1>Logged in</h1>
-      <p>You're logged in as:</p>
-      <pre>{{ JSON.stringify(user, null, 2) }}</pre>
-      <NuxtLink to="/auth/logout">
+      <h1 class="text-3xl font-bold mb-2">
+        Logged in
+      </h1>
+      <p class="text-muted mb-3">
+        You're logged in as:
+      </p>
+      <pre class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mb-3">{{ JSON.stringify(user, null, 2) }}</pre>
+      <UButton to="/auth/logout" color="neutral" variant="soft">
         Logout
-      </NuxtLink>
+      </UButton>
     </div>
 
-    <div class="demo-section">
-      <h2>Hook - <code>directus:loggedIn</code></h2>
-      <p>
+    <div class="pt-6 border-t border-default">
+      <h2 class="text-base font-semibold mb-2">
+        Hook - <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">directus:loggedIn</code>
+      </h2>
+      <p class="text-muted text-sm mb-3">
         Fired by the module plugin on every page load when a session exists, and after a successful login.
-        See <code>plugins/auth-events.client.ts</code> in this playground for the listener.
+        See <code class="text-xs bg-elevated px-1 py-0.5 rounded">plugins/auth-events.client.ts</code> in this playground for the listener.
       </p>
-      <pre v-if="lastEvent">{{ JSON.stringify(lastEvent, null, 2) }}</pre>
-      <p v-else class="note">
+      <pre v-if="lastEvent" class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto">{{ JSON.stringify(lastEvent, null, 2) }}</pre>
+      <p v-else class="text-xs text-muted italic border-l-2 border-default pl-3">
         Not yet fired this session.
       </p>
     </div>

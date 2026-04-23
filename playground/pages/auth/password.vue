@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref, useDirectusAuth } from '#imports'
+import { reactive, ref, useDirectusAuth } from '#imports'
 
 const { passwordRequest, passwordReset } = useDirectusAuth()
 
 const step = ref<'request' | 'reset'>('request')
-const email = ref('')
-const token = ref('')
-const newPassword = ref('')
+const requestState = reactive({ email: '' })
+const resetState = reactive({ token: '', newPassword: '' })
 const message = ref('')
 const error = ref('')
 
@@ -14,7 +13,7 @@ async function submitRequest() {
   message.value = ''
   error.value = ''
   try {
-    await passwordRequest(email.value)
+    await passwordRequest(requestState.email)
     message.value = 'Reset email sent. Check your inbox for the token.'
     step.value = 'reset'
   }
@@ -27,11 +26,11 @@ async function submitReset() {
   message.value = ''
   error.value = ''
   try {
-    await passwordReset(token.value, newPassword.value)
+    await passwordReset(resetState.token, resetState.newPassword)
     message.value = 'Password updated. You can now log in.'
     step.value = 'request'
-    token.value = ''
-    newPassword.value = ''
+    resetState.token = ''
+    resetState.newPassword = ''
   }
   catch (e: any) {
     error.value = e?.message ?? 'Unknown error'
@@ -41,67 +40,68 @@ async function submitReset() {
 
 <template>
   <div>
-    <h1>Password Reset</h1>
-    <p>
-      Demonstrates <code>useDirectusAuth().passwordRequest(email)</code> and
-      <code>passwordReset(token, newPassword)</code>.
-    </p>
-    <div class="config-notice config-notice--directus">
-      <span class="config-notice-badge">
-        <img src="~/assets/directus-logo.svg" width="12" height="12" alt="">
-        Directus Config Required
-      </span>
-      Requires the <code>PASSWORD_RESET_URL_ALLOW_LIST</code> environment variable to be set in your Directus instance.
-      The URL receives the reset token as a query param.
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold mb-2">
+        Password Reset
+      </h1>
+      <p class="text-muted">
+        Demonstrates <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">useDirectusAuth().passwordRequest(email)</code> and
+        <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">passwordReset(token, newPassword)</code>.
+      </p>
     </div>
 
+    <ConfigNotice>
+      Requires the <code>PASSWORD_RESET_URL_ALLOW_LIST</code> environment variable to be set in your Directus instance.
+      The URL receives the reset token as a query param.
+    </ConfigNotice>
+
     <template v-if="step === 'request'">
-      <h2>Step 1 - Request reset email</h2>
-      <form @submit.prevent="submitRequest">
-        <label>
-          Email
-          <input v-model="email" type="email" autocomplete="email" required>
-        </label>
-        <button type="submit">
+      <h2 class="text-base font-semibold mb-3">
+        Step 1 - Request reset email
+      </h2>
+      <UForm :state="requestState" class="space-y-4 max-w-sm" @submit="submitRequest">
+        <UFormField label="Email" name="email" required>
+          <UInput v-model="requestState.email" type="email" autocomplete="email" required class="w-full" />
+        </UFormField>
+        <UButton type="submit" color="primary">
           Send Reset Email
-        </button>
-      </form>
+        </UButton>
+      </UForm>
     </template>
 
     <template v-else>
-      <h2>Step 2 - Set new password</h2>
-      <form @submit.prevent="submitReset">
-        <label>
-          Token (from the reset email link)
-          <input v-model="token" type="text" required>
-        </label>
-        <label>
-          New password
-          <input v-model="newPassword" type="password" autocomplete="new-password" required>
-        </label>
-        <div class="actions">
-          <button type="submit">
+      <h2 class="text-base font-semibold mb-3">
+        Step 2 - Set new password
+      </h2>
+      <UForm :state="resetState" class="space-y-4 max-w-sm" @submit="submitReset">
+        <UFormField label="Token (from the reset email link)" name="token" required>
+          <UInput v-model="resetState.token" required class="w-full" />
+        </UFormField>
+        <UFormField label="New password" name="newPassword" required>
+          <UInput
+            v-model="resetState.newPassword"
+            type="password"
+            autocomplete="new-password"
+            required
+            class="w-full"
+          />
+        </UFormField>
+        <div class="flex gap-2">
+          <UButton type="submit" color="primary">
             Reset Password
-          </button>
-          <button type="button" class="secondary" @click="step = 'request'">
+          </UButton>
+          <UButton type="button" color="neutral" variant="soft" @click="step = 'request'">
             Back
-          </button>
+          </UButton>
         </div>
-      </form>
+      </UForm>
     </template>
 
-    <p v-if="message" class="success">
-      {{ message }}
-    </p>
-    <p v-if="error" class="error">
-      {{ error }}
-    </p>
-    <div class="config-notice config-notice--directus">
-      <span class="config-notice-badge">
-        <img src="~/assets/directus-logo.svg" width="12" height="12" alt="">
-        Directus Config Required
-      </span>
+    <UAlert v-if="message" color="success" variant="soft" class="mt-4" :title="message" />
+    <UAlert v-if="error" color="error" variant="soft" class="mt-4" :title="error" />
+
+    <ConfigNotice class="mt-6">
       The <code>directus-template-cli</code> <code>cms</code> example template uses a dummy email address, and therefore you'll need to register a new user and ensure your Directus instance is configured with a mail sender to test this feature.
-    </div>
+    </ConfigNotice>
   </div>
 </template>

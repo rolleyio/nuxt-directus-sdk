@@ -16,33 +16,42 @@ const { data: post } = await useAsyncData('ve-post', () =>
 </script>
 
 <template>
-  <div>
-    <h1>Visual Editor</h1>
-    <p>
-      Demonstrates <code>DirectusVisualEditor</code>(component) and <code>useDirectusVisualEditor()</code>(composable).
-      Both only activate when your site is loaded inside the Directus admin iframe; for normal visitors they render as transparent pass-throughs.
-    </p>
-
-    <div class="ve-status" :class="visualEditor ? 've-status--active' : 've-status--inactive'">
-      <strong>Visual editor:</strong>
-      {{ visualEditor
-        ? 'Active. You are running inside the Directus admin iframe.'
-        : 'Not detected. To demo these features, open this page inside the Directus Visual Editor.'
-      }}
-    </div>
-    <div v-if="preview" class="ve-banner">
-      Preview mode active - showing draft content
+  <div class="space-y-8">
+    <div>
+      <h1 class="text-3xl font-bold mb-2">
+        Visual Editor
+      </h1>
+      <p class="text-muted">
+        Demonstrates <code class="text-xs bg-elevated px-1 py-0.5 rounded">DirectusVisualEditor</code> (component) and <code class="text-xs bg-elevated px-1 py-0.5 rounded">useDirectusVisualEditor()</code> (composable).
+        Both only activate when your site is loaded inside the Directus admin iframe; for normal visitors they render as transparent pass-throughs.
+      </p>
     </div>
 
-    <div class="demo-section">
-      <h2>Setup</h2>
-      <div class="config-notice config-notice--directus">
-        <span class="config-notice-badge">
-          <img src="~/assets/directus-logo.svg" width="12" height="12" alt="">
-          Directus Config Required
-        </span>
+    <UAlert
+      :color="visualEditor ? 'success' : 'warning'"
+      variant="subtle"
+      :icon="visualEditor ? 'i-lucide-check-circle' : 'i-lucide-triangle-alert'"
+      :title="visualEditor ? 'Visual editor: Active' : 'Visual editor: Not detected'"
+      :description="visualEditor
+        ? 'You are running inside the Directus admin iframe.'
+        : 'To demo these features, open this page inside the Directus Visual Editor.'"
+    />
+    <UAlert
+      v-if="preview"
+      color="info"
+      variant="subtle"
+      icon="i-lucide-eye"
+      title="Preview mode active"
+      description="Showing draft content"
+    />
+
+    <section class="pt-6 border-t border-default">
+      <h2 class="text-base font-semibold mb-3">
+        Setup
+      </h2>
+      <ConfigNotice title="Directus Config Required">
         Two places need to be configured in your Directus instance:
-        <ol style="margin: 4px 0 0 20px; font-size: 13px; line-height: 2">
+        <ol class="list-decimal pl-6 space-y-1 mt-2">
           <li>
             <strong>Collection preview URL</strong> In the <code>posts</code> collection settings, set the Preview URL to <code>http://localhost:3000/blog/<span v-pre>{{slug}}</span>?visual-editing=true</code>.
             Directus substitutes <code><span v-pre>{{slug}}</span></code> with the item's actual value when you open the visual editor for a specific post.
@@ -53,23 +62,24 @@ const { data: post } = await useAsyncData('ve-post', () =>
             preview sidebar that appears while editing.
           </li>
         </ol>
-      </div>
-      <p class="note">
+      </ConfigNotice>
+      <p class="text-xs text-muted italic border-l-2 border-default pl-3">
         Add <code>?debug</code> to the URL to see connection logs in the browser console.
         The module detects the visual editor purely by iframe context (<code>window.parent !== window</code>) - the <code>?visual-editing=true</code> query param is informational only.
       </p>
-    </div>
+    </section>
 
-    <div v-if="post" class="demo-section">
-      <h2><code>DirectusVisualEditor</code> - field-level wrappers</h2>
-      <p>
-        Each wrapper adds a <code>data-directus</code> attribute pointing to the collection,
+    <section v-if="post" class="pt-6 border-t border-default">
+      <h2 class="text-base font-semibold mb-2">
+        <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">DirectusVisualEditor</code> - field-level wrappers
+      </h2>
+      <p class="text-sm text-muted mb-4">
+        Each wrapper adds a <code class="text-xs bg-elevated px-1 py-0.5 rounded">data-directus</code> attribute pointing to the collection,
         item ID, and optional field(s). Clicking a wrapped element inside the Directus iframe
         opens the editor for that specific field.
       </p>
 
-      <div class="ve-post">
-        <!-- Image - single field, drawer mode -->
+      <UCard class="mb-4" :ui="{ body: 'p-0 sm:p-0' }">
         <DirectusVisualEditor
           collection="posts"
           :item="post.id"
@@ -84,206 +94,121 @@ const { data: post } = await useAsyncData('ve-post', () =>
             height="300"
             fit="cover"
             alt="Post image"
-            class="ve-post-image"
+            class="w-full h-50 object-cover block"
           />
-          <div v-else class="ve-post-image-placeholder">
+          <div
+            v-else
+            class="bg-elevated h-30 flex items-center justify-center text-muted text-sm italic"
+          >
             No image - click to add one (inside Directus iframe)
           </div>
         </DirectusVisualEditor>
 
-        <!-- Title - single field, popover mode -->
-        <DirectusVisualEditor
-          collection="posts"
-          :item="post.id"
-          fields="title"
-          mode="popover"
-        >
-          <h2 class="ve-post-title">
-            {{ post.title }}
-          </h2>
-        </DirectusVisualEditor>
+        <div class="p-4 space-y-2">
+          <DirectusVisualEditor
+            collection="posts"
+            :item="post.id"
+            fields="title"
+            mode="popover"
+          >
+            <h2 class="text-xl font-semibold">
+              {{ post.title }}
+            </h2>
+          </DirectusVisualEditor>
 
-        <!-- Author - related collection, multiple fields, modal mode -->
-        <DirectusVisualEditor
-          v-if="post.author && typeof post.author === 'object'"
-          collection="directus_users"
-          :item="(post.author as any).id"
-          :fields="['first_name', 'last_name']"
-          mode="modal"
-        >
-          <p class="ve-post-meta">
-            By {{ (post.author as any).first_name }} {{ (post.author as any).last_name }} {{ post.published_at }}
-          </p>
-        </DirectusVisualEditor>
+          <DirectusVisualEditor
+            v-if="post.author && typeof post.author === 'object'"
+            collection="directus_users"
+            :item="(post.author as any).id"
+            :fields="['first_name', 'last_name']"
+            mode="modal"
+          >
+            <p class="text-xs text-muted">
+              By {{ (post.author as any).first_name }} {{ (post.author as any).last_name }} {{ post.published_at }}
+            </p>
+          </DirectusVisualEditor>
 
-        <!-- Content - single field, drawer mode (default) -->
-        <DirectusVisualEditor
-          collection="posts"
-          :item="post.id"
-          fields="content"
-        >
-          <div class="ve-post-content">
-            <pre>{{ post.content }}</pre>
-          </div>
-        </DirectusVisualEditor>
-      </div>
+          <DirectusVisualEditor
+            collection="posts"
+            :item="post.id"
+            fields="content"
+          >
+            <pre class="text-sm whitespace-pre-wrap wrap-break-word">{{ post.content }}</pre>
+          </DirectusVisualEditor>
+        </div>
+      </UCard>
 
-      <p class="note">
+      <p class="text-xs text-muted italic border-l-2 border-default pl-3 mb-3">
         <strong>mode</strong> prop variants used above: <code>drawer</code> (image, content), <code>popover</code> (title), <code>modal</code> (author).
         All three open in Directus after clicking the wrapped element inside the iframe.
       </p>
 
-      <p>
-        The same <code>DirectusVisualEditor</code> wrappers are used on the individual blog post page.
+      <p class="text-sm text-muted">
+        The same <code class="text-xs bg-elevated px-1 py-0.5 rounded">DirectusVisualEditor</code> wrappers are used on the individual blog post page.
         When loaded inside the Directus visual editor iframe, all fields become clickable edit targets.
       </p>
-      <NuxtLink v-if="post?.slug" :to="`/blog/${post.slug}`">
+      <UButton
+        v-if="post?.slug"
+        :to="`/blog/${post.slug}`"
+        color="primary"
+        variant="link"
+        :padded="false"
+        class="mt-2"
+        trailing-icon="i-lucide-arrow-right"
+      >
         See it in action on this blog post
-      </NuxtLink>
-    </div>
+      </UButton>
+    </section>
 
-    <div class="demo-section">
-      <h2><code>useDirectusVisualEditor()</code> composable</h2>
-      <p>
-        <code>useDirectusVisualEditor()</code> returns a <code>Ref&lt;boolean&gt;</code> that is <code>true</code>
+    <section class="pt-6 border-t border-default">
+      <h2 class="text-base font-semibold mb-2">
+        <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">useDirectusVisualEditor()</code> composable
+      </h2>
+      <p class="text-sm text-muted mb-3">
+        <code class="text-xs bg-elevated px-1 py-0.5 rounded">useDirectusVisualEditor()</code> returns a <code class="text-xs bg-elevated px-1 py-0.5 rounded">Ref&lt;boolean&gt;</code> that is <code class="text-xs bg-elevated px-1 py-0.5 rounded">true</code>
         when the page is running inside the Directus admin iframe. It is the same reactive value the
-        <code>DirectusVisualEditor</code> component uses internally.
+        <code class="text-xs bg-elevated px-1 py-0.5 rounded">DirectusVisualEditor</code> component uses internally.
       </p>
-      <p>
+      <p class="text-sm text-muted mb-3">
         Use it directly when you need custom behavior beyond a field wrapper: conditionally rendering a
         toolbar, lazy-loading editing scripts, or applying editor-only styles.
       </p>
 
-      <pre>
-const visualEditor = useDirectusVisualEditor()
+      <pre class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mb-3">const visualEditor = useDirectusVisualEditor()
 
 // Drive any conditional logic from this boolean:
 // v-if="visualEditor"       only visible inside the Directus iframe
 // :class="{ 'edit-mode': visualEditor }"  apply editor styles</pre>
 
-      <p>
-        <strong>Difference from <code>DirectusVisualEditor</code>:</strong>
-        the component wraps an element and adds <code>data-directus</code> attributes so Directus knows
+      <p class="text-sm text-muted mb-4">
+        <strong>Difference from <code class="text-xs bg-elevated px-1 py-0.5 rounded">DirectusVisualEditor</code>:</strong>
+        the component wraps an element and adds <code class="text-xs bg-elevated px-1 py-0.5 rounded">data-directus</code> attributes so Directus knows
         which collection/item/field to open when clicked. The composable gives you the raw boolean for
         anything the wrapper component does not cover.
       </p>
 
-      <div class="ve-composable-demo">
-        <p v-if="visualEditor" class="ve-composable-active">
+      <UAlert
+        v-if="visualEditor"
+        color="success"
+        variant="soft"
+        icon="i-lucide-check-circle"
+      >
+        <template #description>
           Visual editor is active. This paragraph is only rendered inside the Directus iframe
           (<code>useDirectusVisualEditor()</code> is <code>true</code>).
-        </p>
-        <p v-else class="ve-composable-inactive">
+        </template>
+      </UAlert>
+      <UAlert
+        v-else
+        color="neutral"
+        variant="soft"
+        icon="i-lucide-info"
+      >
+        <template #description>
           Visual editor is not active (<code>useDirectusVisualEditor()</code> is <code>false</code>).
           Load this URL inside Directus Live Preview to see the above message appear.
-        </p>
-      </div>
-    </div>
+        </template>
+      </UAlert>
+    </section>
   </div>
 </template>
-
-<style>
-.ve-status {
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  margin: 20px 10px;
-}
-
-.ve-status--active {
-  background: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #a5d6a7;
-}
-
-.ve-status--inactive {
-  background: #fff8e1;
-  color: #f57f17;
-  border: 1px solid #ffe082;
-}
-
-.ve-banner {
-  background: #ede7f6;
-  color: #4527a0;
-  border: 1px solid #b39ddb;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 20px;
-}
-
-.ve-post {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.ve-post-image {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: block;
-}
-
-.ve-post-image-placeholder {
-  background: #f5f5f5;
-  height: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #aaa;
-  font-size: 13px;
-  font-style: italic;
-}
-
-.ve-post-title {
-  margin: 16px 16px 4px;
-  font-size: 20px;
-}
-
-.ve-post-meta {
-  margin: 0 16px 12px;
-  font-size: 12px;
-  color: #777;
-}
-
-.ve-post-content {
-  padding: 0 16px 16px;
-  font-size: 13px;
-}
-
-.ve-post-content pre {
-  border: none;
-  padding: 0;
-  background: transparent;
-  white-space: pre-wrap;
-}
-
-.ve-composable-demo {
-  margin-top: 12px;
-}
-
-.ve-composable-active {
-  background: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #a5d6a7;
-  padding: 10px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  margin: 0;
-}
-
-.ve-composable-inactive {
-  background: #f5f5f5;
-  color: #777;
-  border: 1px solid #e0e0e0;
-  padding: 10px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  margin: 0;
-  font-style: italic;
-}
-</style>

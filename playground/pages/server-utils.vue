@@ -23,54 +23,75 @@ async function fetchToken() {
 </script>
 
 <template>
-  <div>
-    <h1>Server-side Composables</h1>
-    <p>
-      These composables are only available in Nitro server routes (<code>server/api/*.ts</code>).
-      This page calls each API route and displays the result.
-    </p>
+  <div class="space-y-8">
+    <div>
+      <h1 class="text-3xl font-bold mb-2">
+        Server-side Composables
+      </h1>
+      <p class="text-muted">
+        These composables are only available in Nitro server routes (<code class="text-xs bg-elevated px-1 py-0.5 rounded">server/api/*.ts</code>).
+        This page calls each API route and displays the result.
+      </p>
+    </div>
 
-    <div class="demo-section">
-      <h2><code>useAdminDirectus()</code></h2>
-      <p>
-        Creates a Directus client authenticated with <code>DIRECTUS_ADMIN_TOKEN</code>.
+    <section class="pt-6 border-t border-default">
+      <h2 class="text-base font-semibold mb-2">
+        <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">useAdminDirectus()</code>
+      </h2>
+      <p class="text-sm text-muted mb-3">
+        Creates a Directus client authenticated with <code class="text-xs bg-elevated px-1 py-0.5 rounded">DIRECTUS_ADMIN_TOKEN</code>.
         Use this for privileged operations that should not depend on the current user's session.
       </p>
-      <button @click="fetchAdmin">
+      <UButton color="primary" @click="fetchAdmin">
         Call /api/admin
-      </button>
-      <pre v-if="adminResult">{{ JSON.stringify(adminResult, null, 2) }}</pre>
-    </div>
+      </UButton>
+      <pre v-if="adminResult" class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mt-3">{{ JSON.stringify(adminResult, null, 2) }}</pre>
+    </section>
 
-    <div class="demo-section">
-      <h2><code>useSessionDirectus(event)</code></h2>
-      <p>
+    <section class="pt-6 border-t border-default">
+      <h2 class="text-base font-semibold mb-2">
+        <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">useSessionDirectus(event)</code>
+      </h2>
+      <p class="text-sm text-muted mb-3">
         Creates a Directus client that forwards the current user's session cookie.
         Requests run with that user's permissions - not admin privileges.
-        <span v-if="!loggedIn" class="warning">Log in first to see your session data.</span>
       </p>
-      <button @click="fetchSession">
+      <UAlert
+        v-if="!loggedIn"
+        color="warning"
+        variant="soft"
+        icon="i-lucide-triangle-alert"
+        title="Log in first to see your session data."
+        class="mb-3"
+      />
+      <UButton color="primary" @click="fetchSession">
         Call /api/user-session
-      </button>
-      <pre v-if="sessionResult">{{ JSON.stringify(sessionResult, null, 2) }}</pre>
-    </div>
+      </UButton>
+      <pre v-if="sessionResult" class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mt-3">{{ JSON.stringify(sessionResult, null, 2) }}</pre>
+    </section>
 
-    <div class="demo-section">
-      <h2><code>useTokenDirectus(token)</code></h2>
-      <p>
+    <section class="pt-6 border-t border-default">
+      <h2 class="text-base font-semibold mb-2">
+        <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">useTokenDirectus(token)</code>
+      </h2>
+      <p class="text-sm text-muted mb-3">
         Creates a Directus client authenticated with an explicit static token.
         Useful for service accounts or integrations where you manage tokens directly.
       </p>
-      <form class="form-inline" @submit.prevent="fetchToken">
-        <label>
-          Token
-          <input v-model="tokenInput" type="text" placeholder="your-static-token" required style="width: 280px">
-        </label>
-        <button type="submit">
+      <form class="flex items-end gap-2" @submit.prevent="fetchToken">
+        <UFormField label="Token" class="flex-1 max-w-md">
+          <UInput
+            v-model="tokenInput"
+            placeholder="your-static-token"
+            required
+            class="w-full"
+          />
+        </UFormField>
+        <UButton type="submit" color="primary">
           Call /api/token
-        </button>
+        </UButton>
       </form>
-      <pre v-if="tokenResult">{{ JSON.stringify(tokenResult, null, 2) }}</pre>
-    </div>
+      <pre v-if="tokenResult" class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mt-3">{{ JSON.stringify(tokenResult, null, 2) }}</pre>
+    </section>
   </div>
 </template>

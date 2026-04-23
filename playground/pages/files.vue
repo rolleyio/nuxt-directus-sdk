@@ -52,6 +52,19 @@ const urlOptions = ref({
   filename: '',
 })
 
+const fitOptions = [
+  { label: 'cover', value: 'cover' },
+  { label: 'contain', value: 'contain' },
+  { label: 'inside', value: 'inside' },
+  { label: 'outside', value: 'outside' },
+]
+const formatOptions = [
+  { label: 'webp', value: 'webp' },
+  { label: 'jpg', value: 'jpg' },
+  { label: 'png', value: 'png' },
+  { label: 'avif', value: 'avif' },
+]
+
 const generatedUrl = computed(() => {
   const id = fileIdInput.value || uploadedFile.value?.id
   if (!id)
@@ -70,103 +83,105 @@ const generatedUrl = computed(() => {
 </script>
 
 <template>
-  <div>
-    <h1>Files</h1>
-    <p>
-      Demonstrates file upload and asset URL generation. You must be logged in to upload (Directus permission check).
-    </p>
+  <div class="space-y-8">
+    <div>
+      <h1 class="text-3xl font-bold mb-2">
+        Files
+      </h1>
+      <p class="text-muted">
+        Demonstrates file upload and asset URL generation. You must be logged in to upload (Directus permission check).
+      </p>
+    </div>
 
-    <div class="demo-section">
-      <h2>Single upload - <code>uploadDirectusFile()</code></h2>
-      <form class="form-inline" @submit.prevent="handleUpload">
-        <input ref="fileInput" type="file" required>
-        <button type="submit">
+    <section class="pt-6 border-t border-default">
+      <h2 class="text-base font-semibold mb-3">
+        Single upload - <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">uploadDirectusFile()</code>
+      </h2>
+      <form class="flex items-end gap-2 mb-3" @submit.prevent="handleUpload">
+        <input
+          ref="fileInput"
+          type="file"
+          required
+          class="text-sm file:mr-3 file:rounded file:border-0 file:bg-primary file:text-inverted file:px-3 file:py-1.5 file:text-xs file:font-medium hover:file:bg-primary/90"
+        >
+        <UButton type="submit" color="primary" size="sm">
           Upload
-        </button>
+        </UButton>
       </form>
-      <p v-if="uploadError" class="error">
-        {{ uploadError }}
-      </p>
-      <pre v-if="uploadedFile">{{ JSON.stringify(uploadedFile, null, 2) }}</pre>
-    </div>
+      <UAlert v-if="uploadError" color="error" variant="soft" :title="uploadError" class="mb-3" />
+      <pre v-if="uploadedFile" class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto">{{ JSON.stringify(uploadedFile, null, 2) }}</pre>
+    </section>
 
-    <div class="demo-section">
-      <h2>Batch upload - <code>uploadDirectusFiles()</code></h2>
-      <p>Accepts an array of <code>{ file, data? }</code> objects and uploads them all.</p>
-      <form class="form-inline" @submit.prevent="handleBatchUpload">
-        <input ref="batchInput" type="file" multiple required>
-        <button type="submit">
+    <section class="pt-6 border-t border-default">
+      <h2 class="text-base font-semibold mb-2">
+        Batch upload - <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">uploadDirectusFiles()</code>
+      </h2>
+      <p class="text-sm text-muted mb-3">
+        Accepts an array of <code class="text-xs bg-elevated px-1 py-0.5 rounded">{ file, data? }</code> objects and uploads them all.
+      </p>
+      <form class="flex items-end gap-2 mb-3" @submit.prevent="handleBatchUpload">
+        <input
+          ref="batchInput"
+          type="file"
+          multiple
+          required
+          class="text-sm file:mr-3 file:rounded file:border-0 file:bg-primary file:text-inverted file:px-3 file:py-1.5 file:text-xs file:font-medium hover:file:bg-primary/90"
+        >
+        <UButton type="submit" color="primary" size="sm">
           Upload all
-        </button>
+        </UButton>
       </form>
-      <p v-if="batchError" class="error">
-        {{ batchError }}
-      </p>
-      <pre v-if="batchResult.length">{{ JSON.stringify(batchResult, null, 2) }}</pre>
-    </div>
+      <UAlert v-if="batchError" color="error" variant="soft" :title="batchError" class="mb-3" />
+      <pre v-if="batchResult.length" class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto">{{ JSON.stringify(batchResult, null, 2) }}</pre>
+    </section>
 
-    <div class="demo-section">
-      <h2>Asset URL - <code>getDirectusFileUrl()</code></h2>
-      <p>
-        Generates a Directus asset URL with transformation parameters
+    <section class="pt-6 border-t border-default">
+      <h2 class="text-base font-semibold mb-2">
+        Asset URL - <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">getDirectusFileUrl()</code>
+      </h2>
+      <p class="text-sm text-muted mb-4">
+        Generates a Directus asset URL with transformation parameters.
         Upload a file above to populate the ID automatically, or paste one manually.
       </p>
 
-      <div class="controls">
-        <label>
-          File ID
-          <input v-model="fileIdInput" type="text" :placeholder="uploadedFile?.id ?? 'paste-file-id-here'">
-        </label>
-        <label>
-          Width
-          <input v-model.number="urlOptions.width" type="number" min="0">
-        </label>
-        <label>
-          Height
-          <input v-model.number="urlOptions.height" type="number" min="0">
-        </label>
-        <label>
-          Quality
-          <input v-model.number="urlOptions.quality" type="number" min="1" max="100">
-        </label>
-        <label>
-          Fit
-          <select v-model="urlOptions.fit">
-            <option value="cover">cover</option>
-            <option value="contain">contain</option>
-            <option value="inside">inside</option>
-            <option value="outside">outside</option>
-          </select>
-        </label>
-        <label>
-          Format
-          <select v-model="urlOptions.format">
-            <option value="webp">webp</option>
-            <option value="jpg">jpg</option>
-            <option value="png">png</option>
-            <option value="avif">avif</option>
-          </select>
-        </label>
-        <label>
-          Download filename
-          <input v-model="urlOptions.filename" type="text" placeholder="my-file.jpg">
-        </label>
-        <label class="checkbox-label">
-          <input v-model="urlOptions.download" type="checkbox">
-          Force download
-        </label>
-        <label class="checkbox-label">
-          <input v-model="urlOptions.withoutEnlargement" type="checkbox">
-          Without enlargement
-        </label>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 max-w-2xl">
+        <UFormField label="File ID">
+          <UInput
+            v-model="fileIdInput"
+            :placeholder="uploadedFile?.id ?? 'paste-file-id-here'"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="Width">
+          <UInputNumber v-model="urlOptions.width" :min="0" class="w-full" />
+        </UFormField>
+        <UFormField label="Height">
+          <UInputNumber v-model="urlOptions.height" :min="0" class="w-full" />
+        </UFormField>
+        <UFormField label="Quality">
+          <UInputNumber v-model="urlOptions.quality" :min="1" :max="100" class="w-full" />
+        </UFormField>
+        <UFormField label="Fit">
+          <USelect v-model="urlOptions.fit" :items="fitOptions" class="w-full" />
+        </UFormField>
+        <UFormField label="Format">
+          <USelect v-model="urlOptions.format" :items="formatOptions" class="w-full" />
+        </UFormField>
+        <UFormField label="Download filename" class="md:col-span-3">
+          <UInput v-model="urlOptions.filename" placeholder="my-file.jpg" class="w-full" />
+        </UFormField>
+        <div class="md:col-span-3 flex flex-wrap gap-4">
+          <UCheckbox v-model="urlOptions.download" label="Force download" />
+          <UCheckbox v-model="urlOptions.withoutEnlargement" label="Without enlargement" />
+        </div>
       </div>
 
-      <div v-if="generatedUrl" class="url-result">
-        <p class="url-label">
+      <div v-if="generatedUrl" class="space-y-3">
+        <p class="text-sm font-semibold">
           Generated URL:
         </p>
-        <code class="url">{{ generatedUrl }}</code>
-        <div v-if="!urlOptions.download" class="preview">
+        <code class="block bg-elevated border border-default rounded p-3 text-xs wrap-break-word">{{ generatedUrl }}</code>
+        <div v-if="!urlOptions.download">
           <NuxtImg
             provider="directus"
             :src="fileIdInput || uploadedFile?.id"
@@ -176,9 +191,10 @@ const generatedUrl = computed(() => {
             :format="urlOptions.format"
             :quality="urlOptions.quality"
             alt="Preview"
+            class="max-w-full rounded border border-default"
           />
         </div>
       </div>
-    </div>
+    </section>
   </div>
 </template>
