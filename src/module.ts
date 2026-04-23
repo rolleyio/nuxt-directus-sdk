@@ -451,7 +451,7 @@ export default defineNuxtModule<ModuleOptions>({
         prefix: '',
         global: true,
       })
-      loggerMessage.push('📝 Visual Editor Components Added', '')
+      loggerMessage.push('📝 Visual Editor Component Added', '')
     }
 
     // Add route middleware

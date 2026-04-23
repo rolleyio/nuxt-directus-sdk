@@ -30,9 +30,8 @@ const { data: posts } = await useAsyncData('posts', () => {
       <NuxtLink :href="`/blog/${post.slug}`">
         <h2>{{ post.title }}</h2>
         <span>
-          <small>
-            {{ post.author?.first_name }} {{ post.author?.last_name }}</small>
-          - {{ post.published_at }}
+          <strong>Author: {{ post.author?.first_name }} {{ post.author?.last_name }}</strong>
+          <small> // Published: {{ post.published_at }}</small>
         </span>
       </NuxtLink>
     </div>

@@ -10,9 +10,7 @@ import {
 const route = useRoute()
 const directus = useDirectus()
 
-const slug = computed(() => {
-  return route.params.slug
-})
+const slug = computed(() => route.params.slug)
 
 const { data: blog } = await useAsyncData(
   `blog-${slug.value}`,
@@ -21,11 +19,11 @@ const { data: blog } = await useAsyncData(
       readItems('posts', {
         filter: { slug: { _eq: `${slug.value}` } },
         fields: [
+          'id',
           'title',
           'image',
-          'title',
           'content',
-          { author: ['first_name', 'last_name'] },
+          { author: ['id', 'first_name', 'last_name'] },
           'published_at',
         ],
       }),
@@ -37,19 +35,51 @@ const { data: blog } = await useAsyncData(
 
 <template>
   <div v-if="blog">
-    <h1>
-      {{ blog.title }}
-    </h1>
-    <NuxtImg
-      v-if="blog.image"
-      provider="directus"
-      fit="cover"
-      height="200"
-      width="200"
-      :src="blog.image"
-    />
-    <h2>{{ blog.author?.first_name }} {{ blog.author?.last_name }}</h2>
+    <DirectusVisualEditor
+      collection="posts"
+      :item="blog.id"
+      fields="image"
+      mode="drawer"
+    >
+      <NuxtImg
+        v-if="blog.image"
+        provider="directus"
+        fit="cover"
+        height="250"
+        width="600"
+        :src="blog.image"
+      />
+    </DirectusVisualEditor>
+
+    <DirectusVisualEditor
+      collection="posts"
+      :item="blog.id"
+      fields="title"
+      mode="popover"
+    >
+      <h1>{{ blog.title }}</h1>
+    </DirectusVisualEditor>
+
+    <DirectusVisualEditor
+      v-if="blog.author && typeof blog.author === 'object'"
+      collection="directus_users"
+      :item="(blog.author as any).id"
+      :fields="['first_name', 'last_name']"
+      mode="modal"
+    >
+      <h2>{{ (blog.author as any).first_name }} {{ (blog.author as any).last_name }}</h2>
+    </DirectusVisualEditor>
+
     <small>{{ blog.published_at }}</small>
-    <pre>{{ blog.content }}</pre>
+
+    <DirectusVisualEditor
+      collection="posts"
+      :item="blog.id"
+      fields="content"
+    >
+      <pre style="white-space: pre-wrap; word-break: break-word;">{{ blog.content }}</pre>
+    </DirectusVisualEditor>
+
+    <DirectusEditButton collection="posts" :item="blog.id" />
   </div>
 </template>
