@@ -192,6 +192,8 @@ function parsePermissionConfig<Schema, Collection extends keyof Schema>(
 
   return {
     fields: config.fields as '*' | (keyof Schema[Collection])[] | undefined,
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     filter: config.filter as any,
     presets: config.presets as Partial<Schema[Collection]> | undefined,
     validation: config.validation as DirectusValidation | undefined,
@@ -452,7 +454,11 @@ function convertPayloadPermission<Schema>(
     fields: perm.fields
       ? (perm.fields.includes('*') ? '*' : perm.fields) as '*' | (keyof Schema[keyof Schema])[]
       : undefined,
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     filter: perm.permissions as any,
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     presets: perm.presets as any,
     validation: perm.validation ?? undefined,
   }

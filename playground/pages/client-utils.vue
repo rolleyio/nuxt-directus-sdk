@@ -29,8 +29,15 @@ const visualEditor = useDirectusVisualEditor()
         Returns the context-aware Directus base URL. On the client it uses the configured URL (or <code class="text-xs bg-elevated px-1 py-0.5 rounded">devProxy</code> path in development).
         On the server it prefers <code class="text-xs bg-elevated px-1 py-0.5 rounded">serverDirectusUrl</code> for internal networking (Docker/K8s), falling back to the client URL.
       </p>
-      <UFormField label="Path" class="max-w-sm mb-3">
-        <UInput v-model="pathInput" placeholder="items/posts" class="w-full" />
+      <UFormField
+        label="Path"
+        class="max-w-sm mb-3"
+      >
+        <UInput
+          v-model="pathInput"
+          placeholder="items/posts"
+          class="w-full"
+        />
       </UFormField>
       <p class="text-sm font-semibold mb-1">
         Resolved URL:
@@ -66,7 +73,10 @@ const visualEditor = useDirectusVisualEditor()
         use it to show draft/unpublished content.
       </p>
       <p class="text-sm mb-3">
-        Current value: <UBadge :color="preview ? 'success' : 'neutral'" variant="soft">
+        Current value: <UBadge
+          :color="preview ? 'success' : 'neutral'"
+          variant="soft"
+        >
           {{ preview }}
         </UBadge>
       </p>
@@ -87,7 +97,10 @@ const visualEditor = useDirectusVisualEditor()
         conditionally render editing UI.
       </p>
       <p class="text-sm mb-3">
-        Current value: <UBadge :color="visualEditor ? 'success' : 'neutral'" variant="soft">
+        Current value: <UBadge
+          :color="visualEditor ? 'success' : 'neutral'"
+          variant="soft"
+        >
           {{ visualEditor }}
         </UBadge>
       </p>

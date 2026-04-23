@@ -3,8 +3,14 @@ import { ref, useDirectusAuth } from '#imports'
 
 const { loggedIn } = useDirectusAuth()
 
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const adminResult = ref<any>(null)
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sessionResult = ref<any>(null)
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tokenResult = ref<any>(null)
 const tokenInput = ref('')
 
@@ -42,10 +48,16 @@ async function fetchToken() {
         Creates a Directus client authenticated with <code class="text-xs bg-elevated px-1 py-0.5 rounded">DIRECTUS_ADMIN_TOKEN</code>.
         Use this for privileged operations that should not depend on the current user's session.
       </p>
-      <UButton color="primary" @click="fetchAdmin">
+      <UButton
+        color="primary"
+        @click="fetchAdmin"
+      >
         Call /api/admin
       </UButton>
-      <pre v-if="adminResult" class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mt-3">{{ JSON.stringify(adminResult, null, 2) }}</pre>
+      <pre
+        v-if="adminResult"
+        class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mt-3"
+      >{{ JSON.stringify(adminResult, null, 2) }}</pre>
     </section>
 
     <section class="pt-6 border-t border-default">
@@ -64,10 +76,16 @@ async function fetchToken() {
         title="Log in first to see your session data."
         class="mb-3"
       />
-      <UButton color="primary" @click="fetchSession">
+      <UButton
+        color="primary"
+        @click="fetchSession"
+      >
         Call /api/user-session
       </UButton>
-      <pre v-if="sessionResult" class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mt-3">{{ JSON.stringify(sessionResult, null, 2) }}</pre>
+      <pre
+        v-if="sessionResult"
+        class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mt-3"
+      >{{ JSON.stringify(sessionResult, null, 2) }}</pre>
     </section>
 
     <section class="pt-6 border-t border-default">
@@ -78,8 +96,14 @@ async function fetchToken() {
         Creates a Directus client authenticated with an explicit static token.
         Useful for service accounts or integrations where you manage tokens directly.
       </p>
-      <form class="flex items-end gap-2" @submit.prevent="fetchToken">
-        <UFormField label="Token" class="flex-1 max-w-md">
+      <form
+        class="flex items-end gap-2"
+        @submit.prevent="fetchToken"
+      >
+        <UFormField
+          label="Token"
+          class="flex-1 max-w-md"
+        >
           <UInput
             v-model="tokenInput"
             placeholder="your-static-token"
@@ -87,11 +111,17 @@ async function fetchToken() {
             class="w-full"
           />
         </UFormField>
-        <UButton type="submit" color="primary">
+        <UButton
+          type="submit"
+          color="primary"
+        >
           Call /api/token
         </UButton>
       </form>
-      <pre v-if="tokenResult" class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mt-3">{{ JSON.stringify(tokenResult, null, 2) }}</pre>
+      <pre
+        v-if="tokenResult"
+        class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mt-3"
+      >{{ JSON.stringify(tokenResult, null, 2) }}</pre>
     </section>
   </div>
 </template>

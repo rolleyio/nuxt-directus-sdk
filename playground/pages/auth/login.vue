@@ -36,6 +36,8 @@ async function providerLogin(provider: string) {
 const { data: ssoProviders } = await useAsyncData('ssoProviders', () =>
   directus.request(readProviders()))
 
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const lastEvent = useState<{ user: any, firedAt: string } | null>('directus.lastLoginEvent')
 </script>
 
@@ -51,8 +53,16 @@ const lastEvent = useState<{ user: any, firedAt: string } | null>('directus.last
         </p>
       </div>
 
-      <UForm :state="form" class="space-y-4 max-w-sm" @submit="loginForm">
-        <UFormField label="Email" name="email" required>
+      <UForm
+        :state="form"
+        class="space-y-4 max-w-sm"
+        @submit="loginForm"
+      >
+        <UFormField
+          label="Email"
+          name="email"
+          required
+        >
           <UInput
             v-model="form.email"
             type="email"
@@ -61,7 +71,11 @@ const lastEvent = useState<{ user: any, firedAt: string } | null>('directus.last
             class="w-full"
           />
         </UFormField>
-        <UFormField label="Password" name="password" required>
+        <UFormField
+          label="Password"
+          name="password"
+          required
+        >
           <UInput
             v-model="form.password"
             type="password"
@@ -71,7 +85,10 @@ const lastEvent = useState<{ user: any, firedAt: string } | null>('directus.last
           />
         </UFormField>
 
-        <UFormField label="Redirect after login" name="redirect">
+        <UFormField
+          label="Redirect after login"
+          name="redirect"
+        >
           <USelect
             v-model="redirectMode"
             :items="redirectOptions"
@@ -79,11 +96,22 @@ const lastEvent = useState<{ user: any, firedAt: string } | null>('directus.last
           />
         </UFormField>
 
-        <UFormField v-if="redirectMode === 'custom'" label="Custom path" name="customRedirect">
-          <UInput v-model="customRedirect" placeholder="/dashboard" class="w-full" />
+        <UFormField
+          v-if="redirectMode === 'custom'"
+          label="Custom path"
+          name="customRedirect"
+        >
+          <UInput
+            v-model="customRedirect"
+            placeholder="/dashboard"
+            class="w-full"
+          />
         </UFormField>
 
-        <UButton type="submit" color="primary">
+        <UButton
+          type="submit"
+          color="primary"
+        >
           Login
         </UButton>
       </UForm>
@@ -120,7 +148,11 @@ const lastEvent = useState<{ user: any, firedAt: string } | null>('directus.last
         You're logged in as:
       </p>
       <pre class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mb-3">{{ JSON.stringify(user, null, 2) }}</pre>
-      <UButton to="/auth/logout" color="neutral" variant="soft">
+      <UButton
+        to="/auth/logout"
+        color="neutral"
+        variant="soft"
+      >
         Logout
       </UButton>
     </div>
@@ -133,8 +165,14 @@ const lastEvent = useState<{ user: any, firedAt: string } | null>('directus.last
         Fired by the module plugin on every page load when a session exists, and after a successful login.
         See <code class="text-xs bg-elevated px-1 py-0.5 rounded">plugins/auth-events.client.ts</code> in this playground for the listener.
       </p>
-      <pre v-if="lastEvent" class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto">{{ JSON.stringify(lastEvent, null, 2) }}</pre>
-      <p v-else class="text-xs text-muted italic border-l-2 border-default pl-3">
+      <pre
+        v-if="lastEvent"
+        class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto"
+      >{{ JSON.stringify(lastEvent, null, 2) }}</pre>
+      <p
+        v-else
+        class="text-xs text-muted italic border-l-2 border-default pl-3"
+      >
         Not yet fired this session.
       </p>
     </div>

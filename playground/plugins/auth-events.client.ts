@@ -1,6 +1,8 @@
 import { defineNuxtPlugin, useDirectusAuth, useState } from '#imports'
 
 export default defineNuxtPlugin((nuxtApp) => {
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lastEvent = useState<{ user: any, firedAt: string } | null>('directus.lastLoginEvent', () => null)
 
   // Register listener for future hook calls (e.g. explicit login during the session)

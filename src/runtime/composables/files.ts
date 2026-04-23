@@ -28,6 +28,8 @@ export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Q
     formData.append('file', file)
   })
 
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFile[] | DirectusFile
 }
 

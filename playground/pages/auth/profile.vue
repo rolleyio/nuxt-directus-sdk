@@ -25,6 +25,8 @@ async function submit() {
     await updateMe({ first_name: form.first_name, last_name: form.last_name })
     saved.value = true
   }
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   catch (e: any) {
     error.value = e?.message ?? 'Unknown error'
   }
@@ -43,22 +45,57 @@ async function submit() {
       </p>
     </div>
 
-    <UForm :state="form" class="space-y-4 max-w-sm" @submit="submit">
-      <UFormField label="First name" name="first_name">
-        <UInput v-model="form.first_name" autocomplete="given-name" class="w-full" />
+    <UForm
+      :state="form"
+      class="space-y-4 max-w-sm"
+      @submit="submit"
+    >
+      <UFormField
+        label="First name"
+        name="first_name"
+      >
+        <UInput
+          v-model="form.first_name"
+          autocomplete="given-name"
+          class="w-full"
+        />
       </UFormField>
-      <UFormField label="Last name" name="last_name">
-        <UInput v-model="form.last_name" autocomplete="family-name" class="w-full" />
+      <UFormField
+        label="Last name"
+        name="last_name"
+      >
+        <UInput
+          v-model="form.last_name"
+          autocomplete="family-name"
+          class="w-full"
+        />
       </UFormField>
-      <UFormField label="Email (read-only)" name="email">
-        <UInput :model-value="form.email" type="email" disabled class="w-full" />
+      <UFormField
+        label="Email (read-only)"
+        name="email"
+      >
+        <UInput
+          :model-value="form.email"
+          type="email"
+          disabled
+          class="w-full"
+        />
       </UFormField>
       <div class="flex items-center gap-3">
-        <UButton type="submit" color="primary">
+        <UButton
+          type="submit"
+          color="primary"
+        >
           Save
         </UButton>
-        <span v-if="saved" class="text-sm text-success">Saved.</span>
-        <span v-if="error" class="text-sm text-error">{{ error }}</span>
+        <span
+          v-if="saved"
+          class="text-sm text-success"
+        >Saved.</span>
+        <span
+          v-if="error"
+          class="text-sm text-error"
+        >{{ error }}</span>
       </div>
     </UForm>
 

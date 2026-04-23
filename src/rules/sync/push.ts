@@ -111,6 +111,8 @@ export async function pushRules<Schema>(
             app_access: change.local!.app_access,
           }),
         )
+        // TODO: (eslint) revisit any types
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const newId = (created as any).id
         if (change.local!.id) {
           policyIdMap.set(change.local!.id, newId)

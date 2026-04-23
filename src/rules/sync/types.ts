@@ -24,9 +24,13 @@ export interface DiffChange<T> {
 }
 
 /** Role diff change */
+// TODO: (eslint) empty interface used for interface extension pattern
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface RoleDiffChange extends DiffChange<DirectusRolePayload> {}
 
 /** Policy diff change */
+// TODO: (eslint) empty interface used for interface extension pattern
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface PolicyDiffChange extends DiffChange<DirectusPolicyPayload> {}
 
 /** Permission diff change */

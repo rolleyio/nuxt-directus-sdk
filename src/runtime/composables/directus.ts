@@ -15,11 +15,15 @@ export function useDirectusVisualEditor(): Ref<boolean> {
 
 function resolveClientUrl(): string {
   const config = useRuntimeConfig()
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (config.public.directus as any).directusUrl || config.public.directus.url
 }
 
 function resolveServerUrl(): string {
   const config = useRuntimeConfig()
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (config as any).directus?.serverDirectusUrl || resolveClientUrl()
 }
 
@@ -74,6 +78,8 @@ function createDirectusClient() {
     // During SSR, forward cookies from the incoming request
     if (import.meta.server && requestHeaders?.cookie) {
       return globalThis.$fetch(urlString, {
+        // TODO: (eslint) revisit any types
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...options as any, // $fetch will normalize the method for us
         headers: {
           ...options?.headers,
@@ -83,6 +89,8 @@ function createDirectusClient() {
     }
 
     // On client, use regular fetch with credentials
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return globalThis.$fetch(urlString, { ...options as any, credentials: 'include' })
   }
 

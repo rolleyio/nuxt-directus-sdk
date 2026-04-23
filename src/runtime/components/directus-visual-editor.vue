@@ -5,6 +5,8 @@ import { setAttr } from '@directus/visual-editing'
 import { useDirectusVisualEditor } from '../composables/directus'
 import { Slot } from '../utils'
 
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SingleDirectusCollection = DirectusSchema[T] extends Array<any>
   ? DirectusSchema[T][0]
   : DirectusSchema[T]
@@ -24,6 +26,8 @@ const directusAttr = computed(() => {
     return undefined
   }
 
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data: Record<any, any> = {}
 
   Object.entries(props).forEach(([key, value]) => {
@@ -32,6 +36,8 @@ const directusAttr = computed(() => {
     }
   })
 
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return setAttr(data as any)
 })
 </script>

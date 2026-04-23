@@ -4,6 +4,8 @@ import { joinURL } from 'ufo'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const serverUrl = (config as any).directus?.serverDirectusUrl
   const directusUrl = serverUrl || config.public.directus.directusUrl
 

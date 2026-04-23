@@ -84,7 +84,7 @@
     "ufo": "^1.6.3"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^4.10.0",
+    "@nuxt/eslint-config": "^1.15.2",
     "@directus/sdk": "^21.2.2",
     "@directus/types": "^15.0.2",
     "@directus/visual-editing": "^2.0.0",
@@ -95,7 +95,7 @@
     "@nuxt/test-utils": "^4.0.2",
     "@types/http-proxy": "^1.17.17",
     "changelogen": "^0.6.1",
-    "eslint": "^9.22.0",
+    "eslint": "^10.2.1",
     "nuxt": "^4.4.2",
     "typescript": "^6.0.3",
     "vitepress": "^1.6.4",

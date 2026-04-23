@@ -64,6 +64,8 @@ export function isValidationStandardSchema(
 function convertArkTypeSchema(schema: StandardSchemaV1): DirectusValidation {
   // ArkType stores definition in various internal properties
   // We'll attempt to extract constraints from the schema
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const schemaAny = schema as any
 
   // Check for object type with properties
@@ -92,6 +94,8 @@ function convertArkTypeSchema(schema: StandardSchemaV1): DirectusValidation {
  * Zod stores schema definition in _def property.
  */
 function convertZodSchema(schema: StandardSchemaV1): DirectusValidation {
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const schemaAny = schema as any
   const def = schemaAny._def
 
@@ -126,6 +130,8 @@ function convertZodSchema(schema: StandardSchemaV1): DirectusValidation {
 /**
  * Convert a single Zod field schema to Directus field validation
  */
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertZodFieldSchema(schema: any): Record<string, unknown> | null {
   if (!schema?._def)
     return null
@@ -205,6 +211,8 @@ function convertZodFieldSchema(schema: any): Record<string, unknown> | null {
  * Convert Valibot schema to Directus validation
  */
 function convertValibotSchema(schema: StandardSchemaV1): DirectusValidation {
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const schemaAny = schema as any
 
   // Valibot v1+ uses different internal structure
@@ -232,6 +240,8 @@ function convertValibotSchema(schema: StandardSchemaV1): DirectusValidation {
 /**
  * Convert a single Valibot field schema to Directus field validation
  */
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertValibotFieldSchema(schema: any): Record<string, unknown> | null {
   if (!schema)
     return null
@@ -297,6 +307,8 @@ function convertValibotFieldSchema(schema: any): Record<string, unknown> | null 
  * Convert object properties to validation (generic helper)
  */
 function convertObjectProps(
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   props: Record<string, any>,
   _vendor: string,
 ): DirectusValidation {
@@ -315,6 +327,8 @@ function convertObjectProps(
 /**
  * Convert a property constraint to validation
  */
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertPropToValidation(prop: any): Record<string, unknown> | null {
   if (!prop)
     return null

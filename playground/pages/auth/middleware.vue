@@ -56,7 +56,10 @@ definePageMeta({ middleware: 'guest' })</pre>
       </h2>
       <p class="text-muted text-sm">
         The inverse: add <code class="text-xs bg-elevated px-1 py-0.5 rounded">middleware: 'auth'</code> to any page to protect it
-        individually. The <NuxtLink to="/dashboard" class="text-primary hover:underline">
+        individually. The <NuxtLink
+          to="/dashboard"
+          class="text-primary hover:underline"
+        >
           Dashboard
         </NuxtLink> page in this playground
         uses this pattern. When a logged-out user visits it they are redirected to

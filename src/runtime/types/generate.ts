@@ -375,6 +375,8 @@ function resolveExtensionForField(
   prefix: string,
   extensions: TypegenExtension[],
 ): { name: string, output: string } | null {
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const match = extensions.find(ext => ext.isMatch(field as any))
   if (!match)
     return null
@@ -783,6 +785,8 @@ function generateCollectionNamesEnum(collectionNames: string[], prefix: string):
  * @returns A string representing a valid TypeScript type
  *
  */
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function determineFieldType(field: any): string {
   // Handle translations interface first
   if (field.meta?.special?.includes('translations')) {
@@ -825,6 +829,8 @@ function determineFieldType(field: any): string {
   // Handle choice-based fields
   const choices = field.meta?.options?.choices
   if (Array.isArray(choices) && choices.length > 0) {
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const choiceValues = choices.map((choice: any) =>
       choice.value === null ? 'null' : escapeStringLiteral(choice.value),
     )
@@ -849,6 +855,8 @@ function determineFieldType(field: any): string {
       const nestedFields = field.meta?.options?.fields
 
       if (Array.isArray(nestedFields) && nestedFields.length > 0) {
+        // TODO: (eslint) revisit any types
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const nestedTypes = nestedFields.map((nestedField: any) => {
           // Snapshot options.fields items carry the property name under .field or .name
           // depending on the interface (e.g. inline-repeater-interface uses .name, list uses .field)
@@ -941,6 +949,8 @@ function escapeStringLiteral(value: unknown): string {
  * - `@primaryKey` if the field is marked as a primary key
  * - `@required` if the field is required
  */
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function generateJSDocComment(field: any): string {
   const comments = []
 

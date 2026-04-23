@@ -286,11 +286,17 @@ export default defineNuxtModule<ModuleOptions>({
     const resolver = createResolver(import.meta.url)
 
     // Helper function to register modules
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async function registerModule(name: string, key: string, moduleOptions: Record<string, any>) {
       if (!hasNuxtModule(name)) {
+        // TODO: (eslint) revisit any types
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await installModule(name, defu((nuxtApp.options as any)[key], moduleOptions))
       }
       else {
+        // TODO: (eslint) revisit any types
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (nuxtApp.options as any)[key] = defu((nuxtApp.options as any)[key], moduleOptions)
       }
     }
@@ -338,6 +344,8 @@ export default defineNuxtModule<ModuleOptions>({
       })
 
       // Add error handling to the proxy
+      // TODO: (eslint) revisit any types
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       proxy.on('error', (err: any, _req: any, socket: any) => {
         logger.error(`WebSocket proxy error:`, err.message)
         if (socket && !socket.destroyed) {
@@ -345,6 +353,8 @@ export default defineNuxtModule<ModuleOptions>({
         }
       })
 
+      // TODO: (eslint) revisit any types
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       proxy.on('proxyReqWs', (proxyReq: any, req: any, _socket: any) => {
         // Rewrite the path from /_directus-ws to /websocket
         proxyReq.path = '/websocket'
@@ -360,12 +370,16 @@ export default defineNuxtModule<ModuleOptions>({
 
         // Replace the nuxt server upgrade handler with our WebSocket proxy
         if (nuxtApp.server) {
+          // TODO: (eslint) revisit any types
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           nuxtApp.server.upgrade = (req: any, socket: any, head: any) => {
             // Check if this is our WebSocket proxy route
             if (req.url?.startsWith(wsProxyPath)) {
               try {
                 proxy.ws(req, socket, head)
               }
+              // TODO: (eslint) revisit any types
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               catch (err: any) {
                 logger.error('WebSocket proxy error:', err.message)
                 if (!socket.destroyed) {
@@ -401,14 +415,26 @@ export default defineNuxtModule<ModuleOptions>({
       options.devProxy = false
     }
 
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (options as any).directusUrl = clientUrl
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ; (options as any).serverDirectusUrl = serverUrl || clientUrl
 
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nuxtApp.options.runtimeConfig[configKey] = options as any
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nuxtApp.options.runtimeConfig.public[configKey] = defu(nuxtApp.options.runtimeConfig.public[configKey] as any, options)
 
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (nuxtApp.options.runtimeConfig.public[configKey] as any).adminToken
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (nuxtApp.options.runtimeConfig.public[configKey] as any).serverDirectusUrl
 
     // Register @nuxt/image with Directus provider
@@ -514,6 +540,8 @@ export default defineNuxtModule<ModuleOptions>({
 
     if (options.devtools) {
       loggerMessage.push(`📦 Directus added to Nuxt DevTools`, '')
+      // TODO: (eslint) revisit any types
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       nuxtApp.hook('devtools:customTabs' as any, (iframeTabs: any) => {
         iframeTabs.push({
           name: 'directus',

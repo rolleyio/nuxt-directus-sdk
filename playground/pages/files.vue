@@ -3,6 +3,8 @@ import type { DirectusThumbnailFit, DirectusThumbnailFormat } from '#imports'
 import { computed, getDirectusFileUrl, ref, uploadDirectusFile, uploadDirectusFiles } from '#imports'
 
 const fileInput = ref<HTMLInputElement | null>(null)
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const uploadedFile = ref<any>(null)
 const uploadError = ref('')
 
@@ -15,12 +17,16 @@ async function handleUpload() {
   try {
     uploadedFile.value = await uploadDirectusFile({ file })
   }
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   catch (e: any) {
     uploadError.value = e?.message ?? 'Upload failed'
   }
 }
 
 const batchInput = ref<HTMLInputElement | null>(null)
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const batchResult = ref<any[]>([])
 const batchError = ref('')
 
@@ -34,6 +40,8 @@ async function handleBatchUpload() {
     const result = await uploadDirectusFiles(files.map(file => ({ file })))
     batchResult.value = Array.isArray(result) ? result : [result]
   }
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   catch (e: any) {
     batchError.value = e?.message ?? 'Upload failed'
   }
@@ -97,19 +105,35 @@ const generatedUrl = computed(() => {
       <h2 class="text-base font-semibold mb-3">
         Single upload - <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">uploadDirectusFile()</code>
       </h2>
-      <form class="flex items-end gap-2 mb-3" @submit.prevent="handleUpload">
+      <form
+        class="flex items-end gap-2 mb-3"
+        @submit.prevent="handleUpload"
+      >
         <input
           ref="fileInput"
           type="file"
           required
           class="text-sm file:mr-3 file:rounded file:border-0 file:bg-primary file:text-inverted file:px-3 file:py-1.5 file:text-xs file:font-medium hover:file:bg-primary/90"
         >
-        <UButton type="submit" color="primary" size="sm">
+        <UButton
+          type="submit"
+          color="primary"
+          size="sm"
+        >
           Upload
         </UButton>
       </form>
-      <UAlert v-if="uploadError" color="error" variant="soft" :title="uploadError" class="mb-3" />
-      <pre v-if="uploadedFile" class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto">{{ JSON.stringify(uploadedFile, null, 2) }}</pre>
+      <UAlert
+        v-if="uploadError"
+        color="error"
+        variant="soft"
+        :title="uploadError"
+        class="mb-3"
+      />
+      <pre
+        v-if="uploadedFile"
+        class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto"
+      >{{ JSON.stringify(uploadedFile, null, 2) }}</pre>
     </section>
 
     <section class="pt-6 border-t border-default">
@@ -119,7 +143,10 @@ const generatedUrl = computed(() => {
       <p class="text-sm text-muted mb-3">
         Accepts an array of <code class="text-xs bg-elevated px-1 py-0.5 rounded">{ file, data? }</code> objects and uploads them all.
       </p>
-      <form class="flex items-end gap-2 mb-3" @submit.prevent="handleBatchUpload">
+      <form
+        class="flex items-end gap-2 mb-3"
+        @submit.prevent="handleBatchUpload"
+      >
         <input
           ref="batchInput"
           type="file"
@@ -127,12 +154,25 @@ const generatedUrl = computed(() => {
           required
           class="text-sm file:mr-3 file:rounded file:border-0 file:bg-primary file:text-inverted file:px-3 file:py-1.5 file:text-xs file:font-medium hover:file:bg-primary/90"
         >
-        <UButton type="submit" color="primary" size="sm">
+        <UButton
+          type="submit"
+          color="primary"
+          size="sm"
+        >
           Upload all
         </UButton>
       </form>
-      <UAlert v-if="batchError" color="error" variant="soft" :title="batchError" class="mb-3" />
-      <pre v-if="batchResult.length" class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto">{{ JSON.stringify(batchResult, null, 2) }}</pre>
+      <UAlert
+        v-if="batchError"
+        color="error"
+        variant="soft"
+        :title="batchError"
+        class="mb-3"
+      />
+      <pre
+        v-if="batchResult.length"
+        class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto"
+      >{{ JSON.stringify(batchResult, null, 2) }}</pre>
     </section>
 
     <section class="pt-6 border-t border-default">
@@ -153,30 +193,67 @@ const generatedUrl = computed(() => {
           />
         </UFormField>
         <UFormField label="Width">
-          <UInputNumber v-model="urlOptions.width" :min="0" class="w-full" />
+          <UInputNumber
+            v-model="urlOptions.width"
+            :min="0"
+            class="w-full"
+          />
         </UFormField>
         <UFormField label="Height">
-          <UInputNumber v-model="urlOptions.height" :min="0" class="w-full" />
+          <UInputNumber
+            v-model="urlOptions.height"
+            :min="0"
+            class="w-full"
+          />
         </UFormField>
         <UFormField label="Quality">
-          <UInputNumber v-model="urlOptions.quality" :min="1" :max="100" class="w-full" />
+          <UInputNumber
+            v-model="urlOptions.quality"
+            :min="1"
+            :max="100"
+            class="w-full"
+          />
         </UFormField>
         <UFormField label="Fit">
-          <USelect v-model="urlOptions.fit" :items="fitOptions" class="w-full" />
+          <USelect
+            v-model="urlOptions.fit"
+            :items="fitOptions"
+            class="w-full"
+          />
         </UFormField>
         <UFormField label="Format">
-          <USelect v-model="urlOptions.format" :items="formatOptions" class="w-full" />
+          <USelect
+            v-model="urlOptions.format"
+            :items="formatOptions"
+            class="w-full"
+          />
         </UFormField>
-        <UFormField label="Download filename" class="md:col-span-3">
-          <UInput v-model="urlOptions.filename" placeholder="my-file.jpg" class="w-full" />
+        <UFormField
+          label="Download filename"
+          class="md:col-span-3"
+        >
+          <UInput
+            v-model="urlOptions.filename"
+            placeholder="my-file.jpg"
+            class="w-full"
+          />
         </UFormField>
         <div class="md:col-span-3 flex flex-wrap gap-4">
-          <UCheckbox v-model="urlOptions.download" label="Force download" />
-          <UCheckbox v-model="urlOptions.withoutEnlargement" label="Without enlargement" />
+          <UCheckbox
+            v-model="urlOptions.download"
+            label="Force download"
+          />
+          <UCheckbox
+            v-model="urlOptions.withoutEnlargement"
+            label="Without enlargement"
+          />
         </div>
       </div>
 
-      <div v-if="generatedUrl" class="space-y-3">
+      <div
+        v-if="generatedUrl"
+        class="space-y-3"
+      >
         <p class="text-sm font-semibold">
           Generated URL:
         </p>

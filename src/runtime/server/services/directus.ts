@@ -11,9 +11,12 @@ export function getDirectusSessionToken(event: H3Event): string | undefined {
 
 export function useDirectusUrl(path = ''): string {
   const config = useRuntimeConfig()
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const serverUrl = (config as any).directus?.serverDirectusUrl
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fallback = (config.public.directus as any).directusUrl || config.public.directus.url
-  // eslint-disable-next-line node/prefer-global/process
   const url = serverUrl || fallback || process.env.DIRECTUS_URL
   return useUrl(url, path)
 }
@@ -36,7 +39,6 @@ export function useSessionDirectus(event: H3Event) {
 
 export function useAdminDirectus() {
   const config = useRuntimeConfig().directus
-  // eslint-disable-next-line node/prefer-global/process
   const adminToken = config.adminToken || process.env.DIRECTUS_ADMIN_TOKEN
 
   if (!adminToken)

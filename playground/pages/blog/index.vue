@@ -31,7 +31,10 @@ const { data: posts } = await useAsyncData('posts', () => {
         :key="post.id"
         class="hover:ring-2 hover:ring-primary/40 transition"
       >
-        <NuxtLink :to="`/blog/${post.slug}`" class="block">
+        <NuxtLink
+          :to="`/blog/${post.slug}`"
+          class="block"
+        >
           <h2 class="text-lg font-semibold mb-1">
             {{ post.title }}
           </h2>

@@ -16,6 +16,8 @@ beforeEach(() => {
   vi.doMock('#imports', () => ({
     useRuntimeConfig: mockRuntimeConfig,
     useRequestHeaders: vi.fn(() => ({})),
+    // TODO: (eslint) revisit any types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     useState: vi.fn((_key: string, init: () => any) => ({ value: init() })),
   }))
 
@@ -27,6 +29,8 @@ function setConfig(overrides: {
   url?: string | { client: string, server: string }
   directusUrl?: string
   serverDirectusUrl?: string
+  // TODO: (eslint) revisit any types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   devProxy?: any
 }) {
   mockRuntimeConfig.mockReturnValue({

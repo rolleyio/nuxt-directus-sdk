@@ -97,6 +97,8 @@ function formatSummaryLine(
 /**
  * Format a role change
  */
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatRoleChange(lines: string[], change: DiffChange<any>): void {
   const prefix = changePrefix(change.type)
   lines.push(`${prefix} Role: ${change.name}`)
@@ -114,6 +116,8 @@ function formatRoleChange(lines: string[], change: DiffChange<any>): void {
 /**
  * Format a policy change
  */
+// TODO: (eslint) revisit any types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatPolicyChange(lines: string[], change: DiffChange<any>): void {
   const prefix = changePrefix(change.type)
   lines.push(`${prefix} Policy: ${change.name}`)
