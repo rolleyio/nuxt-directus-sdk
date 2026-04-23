@@ -13,7 +13,7 @@ const globals = await directus.request(readSingleton('globals'))
       (like <code>readItems</code>, <code>readSingleton</code>, <code>createItem</code>, etc.) so you can
       use them in your components without any import statement.
     </p>
-    
+
     <div class="demo-section">
       <h2>Auto-imported: request functions</h2>
       <p>
@@ -21,7 +21,7 @@ const globals = await directus.request(readSingleton('globals'))
         The example below calls <code>readSingleton('globals')</code> with no import statement required in a
         real project.
       </p>
-      
+
       <p class="note">
         The playground you are viewing has nuxt auto-imports <strong>disabled</strong>.
         You will not likely need to import anything to use this module in your project.
@@ -70,7 +70,9 @@ const data = await publicClient.request(readItems('posts'))</pre>
 
       <p class="note">
         On the server side, this module provides <code>useAdminDirectus()</code> and <code>useSessionDirectus(event)</code> in Nitro API routes to handle client setup for you.
-        See the <NuxtLink to="/server">Server Composables</NuxtLink> demo.
+        See the <NuxtLink to="/server">
+          Server Composables
+        </NuxtLink> demo.
       </p>
     </div>
   </div>
