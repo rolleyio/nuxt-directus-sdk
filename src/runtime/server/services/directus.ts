@@ -11,12 +11,8 @@ export function getDirectusSessionToken(event: H3Event): string | undefined {
 
 export function useDirectusUrl(path = ''): string {
   const config = useRuntimeConfig()
-  // TODO: (eslint) revisit any types
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const serverUrl = (config as any).directus?.serverDirectusUrl
-  // TODO: (eslint) revisit any types
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fallback = (config.public.directus as any).directusUrl || config.public.directus.url
+  const serverUrl = config.directus?.serverDirectusUrl
+  const fallback = config.public.directus.directusUrl || config.public.directus.url
   const url = serverUrl || fallback || process.env.DIRECTUS_URL
   return useUrl(url, path)
 }

@@ -16,16 +16,12 @@ export function useDirectusVisualEditor(): Ref<boolean> {
 
 function resolveClientUrl(): string {
   const config = useRuntimeConfig()
-  // TODO: (eslint) revisit any types
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (config.public.directus as any).directusUrl || config.public.directus.url
+  return config.public.directus.directusUrl || config.public.directus.url
 }
 
 function resolveServerUrl(): string {
   const config = useRuntimeConfig()
-  // TODO: (eslint) revisit any types
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (config as any).directus?.serverDirectusUrl || resolveClientUrl()
+  return config.directus?.serverDirectusUrl || resolveClientUrl()
 }
 
 export function useDirectusUrl(path = ''): string {
