@@ -15,23 +15,29 @@ export type CollectionItem<Schema, K extends keyof Schema>
 /**
  * Permission actions supported by Directus
  */
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'share'
+export type PermissionAction
+  = | 'create'
+    | 'read'
+    | 'update'
+    | 'delete'
+    | 'share'
 
 /**
  * Configuration for a single permission action
  */
-export interface PermissionConfig<
-  Schema,
-  Collection extends keyof Schema,
-> {
+export interface PermissionConfig<Schema, Collection extends keyof Schema> {
   /** Fields that can be accessed. '*' for all, array for specific fields */
   fields?: '*' | (keyof CollectionItem<Schema, Collection>)[]
   /** Filter that restricts which items can be accessed */
   filter?: QueryFilter<Schema, CollectionItem<Schema, Collection>>
-  /** Default values applied when creating/updating items */
-  presets?: Partial<CollectionItem<Schema, Collection>>
+  /** Default values applied when creating/updating items. Accepts schema-typed values or Directus Dynamic Variables (e.g. `$CURRENT_USER`) */
+  presets?:
+    | Partial<CollectionItem<Schema, Collection>>
+    | Record<string, unknown>
   /** Validation rules using Standard Schema or Directus format */
-  validation?: StandardSchemaV1<Partial<CollectionItem<Schema, Collection>>> | DirectusValidation
+  validation?:
+    | StandardSchemaV1<Partial<CollectionItem<Schema, Collection>>>
+    | DirectusValidation
 }
 
 /**
@@ -224,7 +230,7 @@ export interface PolicyInput<Schema> {
  * Object notation for permissions (instead of Map)
  */
 export type PermissionsInput<Schema> = {
-  [K in keyof Schema]?: CollectionPermissionsInput<Schema, K>
+  [K in keyof Schema]?: CollectionPermissionsInput<Schema, K>;
 }
 
 /**
@@ -259,8 +265,10 @@ export interface PermissionConfigInput<Schema, K extends keyof Schema> {
   fields?: '*' | (keyof CollectionItem<Schema, K>)[]
   /** Filter that restricts which items can be accessed */
   filter?: QueryFilter<Schema, CollectionItem<Schema, K>>
-  /** Default values applied when creating/updating items */
-  presets?: Partial<CollectionItem<Schema, K>>
+  /** Default values applied when creating/updating items. Accepts schema-typed values or Directus Dynamic Variables (e.g. `$CURRENT_USER`) */
+  presets?: Partial<CollectionItem<Schema, K>> | Record<string, unknown>
   /** Validation rules using Standard Schema or Directus format */
-  validation?: StandardSchemaV1<Partial<CollectionItem<Schema, K>>> | DirectusValidation
+  validation?:
+    | StandardSchemaV1<Partial<CollectionItem<Schema, K>>>
+    | DirectusValidation
 }
