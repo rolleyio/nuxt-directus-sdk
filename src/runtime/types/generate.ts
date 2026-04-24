@@ -296,11 +296,23 @@ export function transformSnapshotToTypeString(
 
   const customInterfaceBlocks = generatedCollections.map(g => g.interfaceBlock)
 
-  // TODO: Review what happens if DirectusSchema omits the directus_ system collections
-  const directusSchemaBlock = generateDirectusSchemaInterface(allCollectionsForSchema, prefix, singletonCollectionNames)
+  // Omit directus_* entries from the DirectusSchema map. The SDK already
+  // merges its own CoreSchema (every directus_* collection) into the client
+  // via CompleteSchema, so readMe / readUsers / readFiles / etc. still
+  // resolve against DirectusUser<Schema> and friends and pick up user-level
+  // customisations from the separately-emitted `interface DirectusUser {}`
+  // augmentations. Keeping directus_* in DirectusSchema only causes
+  // `readItems('directus_users')` to be suggested, which fails at runtime
+  // because system collections are not served from /items/*. See #65.
+  const schemaMapCollections = allCollectionsForSchema.filter(
+    c => !collectionIsDirectusSystem(c.collection),
+  )
+  const directusSchemaBlock = generateDirectusSchemaInterface(schemaMapCollections, prefix, singletonCollectionNames)
 
-  // TODO: Review what happens if enum omits the directus_ system collections
-  const allCollectionNames = allCollectionsForSchema.map(c => c.collection)
+  // The enum is user-facing sugar for iterating custom collection names, so
+  // it follows the same filter — consumers using it to build UI lists don't
+  // want `directus_activity` showing up in a dropdown.
+  const allCollectionNames = schemaMapCollections.map(c => c.collection)
   const enumBlock = generateCollectionNamesEnum(allCollectionNames, prefix)
 
   const bodyParts = [

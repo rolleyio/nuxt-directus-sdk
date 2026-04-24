@@ -95,6 +95,42 @@ describe('generateTypesFromDirectus()', () => {
     })
   })
 
+  // Regression guard for #65: readItems('directus_users') should not be a
+  // valid/suggested call on the generated client because the Directus REST
+  // API does not serve system collections from /items/*.
+  describe('system collections', () => {
+    it('are omitted from the DirectusSchema map', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
+
+      // Extract just the DirectusSchema interface body so we don't match
+      // directus_* strings that appear in unrelated interface bodies.
+      const schemaBlock = result.typeString.match(/interface DirectusSchema \{([\s\S]*?)\n\}/)
+      expect(schemaBlock, 'DirectusSchema interface should be emitted').not.toBeNull()
+      expect(schemaBlock![1]).not.toMatch(/\bdirectus_\w+\s*:/)
+    })
+
+    it('are omitted from the CollectionNames enum', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
+
+      const enumBlock = result.typeString.match(/enum AppCollectionNames \{([\s\S]*?)\n\}/)
+      expect(enumBlock, 'AppCollectionNames enum should be emitted').not.toBeNull()
+      expect(enumBlock![1]).not.toMatch(/\bdirectus_\w+\s*=/)
+    })
+
+    it('still emit their own interface declarations so readMe / readUsers keep working', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
+
+      // The SDK's CoreSchema is augmented via `interface DirectusUser {}`,
+      // so these blocks must still be emitted even when the schema map
+      // drops the directus_* keys.
+      expect(result.typeString).toMatch(/interface DirectusUser\s*\{/)
+      expect(result.typeString).toMatch(/interface DirectusFile\s*\{/)
+    })
+  })
+
   describe('applies jsdoc comments', () => {
     it('for @primaryKey', async () => {
       mockDirectusRequest().directusVersion('latest')
