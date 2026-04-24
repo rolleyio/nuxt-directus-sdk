@@ -3,15 +3,9 @@ import { ref, useDirectusAuth } from '#imports'
 
 const { loggedIn } = useDirectusAuth()
 
-// TODO: (eslint) revisit any types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const adminResult = ref<any>(null)
-// TODO: (eslint) revisit any types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sessionResult = ref<any>(null)
-// TODO: (eslint) revisit any types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tokenResult = ref<any>(null)
+const adminResult = ref(null)
+const sessionResult = ref(null)
+const tokenResult = ref(null)
 const tokenInput = ref('')
 
 async function fetchAdmin() {
