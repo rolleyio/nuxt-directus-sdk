@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import type { DirectusThumbnailFit, DirectusThumbnailFormat } from '#imports'
+import type { DirectusFile, DirectusThumbnailFit, DirectusThumbnailFormat } from '#imports'
 import { computed, getDirectusFileUrl, ref, uploadDirectusFile, uploadDirectusFiles } from '#imports'
 
 const fileInput = ref<HTMLInputElement | null>(null)
-// TODO: (eslint) revisit any types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const uploadedFile = ref<any>(null)
+const uploadedFile = ref<DirectusFile | null>(null)
 const uploadError = ref('')
 
 async function handleUpload() {
@@ -23,9 +21,7 @@ async function handleUpload() {
 }
 
 const batchInput = ref<HTMLInputElement | null>(null)
-// TODO: (eslint) revisit any types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const batchResult = ref<any[]>([])
+const batchResult = ref<DirectusFile[]>([])
 const batchError = ref('')
 
 async function handleBatchUpload() {

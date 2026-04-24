@@ -36,9 +36,7 @@ async function providerLogin(provider: string) {
 const { data: ssoProviders } = await useAsyncData('ssoProviders', () =>
   directus.request(readProviders()))
 
-// TODO: (eslint) revisit any types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const lastEvent = useState<{ user: any, firedAt: string } | null>('directus.lastLoginEvent')
+const lastEvent = useState<{ user: NonNullable<typeof user.value>, firedAt: string } | null>('directus.lastLoginEvent')
 </script>
 
 <template>
