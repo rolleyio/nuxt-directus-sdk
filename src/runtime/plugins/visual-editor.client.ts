@@ -11,9 +11,7 @@ export default defineNuxtPlugin({
     const config = useRuntimeConfig()
 
     const debug = route.query.debug !== undefined
-    // TODO: (eslint) revisit any types
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const log = (...args: any[]) => {
+    const log = (...args: unknown[]) => {
       if (debug)
         console.warn('[Directus Visual Editor]', ...args)
     }
