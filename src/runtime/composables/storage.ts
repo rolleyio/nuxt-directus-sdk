@@ -1,18 +1,16 @@
-import type { DirectusStorage } from '@directus/sdk' // FIXME: AuthenticationStorage?
+import type { AuthenticationData, AuthenticationStorage } from '@directus/sdk'
 
 /**
  * Custom storage implementation for Directus SDK on the server
  * Prevents localStorage errors during SSR
  */
-export function useDirectusStorage(): DirectusStorage {
-  const storage = new Map<string, unknown>()
+export function useDirectusStorage(): AuthenticationStorage {
+  let stored: AuthenticationData | null = null
 
   return {
-    get: async (key: string) => {
-      return storage.get(key) ?? null
-    },
-    set: async (key: string, value: unknown) => {
-      storage.set(key, value)
+    get: async () => stored,
+    set: async (value: AuthenticationData | null) => {
+      stored = value
     },
   }
 }

@@ -842,7 +842,7 @@ function determineFieldType(field: FieldWithRelation): string {
     const unionOfChoices = [...new Set(choiceValues)].join(' | ')
 
     const interfacesWithMultiSelect = ['select-multiple', 'select-multiple-dropdown', 'select-multiple-checkbox']
-    if (interfacesWithMultiSelect.includes(field.meta.interface)) {
+    if (interfacesWithMultiSelect.includes(field.meta.interface ?? '')) {
       return `Array<${unionOfChoices}>`
     }
 
