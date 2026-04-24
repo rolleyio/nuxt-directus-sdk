@@ -1,6 +1,6 @@
 import type { ComputedRef, Ref } from '#imports'
 import type { RouteLocationRaw } from '#vue-router'
-import type { LoginOptions } from '@directus/sdk'
+import type { LoginOptions, QueryFields } from '@directus/sdk'
 import type {
   DirectusError,
   RegisterUserInput,
@@ -62,9 +62,7 @@ export function useDirectusAuth(): DirectusAuth {
     loading.value = true
 
     try {
-      // TODO: (eslint) revisit any types
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const response = await directus.request(directusReadMe({ fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
+      const response = await directus.request(directusReadMe({ fields: (config.public.directus.auth?.readMeFields ?? ['*']) as QueryFields<DirectusSchema, DirectusUser<DirectusSchema>> }))
       if (!response.id) {
         console.warn('Directus is not configured to return the \'id\' field for DirectusUsers.')
       }
@@ -88,9 +86,7 @@ export function useDirectusAuth(): DirectusAuth {
     if (!currentUser?.id)
       throw new Error('No user available')
     // INVESTIGATE: Does this cause issues with creative inputs in the config? Config won't have typesafety so probably a heavy lift for a low return.
-    // TODO: (eslint) revisit any types
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await directus.request(directusUpdateMe(data as any, { fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
+    const response = await directus.request(directusUpdateMe(data as Partial<DirectusUser<DirectusSchema>>, { fields: (config.public.directus.auth?.readMeFields ?? ['*']) as QueryFields<DirectusSchema, DirectusUser<DirectusSchema>> }))
     user.value = response as unknown as DirectusUser
     return user.value
   }
