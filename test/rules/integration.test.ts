@@ -108,9 +108,7 @@ describe('integration: Blog CMS Permissions', () => {
               posts: {
                 create: {
                   fields: ['title', 'slug', 'content', 'excerpt', 'category', 'tags', 'featured_image'],
-                  // TODO: (eslint) revisit any types
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  presets: { status: 'draft', author: '$CURRENT_USER' as any },
+                  presets: { status: 'draft', author: '$CURRENT_USER' },
                   validation: directusValidation(allOf(
                     required('title'),
                     length('title', { min: 5, max: 200 }),

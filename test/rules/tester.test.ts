@@ -263,9 +263,7 @@ describe('createRulesTester', () => {
                   posts: {
                     create: {
                       fields: ['title', 'content'],
-                      // TODO: (eslint) revisit any types
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      presets: { status: 'draft', author: '$CURRENT_USER' as any },
+                      presets: { status: 'draft', author: '$CURRENT_USER' },
                     },
                   },
                 },
