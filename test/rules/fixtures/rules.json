@@ -1,7 +1,7 @@
 {
   "roles": [
     {
-      "id": "51c5c437-86df-4dbb-90e6-217fbc7659ce",
+      "id": "146e2a7d-0442-468f-8fa3-d408abe3c9b3",
       "name": "Administrator",
       "icon": "verified",
       "description": "$t:admin_description",
@@ -37,7 +37,7 @@
     {
       "id": 1,
       "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
-      "collection": "blogs",
+      "collection": "pages",
       "action": "read",
       "permissions": {},
       "validation": {},
@@ -47,7 +47,7 @@
     {
       "id": 2,
       "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
-      "collection": "case_studies",
+      "collection": "posts",
       "action": "read",
       "permissions": {},
       "validation": {},
@@ -65,14 +65,14 @@
       "fields": ["*"]
     },
     {
-      "id": 4,
+      "id": 123,
       "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
       "collection": "directus_users",
       "action": "read",
       "permissions": null,
       "validation": null,
       "presets": null,
-      "fields": ["first_name", "last_name", "email", "avatar"]
+      "fields": ["first_name", "last_name", "avatar", "title", "id"]
     }
   ]
 }
