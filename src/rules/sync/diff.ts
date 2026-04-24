@@ -102,9 +102,7 @@ export async function fetchRemoteRules<Schema>(
   ])
 
   return {
-    // TODO: (eslint) revisit any types
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    roles: (roles as any[]).map(r => ({
+    roles: (roles as DirectusRolePayload[]).map(r => ({
       id: r.id,
       name: r.name,
       icon: r.icon,
@@ -112,9 +110,7 @@ export async function fetchRemoteRules<Schema>(
       parent: r.parent,
       policies: r.policies,
     })),
-    // TODO: (eslint) revisit any types
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    policies: (policies as any[]).map(p => ({
+    policies: (policies as DirectusPolicyPayload[]).map(p => ({
       id: p.id,
       name: p.name,
       icon: p.icon,
@@ -124,9 +120,7 @@ export async function fetchRemoteRules<Schema>(
       admin_access: p.admin_access,
       app_access: p.app_access,
     })),
-    // TODO: (eslint) revisit any types
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    permissions: (permissions as any[]).map(p => ({
+    permissions: (permissions as DirectusPermissionPayload[]).map(p => ({
       id: p.id,
       policy: p.policy,
       collection: p.collection,
