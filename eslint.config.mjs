@@ -16,5 +16,10 @@ export default createConfigForNuxt({
   },
 })
   .append(
-    // your custom flat config here...
+    {
+      rules: {
+        // Allow `interface Foo extends Bar {}` — used for named type aliases and global augmentation
+        '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'with-single-extends' }],
+      },
+    },
   )
