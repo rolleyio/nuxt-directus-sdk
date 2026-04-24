@@ -378,10 +378,8 @@ export default defineNuxtModule<ModuleOptions>({
               try {
                 proxy.ws(req, socket, head)
               }
-              // TODO: (eslint) revisit any types
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              catch (err: any) {
-                logger.error('WebSocket proxy error:', err.message)
+              catch (err: unknown) {
+                logger.error('WebSocket proxy error:', err instanceof Error ? err.message : String(err))
                 if (!socket.destroyed) {
                   socket.destroy()
                 }

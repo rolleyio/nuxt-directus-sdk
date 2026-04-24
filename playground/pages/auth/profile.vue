@@ -25,10 +25,8 @@ async function submit() {
     await updateMe({ first_name: form.first_name, last_name: form.last_name })
     saved.value = true
   }
-  // TODO: (eslint) revisit any types
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  catch (e: any) {
-    error.value = e?.message ?? 'Unknown error'
+  catch (e: unknown) {
+    error.value = e instanceof Error ? e.message : 'Unknown error'
   }
 }
 </script>

@@ -17,10 +17,8 @@ async function submitRequest() {
     message.value = 'Reset email sent. Check your inbox for the token.'
     step.value = 'reset'
   }
-  // TODO: (eslint) revisit any types
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  catch (e: any) {
-    error.value = e?.message ?? 'Unknown error'
+  catch (e: unknown) {
+    error.value = e instanceof Error ? e.message : 'Unknown error'
   }
 }
 
@@ -34,10 +32,8 @@ async function submitReset() {
     resetState.token = ''
     resetState.newPassword = ''
   }
-  // TODO: (eslint) revisit any types
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  catch (e: any) {
-    error.value = e?.message ?? 'Unknown error'
+  catch (e: unknown) {
+    error.value = e instanceof Error ? e.message : 'Unknown error'
   }
 }
 </script>
