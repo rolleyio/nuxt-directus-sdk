@@ -8,13 +8,13 @@ interface DirectusFileUpload {
   data?: Partial<Record<keyof DirectusFile, string>>
 }
 
-export async function uploadDirectusFile(file: DirectusFileUpload, query?: Query<DirectusSchema, DirectusSchema['directus_files']>) {
+export async function uploadDirectusFile(file: DirectusFileUpload, query?: Query<DirectusSchema, DirectusFile>) {
   const result = await uploadDirectusFiles([file], query)
 
   return (Array.isArray(result) ? result[0] : result)
 }
 
-export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Query<DirectusSchema, DirectusSchema['directus_files']>) {
+export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Query<DirectusSchema, DirectusFile>) {
   const directus = useDirectus()
   const formData = new FormData()
 
@@ -28,9 +28,7 @@ export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Q
     formData.append('file', file)
   })
 
-  // TODO: (eslint) revisit any types
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFile[] | DirectusFile
+  return directus.request(uploadFiles(formData, query)) as unknown as DirectusFile[] | DirectusFile
 }
 
 export type DirectusThumbnailFormat = 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'
