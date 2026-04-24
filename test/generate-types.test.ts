@@ -10,16 +10,12 @@ vi.mock('@directus/sdk', async () => {
     createDirectus: vi.fn(() => {
       let token: 'admin' | 'not_admin' | 'empty' | null = null
       return {
-        // TODO: (eslint) revisit any types
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        with(arg: any) {
-          if (arg?.__type === 'staticToken')
-            token = arg.token
+        with(arg: unknown) {
+          if ((arg as { __type?: string })?.__type === 'staticToken')
+            token = (arg as { token: typeof token }).token
           return this
         },
-        // TODO: (eslint) revisit any types
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        request(query: any) {
+        request(query: unknown) {
           return requestMock(query, token)
         },
       }
