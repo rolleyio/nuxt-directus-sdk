@@ -306,9 +306,11 @@ export function transformSnapshotToTypeString(
   const customInterfaceBlocks = generatedCollections.map(g => g.interfaceBlock)
 
   // TODO: Review what happens if DirectusSchema omits the directus_ system collections
+  // https://github.com/rolleyio/nuxt-directus-sdk/issues/65
   const directusSchemaBlock = generateDirectusSchemaInterface(allCollectionsForSchema, prefix, singletonCollectionNames)
 
   // TODO: Review what happens if enum omits the directus_ system collections
+  // https://github.com/rolleyio/nuxt-directus-sdk/issues/65
   const allCollectionNames = allCollectionsForSchema.map(c => c.collection)
   const enumBlock = generateCollectionNamesEnum(allCollectionNames, prefix)
 
