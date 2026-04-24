@@ -16,17 +16,17 @@ const form = reactive({
 })
 
 const saved = ref(false)
-const error = ref('')
+const errorMessage = ref('')
 
 async function submit() {
   saved.value = false
-  error.value = ''
+  errorMessage.value = ''
   try {
     await updateMe({ first_name: form.first_name, last_name: form.last_name })
     saved.value = true
   }
-  catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : 'Unknown error'
+  catch (error: unknown) {
+    errorMessage.value = error instanceof Error ? error.message : String(error)
   }
 }
 </script>
@@ -91,9 +91,9 @@ async function submit() {
           class="text-sm text-success"
         >Saved.</span>
         <span
-          v-if="error"
+          v-if="errorMessage"
           class="text-sm text-error"
-        >{{ error }}</span>
+        >{{ errorMessage }}</span>
       </div>
     </UForm>
 

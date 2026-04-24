@@ -7,24 +7,24 @@ const step = ref<'request' | 'reset'>('request')
 const requestState = reactive({ email: '' })
 const resetState = reactive({ token: '', newPassword: '' })
 const message = ref('')
-const error = ref('')
+const errorMessage = ref('')
 
 async function submitRequest() {
   message.value = ''
-  error.value = ''
+  errorMessage.value = ''
   try {
     await passwordRequest(requestState.email)
     message.value = 'Reset email sent. Check your inbox for the token.'
     step.value = 'reset'
   }
-  catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : 'Unknown error'
+  catch (error: unknown) {
+    errorMessage.value = error instanceof Error ? error.message : String(error)
   }
 }
 
 async function submitReset() {
   message.value = ''
-  error.value = ''
+  errorMessage.value = ''
   try {
     await passwordReset(resetState.token, resetState.newPassword)
     message.value = 'Password updated. You can now log in.'
@@ -32,8 +32,8 @@ async function submitReset() {
     resetState.token = ''
     resetState.newPassword = ''
   }
-  catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : 'Unknown error'
+  catch (error: unknown) {
+    errorMessage.value = error instanceof Error ? error.message : String(error)
   }
 }
 </script>
@@ -146,11 +146,11 @@ async function submitReset() {
       :title="message"
     />
     <UAlert
-      v-if="error"
+      v-if="errorMessage"
       color="error"
       variant="soft"
       class="mt-4"
-      :title="error"
+      :title="errorMessage"
     />
 
     <ConfigNotice class="mt-6">

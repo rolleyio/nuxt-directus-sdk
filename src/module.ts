@@ -378,8 +378,8 @@ export default defineNuxtModule<ModuleOptions>({
               try {
                 proxy.ws(req, socket, head)
               }
-              catch (err: unknown) {
-                logger.error('WebSocket proxy error:', err instanceof Error ? err.message : String(err))
+              catch (error: unknown) {
+                logger.error('WebSocket proxy error:', error instanceof Error ? error.message : String(error))
                 if (!socket.destroyed) {
                   socket.destroy()
                 }

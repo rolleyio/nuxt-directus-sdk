@@ -17,8 +17,8 @@ async function handleUpload() {
   try {
     uploadedFile.value = await uploadDirectusFile({ file })
   }
-  catch (e: unknown) {
-    uploadError.value = e instanceof Error ? e.message : 'Upload failed'
+  catch (error: unknown) {
+    uploadError.value = error instanceof Error ? error.message : String(error)
   }
 }
 
@@ -38,8 +38,8 @@ async function handleBatchUpload() {
     const result = await uploadDirectusFiles(files.map(file => ({ file })))
     batchResult.value = Array.isArray(result) ? result : [result]
   }
-  catch (e: unknown) {
-    batchError.value = e instanceof Error ? e.message : 'Upload failed'
+  catch (error: unknown) {
+    batchError.value = error instanceof Error ? error.message : String(error)
   }
 }
 
