@@ -1,3 +1,4 @@
+import type { DirectusFile } from '@directus/sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFiles } from './fixtures/directus-sdk/request/read-files.data'
 
@@ -37,9 +38,7 @@ describe('getDirectusFileUrl', () => {
 
   it('accepts a DirectusFile object', async () => {
     const { getDirectusFileUrl } = await import('../src/runtime/composables/files')
-    // TODO: (eslint) revisit any types
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(getDirectusFileUrl(FILE_1 as any)).toContain(`assets/${FILE_1.id}`)
+    expect(getDirectusFileUrl(FILE_1 as DirectusFile)).toContain(`assets/${FILE_1.id}`)
   })
 
   it('produces a clean URL with no query string when no options are passed', async () => {
@@ -110,9 +109,7 @@ describe('uploadDirectusFiles', () => {
     const { uploadDirectusFiles } = await import('../src/runtime/composables/files')
     const file = new File(['png-bytes'], FILE_1.filename_download, { type: FILE_1.type })
 
-    // TODO: (eslint) revisit any types
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await uploadDirectusFiles([{ file, data: { title: FILE_1.title } as any }])
+    await uploadDirectusFiles([{ file, data: { title: FILE_1.title } }])
 
     expect(capturedFormData!.get('title')).toBe(FILE_1.title)
     expect(capturedFormData!.getAll('file')).toHaveLength(1)
