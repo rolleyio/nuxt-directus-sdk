@@ -296,23 +296,17 @@ export function transformSnapshotToTypeString(
 
   const customInterfaceBlocks = generatedCollections.map(g => g.interfaceBlock)
 
-  // Omit directus_* entries from the DirectusSchema map. The SDK already
-  // merges its own CoreSchema (every directus_* collection) into the client
-  // via CompleteSchema, so readMe / readUsers / readFiles / etc. still
-  // resolve against DirectusUser<Schema> and friends and pick up user-level
-  // customisations from the separately-emitted `interface DirectusUser {}`
-  // augmentations. Keeping directus_* in DirectusSchema only causes
-  // `readItems('directus_users')` to be suggested, which fails at runtime
-  // because system collections are not served from /items/*. See #65.
-  const schemaMapCollections = allCollectionsForSchema.filter(
-    c => !collectionIsDirectusSystem(c.collection),
-  )
-  const directusSchemaBlock = generateDirectusSchemaInterface(schemaMapCollections, prefix, singletonCollectionNames)
+  // System collections are emitted as non-array (singular) entries in DirectusSchema so that
+  // MergeCoreCollection<Schema, "directus_settings", ...> in the SDK can find the key and merge
+  // any custom fields into the return types.
+  // See: https://directus.io/docs/tutorials/tips-and-tricks/advanced-types-with-the-directus-sdk#custom-fields-on-core-collections
+  const directusSchemaBlock = generateDirectusSchemaInterface(allCollectionsForSchema, prefix, singletonCollectionNames)
 
-  // The enum is user-facing sugar for iterating custom collection names, so
-  // it follows the same filter — consumers using it to build UI lists don't
-  // want `directus_activity` showing up in a dropdown.
-  const allCollectionNames = schemaMapCollections.map(c => c.collection)
+  // The enum is user-facing sugar for iterating custom collection names
+  // consumers using it to build UI lists don't want `directus_activity` showing up in a dropdown.
+  const allCollectionNames = allCollectionsForSchema
+    .filter(c => !collectionIsDirectusSystem(c.collection))
+    .map(c => c.collection)
   const enumBlock = generateCollectionNamesEnum(allCollectionNames, prefix)
 
   const bodyParts = [
@@ -749,8 +743,12 @@ function generateDirectusSchemaInterface(
 ): string {
   const entries = allCollections.map((collection) => {
     const isSingleton = collection.meta?.singleton === true
+    const isDirectusSystemCollection = collectionIsDirectusSystem(collection.collection)
     const interfaceName = collectionNameToInterfaceName(collection.collection, prefix, singletons)
-    const valueType = isSingleton ? interfaceName : `${interfaceName}[]`
+    // System collections use singular (non-array) entries so MergeCoreCollection in the SDK
+    // can find the key and merge custom fields into readUsers() / readSettings() / etc.
+    // https://directus.io/docs/tutorials/tips-and-tricks/advanced-types-with-the-directus-sdk#custom-fields-on-core-collections
+    const valueType = (isSingleton || isDirectusSystemCollection) ? interfaceName : `${interfaceName}[]`
     return `\t${collection.collection}: ${valueType};`
   })
 
