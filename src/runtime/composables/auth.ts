@@ -1,10 +1,7 @@
 import type { ComputedRef, Ref } from '#imports'
 import type { RouteLocationRaw } from '#vue-router'
-import type { LoginOptions } from '@directus/sdk'
-import type {
-  DirectusError,
-  RegisterUserInput,
-} from '@directus/types'
+import type { DirectusUser as DirectusUserSDK, LoginOptions, NestedPartial } from '@directus/sdk'
+import type { RegisterUserInput } from '@directus/types'
 import { navigateTo, useRouter, useRuntimeConfig } from '#app'
 import { computed, useRequestURL, useState } from '#imports'
 import {
@@ -19,17 +16,31 @@ import {
 import { joinURL, withoutTrailingSlash } from 'ufo'
 import { useDirectus, useDirectusOriginUrl } from './directus'
 
-// Auto types don't seem to be generating correctly here, so we need to specify the return type
+/**
+ * Fields that can be passed to {@link useDirectusAuth.updateMe}.
+ *
+ * `role` and `policies` are intentionally excluded — users cannot elevate their
+ * own privileges via this composable.
+ *
+ * `avatar` accepts a pre-uploaded file ID (`string`). To change a user's avatar,
+ * first upload the file via the files endpoint to get its ID, then pass that ID here.
+ */
+export type UpdateMeInput = Omit<NestedPartial<DirectusUserSDK<DirectusSchema>>, 'id' | 'role' | 'policies' | 'avatar'> & {
+  avatar?: string | null
+}
+
+// Field selection is driven by runtime config (`readMeFields`), so TypeScript cannot
+// infer return types from the SDK generics. This interface is the explicit public contract.
 export interface DirectusAuth {
   user: Ref<DirectusUser | null>
   loggedIn: ComputedRef<boolean>
-  readMe: () => Promise<DirectusUser | DirectusError | null>
-  updateMe: (data: Partial<DirectusUser>) => Promise<DirectusUser | DirectusError | null>
+  readMe: () => Promise<DirectusUser | null>
+  updateMe: (data: UpdateMeInput) => Promise<DirectusUser>
   login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<DirectusUser | null>
   loginWithProvider: (provider: string, redirectOnLogin?: boolean | string) => Promise<void>
   logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
-  createUser: (data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>) => Promise<DirectusUser>
-  register: (data: RegisterUserInput & Partial<Omit<DirectusUser, 'id' | 'email' | 'password'>>) => Promise<DirectusUser>
+  createUser: (data: RegisterUserInput) => Promise<DirectusUser>
+  register: (data: RegisterUserInput) => Promise<DirectusUser>
   inviteUser: (email: string, role: string, inviteUrl?: string | undefined) => Promise<void>
   acceptUserInvite: (token: string, password: string) => Promise<void>
   passwordRequest: (email: string, resetUrl?: string | undefined) => Promise<void>
@@ -62,7 +73,8 @@ export function useDirectusAuth(): DirectusAuth {
     loading.value = true
 
     try {
-      const response = await directus.request(directusReadMe({ fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
+      const fields = config.public.directus.auth?.readMeFields
+      const response = await directus.request(directusReadMe(fields?.length ? { fields: fields as any } : undefined))
       if (!response.id) {
         console.warn('Directus is not configured to return the \'id\' field for DirectusUsers.')
       }
@@ -78,17 +90,16 @@ export function useDirectusAuth(): DirectusAuth {
 
     return user.value
   }
-  // FIXME: Avatar requires a separated upload and/or ability to apply Object or string -> Possible Solution is to chunk into uploadDirectusFile -> Attach 'id' string to data.avatar UpdateMe call.
-  // FIXME: Role and Policies will work, but due to the Omit won't get type safety (Previous implementation also didn't have typesafety for them but now it's explicit.)
-  async function updateMe(data: Partial<Omit<DirectusUser, 'avatar' | 'role' | 'policies'>>) {
+  async function updateMe(data: UpdateMeInput): Promise<DirectusUser> {
     const currentUser = user.value
 
     if (!currentUser?.id)
       throw new Error('No user available')
-    // INVESTIGATE: Does this cause issues with creative inputs in the config? Config won't have typesafety so probably a heavy lift for a low return.
-    const response = await directus.request(directusUpdateMe(data as any, { fields: (config.public.directus.auth?.readMeFields ?? ['*']) as any }))
+
+    const fields = config.public.directus.auth?.readMeFields
+    const response = await directus.request(directusUpdateMe(data, fields?.length ? { fields: fields as any } : undefined))
     user.value = response as unknown as DirectusUser
-    return user.value
+    return user.value!
   }
 
   async function login(email: string, password: string, options?: Omit<LoginOptions, 'mode'> & { redirect?: boolean | RouteLocationRaw }) {
