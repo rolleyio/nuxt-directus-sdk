@@ -1,4 +1,4 @@
-import type { Query } from '@directus/sdk'
+import type { DirectusUser, Query } from '@directus/sdk'
 import type { ImageModifiers, ImageProviders } from '@nuxt/image'
 import type { InlinePreset } from 'unimport'
 
@@ -13,7 +13,7 @@ import { useUrl } from './runtime/utils'
 import { discoverSdkImports } from './sdk-imports'
 
 export type DirectusUrl = string | { client: string, server: string }
-export type ReadMeFields = Query<DirectusSchema, DirectusSchema['directus_users']>['fields']
+export type ReadMeFields = Query<DirectusSchema, DirectusUser<DirectusSchema>>['fields']
 
 export interface ModuleOptions {
   /**
