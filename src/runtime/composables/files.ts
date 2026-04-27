@@ -1,5 +1,5 @@
 import type { DirectusFile, DirectusSchema } from '#build/types/directus'
-import type { Query } from '@directus/sdk'
+import type { DirectusFile as DirectusSdkFile, Query } from '@directus/sdk'
 import { uploadFiles } from '@directus/sdk'
 import { useDirectus, useDirectusUrl } from './directus'
 
@@ -8,13 +8,13 @@ interface DirectusFileUpload {
   data?: Record<keyof DirectusFile, string>
 }
 
-export async function uploadDirectusFile(file: DirectusFileUpload, query?: Query<DirectusSchema, DirectusSchema['directus_files']>) {
+export async function uploadDirectusFile(file: DirectusFileUpload, query?: Query<DirectusSchema, DirectusSdkFile<DirectusSchema>>) {
   const result = await uploadDirectusFiles([file], query)
 
   return (Array.isArray(result) ? result[0] : result)
 }
 
-export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Query<DirectusSchema, DirectusSchema['directus_files']>) {
+export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Query<DirectusSchema, DirectusSdkFile<DirectusSchema>>) {
   const directus = useDirectus()
   const formData = new FormData()
 
@@ -28,7 +28,7 @@ export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Q
     formData.append('file', file)
   })
 
-  return directus.request(uploadFiles(formData, query as any)) as unknown as DirectusFile[] | DirectusFile
+  return directus.request(uploadFiles(formData, query)) as unknown as DirectusFile[] | DirectusFile
 }
 
 export type DirectusThumbnailFormat = 'jpg' | 'png' | 'webp' | 'tiff' | 'avif'

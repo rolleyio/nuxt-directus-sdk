@@ -95,6 +95,51 @@ describe('generateTypesFromDirectus()', () => {
     })
   })
 
+  // Regression guard for #65: readItems('directus_users') should not be a
+  // valid/suggested call on the generated client because the Directus REST
+  // API does not serve system collections from /items/*.
+  describe('system collections', () => {
+    it('are present in DirectusSchema as singular (non-array) entries', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
+
+      // Extract just the DirectusSchema interface body so we don't match
+      // directus_* strings that appear in unrelated interface bodies.
+      const schemaBlock = result.typeString.match(/interface DirectusSchema \{([\s\S]*?)\n\}/)
+      expect(schemaBlock, 'DirectusSchema interface should be emitted').not.toBeNull()
+
+      // Every directus_* entry must be singular (no trailing []) so that
+      // MergeCoreCollection in the SDK can find the key and merge custom fields,
+      // while RegularCollections<Schema> excludes them (keeping readItems() clean).
+      const body = schemaBlock![1]
+      const systemEntries = [...body.matchAll(/\bdirectus_\w+\s*:\s*(\S+);/g)]
+      expect(systemEntries.length, 'at least one directus_* entry should be present').toBeGreaterThan(0)
+      for (const [, valueType] of systemEntries) {
+        expect(valueType, `system collection entry should not be an array type`).not.toMatch(/\[\]$/)
+      }
+    })
+
+    it('are omitted from the CollectionNames enum', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
+
+      const enumBlock = result.typeString.match(/enum AppCollectionNames \{([\s\S]*?)\n\}/)
+      expect(enumBlock, 'AppCollectionNames enum should be emitted').not.toBeNull()
+      expect(enumBlock![1]).not.toMatch(/\bdirectus_\w+\s*=/)
+    })
+
+    it('still emit their own interface declarations so readMe / readUsers keep working', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
+
+      // The SDK's CoreSchema is augmented via `interface DirectusUser {}`,
+      // so these blocks must still be emitted even when the schema map
+      // drops the directus_* keys.
+      expect(result.typeString).toMatch(/interface DirectusUser\s*\{/)
+      expect(result.typeString).toMatch(/interface DirectusFile\s*\{/)
+    })
+  })
+
   describe('applies jsdoc comments', () => {
     it('for @primaryKey', async () => {
       mockDirectusRequest().directusVersion('latest')
