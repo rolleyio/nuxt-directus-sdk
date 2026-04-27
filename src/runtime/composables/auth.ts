@@ -2,7 +2,6 @@ import type { ComputedRef, Ref } from '#imports'
 import type { RouteLocationRaw } from '#vue-router'
 import type { DirectusUser as DirectusUserSDK, NestedPartial, LoginOptions, QueryFields } from '@directus/sdk'
 import type {
-  DirectusError,
   RegisterUserInput,
 } from '@directus/types'
 import { navigateTo, useRouter, useRuntimeConfig } from '#app'
@@ -77,7 +76,7 @@ export function useDirectusAuth(): DirectusAuth {
 
     try {
       const fields = config.public.directus.auth?.readMeFields
-      const response = await directus.request(directusReadMe(fields?.length ? { fields: fields as any } : undefined))
+      const response = await directus.request(directusReadMe(fields?.length ? { fields: fields as QueryFields<DirectusSchema, DirectusUserSDK<DirectusSchema>> } : undefined))
       if (!response.id) {
         console.warn('Directus is not configured to return the \'id\' field for DirectusUsers.')
       }
@@ -100,7 +99,7 @@ export function useDirectusAuth(): DirectusAuth {
       throw new Error('No user available')
 
     const fields = config.public.directus.auth?.readMeFields
-    const response = await directus.request(directusUpdateMe(data, fields?.length ? { fields: fields as any } : undefined))
+    const response = await directus.request(directusUpdateMe(data, fields?.length ? { fields: fields as QueryFields<DirectusSchema, DirectusUserSDK<DirectusSchema>> } : undefined))
     user.value = response as unknown as DirectusUser
     return user.value!
   }
