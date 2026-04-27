@@ -232,8 +232,8 @@ describe('rulesToJson', () => {
 
     expect(json.roles).toHaveLength(1)
     expect(json.roles![0]!.name).toBe('Editor')
-    expect(json.roles![0]!.policies[0]!.permissions.posts.create).toBe(true)
-    expect(json.roles![0]!.policies[0]!.permissions.posts.read).toBe(true)
+    expect(json.roles![0]!.policies[0]!.permissions.posts!.create).toBe(true)
+    expect(json.roles![0]!.policies[0]!.permissions.posts!.read).toBe(true)
   })
 
   it('handles complex permission configs', () => {
@@ -262,7 +262,7 @@ describe('rulesToJson', () => {
     const rules = loadRulesFromJson<TestSchema>(originalJson)
     const json = rulesToJson(rules)
 
-    const updatePerm = json.roles![0]!.policies[0]!.permissions.posts.update
+    const updatePerm = json.roles![0]!.policies[0]!.permissions.posts!.update
 
     expect(updatePerm).toEqual({
       fields: ['title', 'content'],

@@ -89,17 +89,19 @@ export async function pushRules<Schema>(
 
     // Create new policies
     const policiesToCreate = diff.policies.filter(p => p.type === 'added')
-    for (let i = 0; i < policiesToCreate.length; i++) {
-      const change = policiesToCreate[i]
+    let policyCreateIdx = 0
+    for (const change of policiesToCreate) {
       onProgress?.({
         phase: 'policies',
         action: 'create',
         name: change.name,
-        current: i + 1,
+        current: ++policyCreateIdx,
         total: policiesToCreate.length,
       })
 
       try {
+        // NestedPartial<IfAny<Schema, ...>> can't be resolved for generic Schema;
+        // the runtime shape is correct so we cast to satisfy the overload.
         const created = await client.request(
           createPolicy({
             name: change.local!.name,
@@ -109,7 +111,7 @@ export async function pushRules<Schema>(
             enforce_tfa: change.local!.enforce_tfa,
             admin_access: change.local!.admin_access,
             app_access: change.local!.app_access,
-          }),
+          } as never),
         )
         const newId = (created as { id: string }).id
         if (change.local!.id) {
@@ -130,13 +132,13 @@ export async function pushRules<Schema>(
     // Update modified policies
     if (!addOnly) {
       const policiesToUpdate = diff.policies.filter(p => p.type === 'modified')
-      for (let i = 0; i < policiesToUpdate.length; i++) {
-        const change = policiesToUpdate[i]
+      let policyUpdateIdx = 0
+      for (const change of policiesToUpdate) {
         onProgress?.({
           phase: 'policies',
           action: 'update',
           name: change.name,
-          current: i + 1,
+          current: ++policyUpdateIdx,
           total: policiesToUpdate.length,
         })
 
@@ -151,7 +153,7 @@ export async function pushRules<Schema>(
               enforce_tfa: change.local!.enforce_tfa,
               admin_access: change.local!.admin_access,
               app_access: change.local!.app_access,
-            }),
+            } as never),
           )
           if (change.local!.id) {
             policyIdMap.set(change.local!.id, remoteId)
@@ -179,13 +181,13 @@ export async function pushRules<Schema>(
     // 4. Push roles (now that policies exist)
     // Create new roles
     const rolesToCreate = diff.roles.filter(r => r.type === 'added')
-    for (let i = 0; i < rolesToCreate.length; i++) {
-      const change = rolesToCreate[i]
+    let roleCreateIdx = 0
+    for (const change of rolesToCreate) {
       onProgress?.({
         phase: 'roles',
         action: 'create',
         name: change.name,
-        current: i + 1,
+        current: ++roleCreateIdx,
         total: rolesToCreate.length,
       })
 
@@ -202,7 +204,7 @@ export async function pushRules<Schema>(
             description: change.local!.description,
             parent: change.local!.parent,
             policies: remotePolicyIds,
-          }),
+          } as never),
         )
         result.roles.push({ type: 'created', name: change.name })
         result.summary.roles.created++
@@ -219,13 +221,13 @@ export async function pushRules<Schema>(
     // Update modified roles
     if (!addOnly) {
       const rolesToUpdate = diff.roles.filter(r => r.type === 'modified')
-      for (let i = 0; i < rolesToUpdate.length; i++) {
-        const change = rolesToUpdate[i]
+      let roleUpdateIdx = 0
+      for (const change of rolesToUpdate) {
         onProgress?.({
           phase: 'roles',
           action: 'update',
           name: change.name,
-          current: i + 1,
+          current: ++roleUpdateIdx,
           total: rolesToUpdate.length,
         })
 
@@ -243,7 +245,7 @@ export async function pushRules<Schema>(
               description: change.local!.description,
               parent: change.local!.parent,
               policies: remotePolicyIds,
-            }),
+            } as never),
           )
           result.roles.push({ type: 'updated', name: change.name, id: remoteId })
           result.summary.roles.updated++
@@ -261,13 +263,13 @@ export async function pushRules<Schema>(
     // 5. Push permissions (after policies exist)
     // Create new permissions
     const permsToCreate = diff.permissions.filter(p => p.type === 'added')
-    for (let i = 0; i < permsToCreate.length; i++) {
-      const change = permsToCreate[i]
+    let permCreateIdx = 0
+    for (const change of permsToCreate) {
       onProgress?.({
         phase: 'permissions',
         action: 'create',
         name: change.name,
-        current: i + 1,
+        current: ++permCreateIdx,
         total: permsToCreate.length,
       })
 
@@ -285,7 +287,7 @@ export async function pushRules<Schema>(
             validation: change.local!.validation,
             presets: change.local!.presets,
             fields: change.local!.fields,
-          }),
+          } as never),
         )
         result.permissions.push({ type: 'created', name: change.name })
         result.summary.permissions.created++
@@ -302,13 +304,13 @@ export async function pushRules<Schema>(
     // Update modified permissions
     if (!addOnly) {
       const permsToUpdate = diff.permissions.filter(p => p.type === 'modified')
-      for (let i = 0; i < permsToUpdate.length; i++) {
-        const change = permsToUpdate[i]
+      let permUpdateIdx = 0
+      for (const change of permsToUpdate) {
         onProgress?.({
           phase: 'permissions',
           action: 'update',
           name: change.name,
-          current: i + 1,
+          current: ++permUpdateIdx,
           total: permsToUpdate.length,
         })
 
@@ -320,7 +322,7 @@ export async function pushRules<Schema>(
               validation: change.local!.validation,
               presets: change.local!.presets,
               fields: change.local!.fields,
-            }),
+            } as never),
           )
           result.permissions.push({ type: 'updated', name: change.name, id: String(remoteId) })
           result.summary.permissions.updated++
@@ -339,13 +341,13 @@ export async function pushRules<Schema>(
     if (!skipDeletes && !addOnly) {
       // Delete permissions first
       const permsToDelete = diff.permissions.filter(p => p.type === 'removed')
-      for (let i = 0; i < permsToDelete.length; i++) {
-        const change = permsToDelete[i]
+      let permDeleteIdx = 0
+      for (const change of permsToDelete) {
         onProgress?.({
           phase: 'permissions',
           action: 'delete',
           name: change.name,
-          current: i + 1,
+          current: ++permDeleteIdx,
           total: permsToDelete.length,
         })
 
@@ -365,13 +367,13 @@ export async function pushRules<Schema>(
 
       // Delete roles
       const rolesToDelete = diff.roles.filter(r => r.type === 'removed')
-      for (let i = 0; i < rolesToDelete.length; i++) {
-        const change = rolesToDelete[i]
+      let roleDeleteIdx = 0
+      for (const change of rolesToDelete) {
         onProgress?.({
           phase: 'roles',
           action: 'delete',
           name: change.name,
-          current: i + 1,
+          current: ++roleDeleteIdx,
           total: rolesToDelete.length,
         })
 
@@ -391,13 +393,13 @@ export async function pushRules<Schema>(
 
       // Delete policies last
       const policiesToDelete = diff.policies.filter(p => p.type === 'removed')
-      for (let i = 0; i < policiesToDelete.length; i++) {
-        const change = policiesToDelete[i]
+      let policyDeleteIdx = 0
+      for (const change of policiesToDelete) {
         onProgress?.({
           phase: 'policies',
           action: 'delete',
           name: change.name,
-          current: i + 1,
+          current: ++policyDeleteIdx,
           total: policiesToDelete.length,
         })
 

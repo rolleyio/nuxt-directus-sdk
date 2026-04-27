@@ -23,7 +23,7 @@ function setConfig(overrides: {
   url?: string | { client: string, server: string }
   directusUrl?: string
   serverDirectusUrl?: string
-  devProxy?: boolean | { enabled: boolean, path?: string }
+  devProxy?: boolean | { enabled: boolean, path?: string, wsPath?: string }
 }) {
   mockRuntimeConfig.mockReturnValue({
     public: {

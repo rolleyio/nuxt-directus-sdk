@@ -315,8 +315,8 @@ When enabled, types are automatically generated and available globally:
 ```typescript
 // Access generated types
 type Article = DirectusSchema['articles']
-type User = DirectusUsers
-type File = DirectusFiles
+type User = DirectusUser
+type File = DirectusFile
 
 // Use with Directus SDK - fully typed!
 const directus = useDirectus()

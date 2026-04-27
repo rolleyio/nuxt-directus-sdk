@@ -8,8 +8,7 @@
  * @see https://github.com/standard-schema/standard-schema
  */
 
-import type { DirectusValidation, StandardSchemaV1 } from '../types'
-import { isStandardSchema } from '../types'
+import { type DirectusFieldValidation, type DirectusValidation, isStandardSchema, type StandardSchemaV1 } from '../types'
 
 /**
  * Convert a Standard Schema to Directus validation format
@@ -372,7 +371,9 @@ function convertExpressionToValidation(expr: string): DirectusValidation {
   // This is a simplified parser for common ArkType expressions
   // Format: "string >= 5 & string <= 200" or "'draft' | 'published'"
 
-  const validation: DirectusValidation = {}
+  // Build field-level operators; cast to DirectusValidation on return since the
+  // result is used as a record-level filter object by the caller.
+  const validation: DirectusFieldValidation = {}
 
   // Check for string length constraints
   const minMatch = expr.match(/string\s*>=?\s*(\d+)/)
@@ -390,7 +391,7 @@ function convertExpressionToValidation(expr: string): DirectusValidation {
     validation._in = literalMatch.map(l => l.replace(/'/g, ''))
   }
 
-  return validation
+  return validation as DirectusValidation
 }
 
 /**

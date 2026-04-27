@@ -30,10 +30,10 @@ describe('sync: compareRulesPayloads', () => {
 
       expect(diff.hasChanges).toBe(true)
       expect(diff.summary.roles.added).toBe(1)
-      expect(diff.roles[0].type).toBe('added')
-      expect(diff.roles[0].name).toBe('Editor')
-      expect(diff.roles[0].local).toBeDefined()
-      expect(diff.roles[0].remote).toBeUndefined()
+      expect(diff.roles[0]!.type).toBe('added')
+      expect(diff.roles[0]!.name).toBe('Editor')
+      expect(diff.roles[0]!.local).toBeDefined()
+      expect(diff.roles[0]!.remote).toBeUndefined()
     })
 
     it('detects removed roles', () => {
@@ -52,10 +52,10 @@ describe('sync: compareRulesPayloads', () => {
 
       expect(diff.hasChanges).toBe(true)
       expect(diff.summary.roles.removed).toBe(1)
-      expect(diff.roles[0].type).toBe('removed')
-      expect(diff.roles[0].name).toBe('Legacy')
-      expect(diff.roles[0].remote).toBeDefined()
-      expect(diff.roles[0].local).toBeUndefined()
+      expect(diff.roles[0]!.type).toBe('removed')
+      expect(diff.roles[0]!.name).toBe('Legacy')
+      expect(diff.roles[0]!.remote).toBeDefined()
+      expect(diff.roles[0]!.local).toBeUndefined()
     })
 
     it('detects modified roles', () => {
@@ -74,10 +74,10 @@ describe('sync: compareRulesPayloads', () => {
 
       expect(diff.hasChanges).toBe(true)
       expect(diff.summary.roles.modified).toBe(1)
-      expect(diff.roles[0].type).toBe('modified')
-      expect(diff.roles[0].name).toBe('Editor')
-      expect(diff.roles[0].local?.icon).toBe('edit_new')
-      expect(diff.roles[0].remote?.icon).toBe('edit')
+      expect(diff.roles[0]!.type).toBe('modified')
+      expect(diff.roles[0]!.name).toBe('Editor')
+      expect(diff.roles[0]!.local?.icon).toBe('edit_new')
+      expect(diff.roles[0]!.remote?.icon).toBe('edit')
     })
 
     it('detects unchanged roles', () => {
@@ -96,7 +96,7 @@ describe('sync: compareRulesPayloads', () => {
       const diff = compareRulesPayloads(local, remote)
 
       expect(diff.hasChanges).toBe(false)
-      expect(diff.roles[0].type).toBe('unchanged')
+      expect(diff.roles[0]!.type).toBe('unchanged')
     })
   })
 
@@ -125,8 +125,8 @@ describe('sync: compareRulesPayloads', () => {
 
       expect(diff.hasChanges).toBe(true)
       expect(diff.summary.policies.added).toBe(1)
-      expect(diff.policies[0].type).toBe('added')
-      expect(diff.policies[0].name).toBe('Content')
+      expect(diff.policies[0]!.type).toBe('added')
+      expect(diff.policies[0]!.name).toBe('Content')
     })
 
     it('detects modified policies', () => {
@@ -162,9 +162,9 @@ describe('sync: compareRulesPayloads', () => {
 
       expect(diff.hasChanges).toBe(true)
       expect(diff.summary.policies.modified).toBe(1)
-      expect(diff.policies[0].type).toBe('modified')
-      expect(diff.policies[0].local?.enforce_tfa).toBe(true)
-      expect(diff.policies[0].remote?.enforce_tfa).toBe(false)
+      expect(diff.policies[0]!.type).toBe('modified')
+      expect(diff.policies[0]!.local?.enforce_tfa).toBe(true)
+      expect(diff.policies[0]!.remote?.enforce_tfa).toBe(false)
     })
   })
 
@@ -193,9 +193,9 @@ describe('sync: compareRulesPayloads', () => {
 
       expect(diff.hasChanges).toBe(true)
       expect(diff.summary.permissions.added).toBe(1)
-      expect(diff.permissions[0].type).toBe('added')
-      expect(diff.permissions[0].collection).toBe('posts')
-      expect(diff.permissions[0].action).toBe('read')
+      expect(diff.permissions[0]!.type).toBe('added')
+      expect(diff.permissions[0]!.collection).toBe('posts')
+      expect(diff.permissions[0]!.action).toBe('read')
     })
 
     it('detects modified permissions', () => {
@@ -231,7 +231,7 @@ describe('sync: compareRulesPayloads', () => {
 
       expect(diff.hasChanges).toBe(true)
       expect(diff.summary.permissions.modified).toBe(1)
-      expect(diff.permissions[0].type).toBe('modified')
+      expect(diff.permissions[0]!.type).toBe('modified')
     })
 
     it('matches permissions by policy+collection+action composite key', () => {
@@ -255,7 +255,7 @@ describe('sync: compareRulesPayloads', () => {
       const diff = compareRulesPayloads(local, remote)
 
       expect(diff.summary.permissions.added).toBe(2)
-      expect(diff.summary.permissions.unchanged).toBe(undefined) // not in summary
+      // unchanged items appear in the diff array but are not counted in the summary
       expect(diff.permissions.filter(p => p.type === 'unchanged')).toHaveLength(1)
       expect(diff.permissions.filter(p => p.type === 'added')).toHaveLength(2)
     })

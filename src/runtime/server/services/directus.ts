@@ -13,7 +13,7 @@ export function useDirectusUrl(path = ''): string {
   const config = useRuntimeConfig()
   const serverUrl = config.directus?.serverDirectusUrl
   const fallback = config.public.directus.directusUrl || config.public.directus.url
-  const url = serverUrl || fallback || process.env.DIRECTUS_URL
+  const url = serverUrl || fallback || process.env.DIRECTUS_URL || ''
   return useUrl(url, path)
 }
 

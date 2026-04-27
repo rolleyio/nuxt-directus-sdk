@@ -3,6 +3,7 @@
  */
 
 import type {
+  CollectionItem,
   DirectusValidation,
   FilterContext,
   PermissionAction,
@@ -78,7 +79,7 @@ export interface RulesTester<Schema> {
     roleOrPolicy: string,
     action: PermissionAction,
     collection: K,
-  ) => (keyof Schema[K])[] | '*'
+  ) => (keyof CollectionItem<Schema, K>)[] | '*'
 
   /**
    * Check if a specific field is accessible
@@ -87,7 +88,7 @@ export interface RulesTester<Schema> {
     roleOrPolicy: string,
     action: PermissionAction,
     collection: K,
-    field: keyof Schema[K],
+    field: keyof CollectionItem<Schema, K>,
   ) => boolean
 
   /**
@@ -97,7 +98,7 @@ export interface RulesTester<Schema> {
     roleOrPolicy: string,
     action: PermissionAction,
     collection: K,
-  ) => Partial<Schema[K]> | null
+  ) => Partial<CollectionItem<Schema, K>> | null
 
   /**
    * Validate an item against permission validation rules
@@ -236,7 +237,7 @@ class RulesTesterImpl<Schema> implements RulesTester<Schema> {
     roleOrPolicy: string,
     action: PermissionAction,
     collection: K,
-  ): (keyof Schema[K])[] | '*' {
+  ): (keyof CollectionItem<Schema, K>)[] | '*' {
     return getAccessibleFields(this.rules, roleOrPolicy, action, collection)
   }
 
@@ -244,7 +245,7 @@ class RulesTesterImpl<Schema> implements RulesTester<Schema> {
     roleOrPolicy: string,
     action: PermissionAction,
     collection: K,
-    field: keyof Schema[K],
+    field: keyof CollectionItem<Schema, K>,
   ): boolean {
     return canAccessField(this.rules, roleOrPolicy, action, collection, field)
   }
@@ -253,7 +254,7 @@ class RulesTesterImpl<Schema> implements RulesTester<Schema> {
     roleOrPolicy: string,
     action: PermissionAction,
     collection: K,
-  ): Partial<Schema[K]> | null {
+  ): Partial<CollectionItem<Schema, K>> | null {
     return getPresets(this.rules, roleOrPolicy, action, collection)
   }
 

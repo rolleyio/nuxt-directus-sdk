@@ -10,17 +10,18 @@ import {
   serializeToDirectusApi,
 } from '../../src/rules'
 
-// Load rules pulled from Directus
+// TODO: upcoming refactor for more consistent testing schema
+// https://github.com/rolleyio/nuxt-directus-sdk/issues/63
 const payload = JSON.parse(readFileSync('./test/rules/fixtures/rules.json', 'utf-8'))
-const remoteRules = loadRulesFromPayload <DirectusSchema> (payload)
+const remoteRules = loadRulesFromPayload<DirectusSchema>(payload)
 
 // Extend with additional policies and roles
 const rules = extendRules(remoteRules, {
   policies: [
     {
-      name: 'Blog Editor',
+      name: 'Post Editor',
       permissions: {
-        blogs: { read: true, create: true, update: true },
+        posts: { read: true, create: true, update: true },
       },
     },
   ],
@@ -31,8 +32,8 @@ const rules = extendRules(remoteRules, {
         {
           name: 'Content Management',
           permissions: {
-            blogs: { read: true, create: true, update: true },
-            case_studies: { read: true },
+            posts: { read: true, create: true, update: true },
+            pages: { read: true },
           },
         },
       ],
@@ -47,43 +48,43 @@ const rules = extendRules(remoteRules, {
 const tester = createRulesTester(rules)
 
 describe('remote rules (from directus)', () => {
-  it('public policy allows reading blogs', () => {
-    expect(tester.can('$t:public_label', 'read', 'blogs').allowed).toBe(true)
+  it('public policy allows reading posts', () => {
+    expect(tester.can('$t:public_label', 'read', 'posts').allowed).toBe(true)
   })
 
-  it('public policy allows reading case studies', () => {
-    expect(tester.can('$t:public_label', 'read', 'case_studies').allowed).toBe(true)
+  it('public policy allows reading pages', () => {
+    expect(tester.can('$t:public_label', 'read', 'pages').allowed).toBe(true)
   })
 
-  it('public policy does not allow creating blogs', () => {
-    expect(tester.can('$t:public_label', 'create', 'blogs').allowed).toBe(false)
+  it('public policy does not allow creating posts', () => {
+    expect(tester.can('$t:public_label', 'create', 'posts').allowed).toBe(false)
   })
 })
 
 describe('extended rules (local additions)', () => {
-  it('editor role can read and create blogs', () => {
-    expect(tester.can('Editor', 'read', 'blogs').allowed).toBe(true)
-    expect(tester.can('Editor', 'create', 'blogs').allowed).toBe(true)
+  it('editor role can read and create posts', () => {
+    expect(tester.can('Editor', 'read', 'posts').allowed).toBe(true)
+    expect(tester.can('Editor', 'create', 'posts').allowed).toBe(true)
   })
 
-  it('editor role can read case studies', () => {
-    expect(tester.can('Editor', 'read', 'case_studies').allowed).toBe(true)
+  it('editor role can read pages', () => {
+    expect(tester.can('Editor', 'read', 'pages').allowed).toBe(true)
   })
 
   it('admin role has full access via adminAccess', () => {
-    const result = tester.can('Admin', 'read', 'blogs')
+    const result = tester.can('Admin', 'read', 'posts')
     expect(result.allowed).toBe(true)
     expect(result.reason).toBe('Admin access granted')
   })
 
   it('admin role can do anything', () => {
-    expect(tester.can('Admin', 'delete', 'blogs').allowed).toBe(true)
-    expect(tester.can('Admin', 'create', 'case_studies').allowed).toBe(true)
+    expect(tester.can('Admin', 'delete', 'posts').allowed).toBe(true)
+    expect(tester.can('Admin', 'create', 'pages').allowed).toBe(true)
   })
 
   it('standalone policy can be tested directly', () => {
-    expect(tester.can('Blog Editor', 'read', 'blogs').allowed).toBe(true)
-    expect(tester.can('Blog Editor', 'create', 'blogs').allowed).toBe(true)
+    expect(tester.can('Post Editor', 'read', 'posts').allowed).toBe(true)
+    expect(tester.can('Post Editor', 'create', 'posts').allowed).toBe(true)
   })
 })
 

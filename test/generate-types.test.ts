@@ -111,7 +111,7 @@ describe('generateTypesFromDirectus()', () => {
       // Every directus_* entry must be singular (no trailing []) so that
       // MergeCoreCollection in the SDK can find the key and merge custom fields,
       // while RegularCollections<Schema> excludes them (keeping readItems() clean).
-      const body = schemaBlock![1]
+      const body = schemaBlock![1]!
       const systemEntries = [...body.matchAll(/\bdirectus_\w+\s*:\s*(\S+);/g)]
       expect(systemEntries.length, 'at least one directus_* entry should be present').toBeGreaterThan(0)
       for (const [, valueType] of systemEntries) {

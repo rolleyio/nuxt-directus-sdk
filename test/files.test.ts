@@ -1,4 +1,3 @@
-import type { DirectusFile } from '@directus/sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFiles } from './fixtures/directus-sdk/request/read-files.data'
 
@@ -38,7 +37,8 @@ describe('getDirectusFileUrl', () => {
 
   it('accepts a DirectusFile object', async () => {
     const { getDirectusFileUrl } = await import('../src/runtime/composables/files')
-    expect(getDirectusFileUrl(FILE_1 as DirectusFile)).toContain(`assets/${FILE_1.id}`)
+    const file: DirectusFile = { id: FILE_1.id }
+    expect(getDirectusFileUrl(file)).toContain(`assets/${FILE_1.id}`)
   })
 
   it('produces a clean URL with no query string when no options are passed', async () => {

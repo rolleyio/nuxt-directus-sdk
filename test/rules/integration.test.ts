@@ -306,9 +306,11 @@ describe('integration: Blog CMS Permissions', () => {
     })
   })
 
+  // TODO: revisit this
+  // https://github.com/rolleyio/nuxt-directus-sdk/issues/63
   describe('jSON roundtrip', () => {
     it('can export and import rules', () => {
-      const json = JSON.stringify(rules, (key, value) => {
+      const json = JSON.stringify(rules, (_, value) => {
         if (value instanceof Map) {
           return Object.fromEntries(value)
         }
@@ -338,7 +340,7 @@ describe('integration: Blog CMS Permissions', () => {
 
       // Verify a specific permission
       const publicPostRead = payload.permissions.find(
-        p => p.collection === 'posts' && p.action === 'read' && p.permissions?.status?._eq === 'published',
+        p => p.collection === 'posts' && p.action === 'read' && (p.permissions as { status?: { _eq?: string } } | null)?.status?._eq === 'published',
       )
       expect(publicPostRead).toBeDefined()
     })
