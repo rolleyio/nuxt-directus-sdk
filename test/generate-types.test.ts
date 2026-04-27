@@ -99,7 +99,7 @@ describe('generateTypesFromDirectus()', () => {
   // valid/suggested call on the generated client because the Directus REST
   // API does not serve system collections from /items/*.
   describe('system collections', () => {
-    it('are omitted from the DirectusSchema map', async () => {
+    it('are present in DirectusSchema as singular (non-array) entries', async () => {
       mockDirectusRequest().directusVersion('latest')
       const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
 
@@ -107,7 +107,16 @@ describe('generateTypesFromDirectus()', () => {
       // directus_* strings that appear in unrelated interface bodies.
       const schemaBlock = result.typeString.match(/interface DirectusSchema \{([\s\S]*?)\n\}/)
       expect(schemaBlock, 'DirectusSchema interface should be emitted').not.toBeNull()
-      expect(schemaBlock![1]).not.toMatch(/\bdirectus_\w+\s*:/)
+
+      // Every directus_* entry must be singular (no trailing []) so that
+      // MergeCoreCollection in the SDK can find the key and merge custom fields,
+      // while RegularCollections<Schema> excludes them (keeping readItems() clean).
+      const body = schemaBlock![1]
+      const systemEntries = [...body.matchAll(/\bdirectus_\w+\s*:\s*(\S+);/g)]
+      expect(systemEntries.length, 'at least one directus_* entry should be present').toBeGreaterThan(0)
+      for (const [, valueType] of systemEntries) {
+        expect(valueType, `system collection entry should not be an array type`).not.toMatch(/\[\]$/)
+      }
     })
 
     it('are omitted from the CollectionNames enum', async () => {

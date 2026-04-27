@@ -1,5 +1,6 @@
-export interface FallbackSchema {
-  directus_users?: Record<string, never>
-}
+export {}
 
-declare global { interface DirectusSchema extends FallbackSchema { } }
+declare global {
+  interface DirectusSchema {
+  }
+}

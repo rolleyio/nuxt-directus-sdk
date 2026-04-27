@@ -30,6 +30,11 @@ export default defineConfig({
           name: 'default',
           include: ['test/**/*.test.ts'],
           exclude: ['test/url-helpers.server.test.ts', 'test/url-helpers.client.test.ts'],
+          // typecheck: {
+          //   enabled: true,
+          //   checker: 'vue-tsc',
+          //   include: ['test/**/*.test-d.ts'],
+          // },
         },
       },
     ],
