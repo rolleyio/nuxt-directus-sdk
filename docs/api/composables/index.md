@@ -11,7 +11,7 @@ Complete API reference for all composables provided by nuxt-directus-sdk.
 All composables are fully typed with TypeScript:
 
 ```typescript
-// User is typed as DirectusUsers
+// User is typed as DirectusUser
 const { user } = useDirectusAuth()
 user.value?.email // string | undefined
 user.value?.first_name // string | undefined
