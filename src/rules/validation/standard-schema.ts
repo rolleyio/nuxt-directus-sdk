@@ -62,8 +62,9 @@ export function isValidationStandardSchema(
  * Complex schemas may not be fully convertible.
  */
 function convertArkTypeSchema(schema: StandardSchemaV1): DirectusValidation {
-  // ArkType stores definition in various internal properties
-  // We'll attempt to extract constraints from the schema
+  // ArkType stores definition in various internal properties (.t, .json, .expression)
+  // with no public type interface — we must introspect them at runtime.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const schemaAny = schema as any
 
   // Check for object type with properties
@@ -92,6 +93,7 @@ function convertArkTypeSchema(schema: StandardSchemaV1): DirectusValidation {
  * Zod stores schema definition in _def property.
  */
 function convertZodSchema(schema: StandardSchemaV1): DirectusValidation {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const schemaAny = schema as any
   const def = schemaAny._def
 
@@ -126,6 +128,8 @@ function convertZodSchema(schema: StandardSchemaV1): DirectusValidation {
 /**
  * Convert a single Zod field schema to Directus field validation
  */
+// Receives Zod internal schema objects whose shape is not publicly typed.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertZodFieldSchema(schema: any): Record<string, unknown> | null {
   if (!schema?._def)
     return null
@@ -205,9 +209,11 @@ function convertZodFieldSchema(schema: any): Record<string, unknown> | null {
  * Convert Valibot schema to Directus validation
  */
 function convertValibotSchema(schema: StandardSchemaV1): DirectusValidation {
+  // Valibot v1+ uses internal .type and .entries properties with no public
+  // type interface — we must introspect them at runtime.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const schemaAny = schema as any
 
-  // Valibot v1+ uses different internal structure
   // Check for object schema with entries
   if (schemaAny.type === 'object' && schemaAny.entries) {
     const validation: DirectusValidation = {}
@@ -232,6 +238,8 @@ function convertValibotSchema(schema: StandardSchemaV1): DirectusValidation {
 /**
  * Convert a single Valibot field schema to Directus field validation
  */
+// Receives Valibot internal schema objects whose shape is not publicly typed.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertValibotFieldSchema(schema: any): Record<string, unknown> | null {
   if (!schema)
     return null
@@ -297,6 +305,8 @@ function convertValibotFieldSchema(schema: any): Record<string, unknown> | null 
  * Convert object properties to validation (generic helper)
  */
 function convertObjectProps(
+  // Receives ArkType internal prop objects whose shape is not publicly typed.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   props: Record<string, any>,
   _vendor: string,
 ): DirectusValidation {
@@ -315,6 +325,8 @@ function convertObjectProps(
 /**
  * Convert a property constraint to validation
  */
+// Receives ArkType internal prop objects whose shape is not publicly typed.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertPropToValidation(prop: any): Record<string, unknown> | null {
   if (!prop)
     return null

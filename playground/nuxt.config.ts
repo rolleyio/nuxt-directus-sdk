@@ -1,8 +1,20 @@
 export default defineNuxtConfig({
   modules: ['@nuxt/ui', '../src/module'],
-  css: ['~/assets/playground.css'],
   devtools: {
     enabled: true,
+  },
+  css: ['~/assets/playground.css'],
+  routeRules: {
+    '/**': {
+      headers: {
+        'x-frame-options': 'allowall',
+      },
+    },
+  },
+
+  compatibilityDate: '2025-03-13',
+  typescript: {
+    includeWorkspace: true,
   },
   directus: {
     // url: import.emeta.env.DIRECTUS_URL
@@ -30,17 +42,5 @@ export default defineNuxtConfig({
         logout: '/',
       },
     },
-  },
-  routeRules: {
-    '/**': {
-      headers: {
-        'x-frame-options': 'allowall',
-      },
-    },
-  },
-
-  compatibilityDate: '2025-03-13',
-  typescript: {
-    includeWorkspace: true,
   },
 })

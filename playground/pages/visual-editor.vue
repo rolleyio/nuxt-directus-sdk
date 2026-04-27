@@ -69,7 +69,10 @@ const { data: post } = await useAsyncData('ve-post', () =>
       </p>
     </section>
 
-    <section v-if="post" class="pt-6 border-t border-default">
+    <section
+      v-if="post"
+      class="pt-6 border-t border-default"
+    >
       <h2 class="text-base font-semibold mb-2">
         <code class="text-xs bg-elevated px-1.5 py-0.5 rounded">DirectusVisualEditor</code> - field-level wrappers
       </h2>
@@ -79,7 +82,10 @@ const { data: post } = await useAsyncData('ve-post', () =>
         opens the editor for that specific field.
       </p>
 
-      <UCard class="mb-4" :ui="{ body: 'p-0 sm:p-0' }">
+      <UCard
+        class="mb-4"
+        :ui="{ body: 'p-0 sm:p-0' }"
+      >
         <DirectusVisualEditor
           collection="posts"
           :item="post.id"

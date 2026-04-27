@@ -34,7 +34,10 @@ const { data: blog } = await useAsyncData(
 </script>
 
 <template>
-  <article v-if="blog" class="space-y-4">
+  <article
+    v-if="blog"
+    class="space-y-4"
+  >
     <DirectusVisualEditor
       collection="posts"
       :item="blog.id"
@@ -85,6 +88,9 @@ const { data: blog } = await useAsyncData(
       <pre class="bg-elevated border border-default rounded p-4 text-sm whitespace-pre-wrap wrap-break-word">{{ blog.content }}</pre>
     </DirectusVisualEditor>
 
-    <DirectusEditButton collection="posts" :item="blog.id" />
+    <DirectusEditButton
+      collection="posts"
+      :item="blog.id"
+    />
   </article>
 </template>

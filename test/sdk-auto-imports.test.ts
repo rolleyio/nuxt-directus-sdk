@@ -2,8 +2,10 @@ import * as sdkModule from '@directus/sdk'
 import { describe, expect, it } from 'vitest'
 import { discoverSdkImports, SDK_COMPOSABLE_WRAPPED, SDK_DENYLIST } from '../src/sdk-imports'
 
+const sdk = sdkModule as Record<string, unknown>
+
 const sdkFunctions = new Set(
-  Object.keys(sdkModule).filter(key => typeof (sdkModule as any)[key] === 'function'),
+  Object.keys(sdk).filter(key => typeof sdk[key] === 'function'),
 )
 
 describe('ensure SDK_COMPOSABLE_WRAPPED stays in sync with @directus/sdk', () => {
@@ -29,7 +31,7 @@ describe('discoverSdkImports', () => {
   it('excludes all denylist entries', () => {
     // If this fails, a blocked function is leaking into auto-imports.
     // Add the leaking name to the appropriate set in src/sdk-imports.ts.
-    const imports = discoverSdkImports(sdkModule as any)
+    const imports = discoverSdkImports(sdk)
     const leaked = imports.filter(fn => SDK_DENYLIST.has(fn))
     expect(leaked).toEqual([])
   })
@@ -37,7 +39,7 @@ describe('discoverSdkImports', () => {
   it('contains only functions that exist in @directus/sdk', () => {
     // If this fails, discoverSdkImports is returning a name that is not a function in the SDK.
     // Check the filter logic in src/sdk-imports.ts.
-    const imports = discoverSdkImports(sdkModule as any)
+    const imports = discoverSdkImports(sdk)
     const unknown = imports.filter(fn => !sdkFunctions.has(fn))
     expect(unknown).toEqual([])
   })
@@ -45,7 +47,7 @@ describe('discoverSdkImports', () => {
   it('returns a non-empty list of importable functions', () => {
     // If this fails, discoverSdkImports is filtering out everything.
     // Check that SDK_DENYLIST in src/sdk-imports.ts has not grown to cover all SDK exports.
-    const imports = discoverSdkImports(sdkModule as any)
+    const imports = discoverSdkImports(sdk)
     expect(imports.length).toBeGreaterThan(0)
   })
 
@@ -53,7 +55,7 @@ describe('discoverSdkImports', () => {
     // If this fails, discoverSdkImports is ignoring the userExclude parameter.
     // Check the filter logic in src/sdk-imports.ts.
     const userExclude = new Set(['aggregate', 'withToken'])
-    const imports = discoverSdkImports(sdkModule as any, userExclude)
+    const imports = discoverSdkImports(sdk, userExclude)
     expect(imports).not.toContain('aggregate')
     expect(imports).not.toContain('withToken')
   })

@@ -14,7 +14,7 @@ export default defineNuxtPlugin({
     const directusVisualEditor = useDirectusVisualEditor()
 
     const debug = import.meta.client && route.query.debug !== undefined
-    const log = (...args: any[]) => {
+    const log = (...args: unknown[]) => {
       if (debug)
         console.warn('[Directus Plugin]', ...args)
     }

@@ -96,7 +96,6 @@ describe('diff functionality', () => {
     const diff = compareRulesPayloads(localPayload, payload)
 
     // Print the diff
-    // eslint-disable-next-line no-console
     console.log(`\n${formatDiff(diff)}`)
 
     // We added new roles and policies, so there should be changes

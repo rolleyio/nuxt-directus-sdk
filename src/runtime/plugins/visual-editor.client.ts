@@ -11,7 +11,7 @@ export default defineNuxtPlugin({
     const config = useRuntimeConfig()
 
     const debug = route.query.debug !== undefined
-    const log = (...args: any[]) => {
+    const log = (...args: unknown[]) => {
       if (debug)
         console.warn('[Directus Visual Editor]', ...args)
     }

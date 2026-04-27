@@ -1,3 +1,4 @@
+import type { FetchOptions } from 'ofetch'
 import type { Ref } from '#imports'
 import type { WebSocketAuthModes } from '@directus/sdk'
 import { useRequestHeaders, useRuntimeConfig, useState } from '#imports'
@@ -15,12 +16,12 @@ export function useDirectusVisualEditor(): Ref<boolean> {
 
 function resolveClientUrl(): string {
   const config = useRuntimeConfig()
-  return (config.public.directus as any).directusUrl || config.public.directus.url
+  return config.public.directus.directusUrl || config.public.directus.url
 }
 
 function resolveServerUrl(): string {
   const config = useRuntimeConfig()
-  return (config as any).directus?.serverDirectusUrl || resolveClientUrl()
+  return config.directus?.serverDirectusUrl || resolveClientUrl()
 }
 
 export function useDirectusUrl(path = ''): string {
@@ -74,7 +75,7 @@ function createDirectusClient() {
     // During SSR, forward cookies from the incoming request
     if (import.meta.server && requestHeaders?.cookie) {
       return globalThis.$fetch(urlString, {
-        ...options as any, // $fetch will normalize the method for us
+        ...options as FetchOptions, // $fetch will normalize the method for us
         headers: {
           ...options?.headers,
           cookie: requestHeaders.cookie,
@@ -83,7 +84,7 @@ function createDirectusClient() {
     }
 
     // On client, use regular fetch with credentials
-    return globalThis.$fetch(urlString, { ...options as any, credentials: 'include' })
+    return globalThis.$fetch(urlString, { ...options as FetchOptions, credentials: 'include' })
   }
 
   const baseUrl = useDirectusUrl()

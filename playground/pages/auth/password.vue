@@ -7,24 +7,24 @@ const step = ref<'request' | 'reset'>('request')
 const requestState = reactive({ email: '' })
 const resetState = reactive({ token: '', newPassword: '' })
 const message = ref('')
-const error = ref('')
+const errorMessage = ref('')
 
 async function submitRequest() {
   message.value = ''
-  error.value = ''
+  errorMessage.value = ''
   try {
     await passwordRequest(requestState.email)
     message.value = 'Reset email sent. Check your inbox for the token.'
     step.value = 'reset'
   }
-  catch (e: any) {
-    error.value = e?.message ?? 'Unknown error'
+  catch (error: unknown) {
+    errorMessage.value = error instanceof Error ? error.message : String(error)
   }
 }
 
 async function submitReset() {
   message.value = ''
-  error.value = ''
+  errorMessage.value = ''
   try {
     await passwordReset(resetState.token, resetState.newPassword)
     message.value = 'Password updated. You can now log in.'
@@ -32,8 +32,8 @@ async function submitReset() {
     resetState.token = ''
     resetState.newPassword = ''
   }
-  catch (e: any) {
-    error.value = e?.message ?? 'Unknown error'
+  catch (error: unknown) {
+    errorMessage.value = error instanceof Error ? error.message : String(error)
   }
 }
 </script>
@@ -59,11 +59,28 @@ async function submitReset() {
       <h2 class="text-base font-semibold mb-3">
         Step 1 - Request reset email
       </h2>
-      <UForm :state="requestState" class="space-y-4 max-w-sm" @submit="submitRequest">
-        <UFormField label="Email" name="email" required>
-          <UInput v-model="requestState.email" type="email" autocomplete="email" required class="w-full" />
+      <UForm
+        :state="requestState"
+        class="space-y-4 max-w-sm"
+        @submit="submitRequest"
+      >
+        <UFormField
+          label="Email"
+          name="email"
+          required
+        >
+          <UInput
+            v-model="requestState.email"
+            type="email"
+            autocomplete="email"
+            required
+            class="w-full"
+          />
         </UFormField>
-        <UButton type="submit" color="primary">
+        <UButton
+          type="submit"
+          color="primary"
+        >
           Send Reset Email
         </UButton>
       </UForm>
@@ -73,11 +90,27 @@ async function submitReset() {
       <h2 class="text-base font-semibold mb-3">
         Step 2 - Set new password
       </h2>
-      <UForm :state="resetState" class="space-y-4 max-w-sm" @submit="submitReset">
-        <UFormField label="Token (from the reset email link)" name="token" required>
-          <UInput v-model="resetState.token" required class="w-full" />
+      <UForm
+        :state="resetState"
+        class="space-y-4 max-w-sm"
+        @submit="submitReset"
+      >
+        <UFormField
+          label="Token (from the reset email link)"
+          name="token"
+          required
+        >
+          <UInput
+            v-model="resetState.token"
+            required
+            class="w-full"
+          />
         </UFormField>
-        <UFormField label="New password" name="newPassword" required>
+        <UFormField
+          label="New password"
+          name="newPassword"
+          required
+        >
           <UInput
             v-model="resetState.newPassword"
             type="password"
@@ -87,18 +120,38 @@ async function submitReset() {
           />
         </UFormField>
         <div class="flex gap-2">
-          <UButton type="submit" color="primary">
+          <UButton
+            type="submit"
+            color="primary"
+          >
             Reset Password
           </UButton>
-          <UButton type="button" color="neutral" variant="soft" @click="step = 'request'">
+          <UButton
+            type="button"
+            color="neutral"
+            variant="soft"
+            @click="step = 'request'"
+          >
             Back
           </UButton>
         </div>
       </UForm>
     </template>
 
-    <UAlert v-if="message" color="success" variant="soft" class="mt-4" :title="message" />
-    <UAlert v-if="error" color="error" variant="soft" class="mt-4" :title="error" />
+    <UAlert
+      v-if="message"
+      color="success"
+      variant="soft"
+      class="mt-4"
+      :title="message"
+    />
+    <UAlert
+      v-if="errorMessage"
+      color="error"
+      variant="soft"
+      class="mt-4"
+      :title="errorMessage"
+    />
 
     <ConfigNotice class="mt-6">
       The <code>directus-template-cli</code> <code>cms</code> example template uses a dummy email address, and therefore you'll need to register a new user and ensure your Directus instance is configured with a mail sender to test this feature.

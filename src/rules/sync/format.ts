@@ -2,7 +2,7 @@
  * Formatting utilities for diff output
  */
 
-import type { DiffChange, PermissionDiffChange, RulesDiff } from './types'
+import type { PermissionDiffChange, PolicyDiffChange, RoleDiffChange, RulesDiff } from './types'
 
 /**
  * Format diff as human-readable string (git-style)
@@ -97,7 +97,7 @@ function formatSummaryLine(
 /**
  * Format a role change
  */
-function formatRoleChange(lines: string[], change: DiffChange<any>): void {
+function formatRoleChange(lines: string[], change: RoleDiffChange): void {
   const prefix = changePrefix(change.type)
   lines.push(`${prefix} Role: ${change.name}`)
 
@@ -114,7 +114,7 @@ function formatRoleChange(lines: string[], change: DiffChange<any>): void {
 /**
  * Format a policy change
  */
-function formatPolicyChange(lines: string[], change: DiffChange<any>): void {
+function formatPolicyChange(lines: string[], change: PolicyDiffChange): void {
   const prefix = changePrefix(change.type)
   lines.push(`${prefix} Policy: ${change.name}`)
 

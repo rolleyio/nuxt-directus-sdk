@@ -35,20 +35,65 @@ async function registerForm() {
       You can login as an administrator to register a new user or configure your Directus instance to enable public registration to use this playground page.
     </ConfigNotice>
 
-    <UForm :state="form" class="space-y-4 max-w-sm" @submit="registerForm">
-      <UFormField label="First Name" name="first_name" required>
-        <UInput v-model="form.first_name" autocomplete="given-name" required class="w-full" />
+    <UForm
+      :state="form"
+      class="space-y-4 max-w-sm"
+      @submit="registerForm"
+    >
+      <UFormField
+        label="First Name"
+        name="first_name"
+        required
+      >
+        <UInput
+          v-model="form.first_name"
+          autocomplete="given-name"
+          required
+          class="w-full"
+        />
       </UFormField>
-      <UFormField label="Last Name" name="last_name" required>
-        <UInput v-model="form.last_name" autocomplete="family-name" required class="w-full" />
+      <UFormField
+        label="Last Name"
+        name="last_name"
+        required
+      >
+        <UInput
+          v-model="form.last_name"
+          autocomplete="family-name"
+          required
+          class="w-full"
+        />
       </UFormField>
-      <UFormField label="Email" name="email" required>
-        <UInput v-model="form.email" type="email" autocomplete="email" required class="w-full" />
+      <UFormField
+        label="Email"
+        name="email"
+        required
+      >
+        <UInput
+          v-model="form.email"
+          type="email"
+          autocomplete="email"
+          required
+          class="w-full"
+        />
       </UFormField>
-      <UFormField label="Password" name="password" required>
-        <UInput v-model="form.password" type="password" autocomplete="new-password" required class="w-full" />
+      <UFormField
+        label="Password"
+        name="password"
+        required
+      >
+        <UInput
+          v-model="form.password"
+          type="password"
+          autocomplete="new-password"
+          required
+          class="w-full"
+        />
       </UFormField>
-      <UButton type="submit" color="primary">
+      <UButton
+        type="submit"
+        color="primary"
+      >
         Register New User
       </UButton>
     </UForm>

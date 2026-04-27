@@ -289,12 +289,15 @@ export default defineNuxtModule<ModuleOptions>({
     const resolver = createResolver(import.meta.url)
 
     // Helper function to register modules
-    async function registerModule(name: string, key: string, moduleOptions: Record<string, any>) {
+    // NuxtOptions has no public index signature for module config keys.
+    async function registerModule(name: string, key: string, moduleOptions: Record<string, unknown>) {
       if (!hasNuxtModule(name)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await installModule(name, defu((nuxtApp.options as any)[key], moduleOptions))
       }
       else {
-        (nuxtApp.options as any)[key] = defu((nuxtApp.options as any)[key], moduleOptions)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(nuxtApp.options as any)[key] = defu((nuxtApp.options as any)[key], moduleOptions)
       }
     }
 
@@ -339,14 +342,14 @@ export default defineNuxtModule<ModuleOptions>({
       })
 
       // Add error handling to the proxy
-      proxy.on('error', (err: any, _req: any, socket: any) => {
+      proxy.on('error', (err, _req, socket) => {
         logger.error(`WebSocket proxy error:`, err.message)
         if (socket && !socket.destroyed) {
           socket.end()
         }
       })
 
-      proxy.on('proxyReqWs', (proxyReq: any, req: any, _socket: any) => {
+      proxy.on('proxyReqWs', (proxyReq, req, _socket) => {
         // Rewrite the path from /_directus-ws to /websocket
         proxyReq.path = '/websocket'
 
@@ -361,14 +364,16 @@ export default defineNuxtModule<ModuleOptions>({
 
         // Replace the nuxt server upgrade handler with our WebSocket proxy
         if (nuxtApp.server) {
+          // nuxtApp.server.upgrade is not part of Nuxt's public type surface.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           nuxtApp.server.upgrade = (req: any, socket: any, head: any) => {
             // Check if this is our WebSocket proxy route
             if (req.url?.startsWith(wsProxyPath)) {
               try {
                 proxy.ws(req, socket, head)
               }
-              catch (err: any) {
-                logger.error('WebSocket proxy error:', err.message)
+              catch (error: unknown) {
+                logger.error('WebSocket proxy error:', error instanceof Error ? error.message : String(error))
                 if (!socket.destroyed) {
                   socket.destroy()
                 }
@@ -402,14 +407,24 @@ export default defineNuxtModule<ModuleOptions>({
       options.devProxy = false
     }
 
-    (options as any).directusUrl = clientUrl
-    ; (options as any).serverDirectusUrl = serverUrl || clientUrl
+    // directusUrl/serverDirectusUrl are injected onto options so Nuxt's type
+    // generation picks them up in runtimeConfig — ModuleOptions has no typed slot for them.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(options as any).directusUrl = clientUrl
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(options as any).serverDirectusUrl = serverUrl || clientUrl
 
+    // runtimeConfig is indexed by the module configKey which is not statically known.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nuxtApp.options.runtimeConfig[configKey] = options as any
     nuxtApp.options.runtimeConfig.public = nuxtApp.options.runtimeConfig.public || {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nuxtApp.options.runtimeConfig.public[configKey] = defu(nuxtApp.options.runtimeConfig.public[configKey] as any, options)
 
+    // Strip server-only fields before they reach the public runtime config.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (nuxtApp.options.runtimeConfig.public[configKey] as any).adminToken
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (nuxtApp.options.runtimeConfig.public[configKey] as any).serverDirectusUrl
 
     // Register @nuxt/image with Directus provider
@@ -515,6 +530,8 @@ export default defineNuxtModule<ModuleOptions>({
 
     if (options.devtools) {
       loggerMessage.push(`📦 Directus added to Nuxt DevTools`, '')
+      // 'devtools:customTabs' is a Nuxt DevTools hook not declared in core Nuxt hook types.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       nuxtApp.hook('devtools:customTabs' as any, (iframeTabs: any) => {
         iframeTabs.push({
           name: 'directus',

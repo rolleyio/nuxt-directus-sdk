@@ -1,7 +1,10 @@
 import type { ComputedRef, Ref } from '#imports'
 import type { RouteLocationRaw } from '#vue-router'
-import type { DirectusUser as DirectusUserSDK, LoginOptions, NestedPartial } from '@directus/sdk'
-import type { RegisterUserInput } from '@directus/types'
+import type { DirectusUser as DirectusUserSDK, NestedPartial, LoginOptions, QueryFields } from '@directus/sdk'
+import type {
+  DirectusError,
+  RegisterUserInput,
+} from '@directus/types'
 import { navigateTo, useRouter, useRuntimeConfig } from '#app'
 import { computed, useRequestURL, useState } from '#imports'
 import {

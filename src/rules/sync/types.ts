@@ -24,10 +24,10 @@ export interface DiffChange<T> {
 }
 
 /** Role diff change */
-export interface RoleDiffChange extends DiffChange<DirectusRolePayload> {}
+export type RoleDiffChange = DiffChange<DirectusRolePayload>
 
 /** Policy diff change */
-export interface PolicyDiffChange extends DiffChange<DirectusPolicyPayload> {}
+export type PolicyDiffChange = DiffChange<DirectusPolicyPayload>
 
 /** Permission diff change */
 export interface PermissionDiffChange extends DiffChange<DirectusPermissionPayload> {

@@ -5,7 +5,7 @@ import { setAttr } from '@directus/visual-editing'
 import { useDirectusVisualEditor } from '../composables/directus'
 import { Slot } from '../utils'
 
-type SingleDirectusCollection = DirectusSchema[T] extends Array<any>
+type SingleDirectusCollection = DirectusSchema[T] extends Array<unknown>
   ? DirectusSchema[T][0]
   : DirectusSchema[T]
 type FieldKey = keyof SingleDirectusCollection
@@ -24,7 +24,7 @@ const directusAttr = computed(() => {
     return undefined
   }
 
-  const data: Record<any, any> = {}
+  const data: Record<string, unknown> = {}
 
   Object.entries(props).forEach(([key, value]) => {
     if (value !== undefined) {
@@ -32,7 +32,7 @@ const directusAttr = computed(() => {
     }
   })
 
-  return setAttr(data as any)
+  return setAttr(data as Parameters<typeof setAttr>[0])
 })
 </script>
 

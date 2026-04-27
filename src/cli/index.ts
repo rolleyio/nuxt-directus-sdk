@@ -11,8 +11,6 @@
  *   generate-types     - Generate TypeScript types from a Directus schema
  */
 
-/* eslint-disable node/prefer-global/process */
-
 import type { DirectusRulesPayload } from '../rules/types/directus-api'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'

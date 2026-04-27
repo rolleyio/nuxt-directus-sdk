@@ -30,7 +30,10 @@ const nav = useNav().filter(group => group.label !== 'Overview')
           :key="link.to"
           class="text-sm"
         >
-          <NuxtLink :to="link.to" class="text-primary font-medium hover:underline">
+          <NuxtLink
+            :to="link.to"
+            class="text-primary font-medium hover:underline"
+          >
             {{ link.label }}
           </NuxtLink>
           <template v-if="link.description">

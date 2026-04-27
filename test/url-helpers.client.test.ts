@@ -16,7 +16,7 @@ beforeEach(() => {
   vi.doMock('#imports', () => ({
     useRuntimeConfig: mockRuntimeConfig,
     useRequestHeaders: vi.fn(() => ({})),
-    useState: vi.fn((_key: string, init: () => any) => ({ value: init() })),
+    useState: vi.fn((_key: string, init: () => unknown) => ({ value: init() })),
   }))
 
   // Mock window.location for client-side tests
@@ -27,7 +27,7 @@ function setConfig(overrides: {
   url?: string | { client: string, server: string }
   directusUrl?: string
   serverDirectusUrl?: string
-  devProxy?: any
+  devProxy?: boolean | { enabled: boolean, path?: string }
 }) {
   mockRuntimeConfig.mockReturnValue({
     public: {

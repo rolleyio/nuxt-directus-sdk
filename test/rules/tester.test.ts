@@ -263,7 +263,7 @@ describe('createRulesTester', () => {
                   posts: {
                     create: {
                       fields: ['title', 'content'],
-                      presets: { status: 'draft', author: '$CURRENT_USER' as any },
+                      presets: { status: 'draft', author: '$CURRENT_USER' },
                     },
                   },
                 },

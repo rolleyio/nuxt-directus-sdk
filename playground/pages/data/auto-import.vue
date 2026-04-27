@@ -77,7 +77,10 @@ const data = await publicClient.request(readItems('posts'))</pre>
 
       <p class="text-xs text-muted italic border-l-2 border-default pl-3">
         On the server side, this module provides <code>useAdminDirectus()</code> and <code>useSessionDirectus(event)</code> in Nitro API routes to handle client setup for you.
-        See the <NuxtLink to="/server-utils" class="text-primary hover:underline">
+        See the <NuxtLink
+          to="/server-utils"
+          class="text-primary hover:underline"
+        >
           Server Composables
         </NuxtLink> demo.
       </p>

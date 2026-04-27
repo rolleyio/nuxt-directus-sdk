@@ -5,7 +5,7 @@ import { useDirectus, useDirectusUrl } from './directus'
 
 interface DirectusFileUpload {
   file: File
-  data?: Record<keyof DirectusFile, string>
+  data?: Partial<Record<keyof DirectusFile, string>>
 }
 
 export async function uploadDirectusFile(file: DirectusFileUpload, query?: Query<DirectusSchema, DirectusSdkFile<DirectusSchema>>) {
