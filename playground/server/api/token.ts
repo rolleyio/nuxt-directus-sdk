@@ -1,7 +1,15 @@
-import { defineEventHandler, getQuery, useTokenDirectus } from '#imports'
+// In your project, none of these imports are needed.
+// The module registers useTokenDirectus, defineEventHandler, getQuery, and all
+// @directus/sdk functions (including readMe) as Nitro auto-imports; they are
+// available globally in every server route without any import statement.
+// H3Event is also available as a global type in Nitro server routes, so the
+// `event: H3Event` annotation works without importing it.
 import { readMe } from '@directus/sdk'
+import { defineEventHandler, getQuery } from 'h3'
+import type { H3Event } from 'h3'
+import { useTokenDirectus } from '../../../src/runtime/server/services/directus'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event: H3Event) => {
   const { token } = getQuery(event)
 
   if (!token || typeof token !== 'string') {
