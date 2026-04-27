@@ -305,11 +305,17 @@ export function transformSnapshotToTypeString(
 
   const customInterfaceBlocks = generatedCollections.map(g => g.interfaceBlock)
 
-  // TODO: Review what happens if DirectusSchema omits the directus_ system collections
+  // System collections are emitted as non-array (singular) entries in DirectusSchema so that
+  // MergeCoreCollection<Schema, "directus_settings", ...> in the SDK can find the key and merge
+  // any custom fields into the return types.
+  // See: https://directus.io/docs/tutorials/tips-and-tricks/advanced-types-with-the-directus-sdk#custom-fields-on-core-collections
   const directusSchemaBlock = generateDirectusSchemaInterface(allCollectionsForSchema, prefix, singletonCollectionNames)
 
-  // TODO: Review what happens if enum omits the directus_ system collections
-  const allCollectionNames = allCollectionsForSchema.map(c => c.collection)
+  // The enum is user-facing sugar for iterating custom collection names
+  // consumers using it to build UI lists don't want `directus_activity` showing up in a dropdown.
+  const allCollectionNames = allCollectionsForSchema
+    .filter(c => !collectionIsDirectusSystem(c.collection))
+    .map(c => c.collection)
   const enumBlock = generateCollectionNamesEnum(allCollectionNames, prefix)
 
   const bodyParts = [
@@ -746,8 +752,12 @@ function generateDirectusSchemaInterface(
 ): string {
   const entries = allCollections.map((collection) => {
     const isSingleton = collection.meta?.singleton === true
+    const isDirectusSystemCollection = collectionIsDirectusSystem(collection.collection)
     const interfaceName = collectionNameToInterfaceName(collection.collection, prefix, singletons)
-    const valueType = isSingleton ? interfaceName : `${interfaceName}[]`
+    // System collections use singular (non-array) entries so MergeCoreCollection in the SDK
+    // can find the key and merge custom fields into readUsers() / readSettings() / etc.
+    // https://directus.io/docs/tutorials/tips-and-tricks/advanced-types-with-the-directus-sdk#custom-fields-on-core-collections
+    const valueType = (isSingleton || isDirectusSystemCollection) ? interfaceName : `${interfaceName}[]`
     return `\t${collection.collection}: ${valueType};`
   })
 

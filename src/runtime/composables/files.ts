@@ -1,5 +1,5 @@
 import type { DirectusFile, DirectusSchema } from '#build/types/directus'
-import type { Query } from '@directus/sdk'
+import type { DirectusFile as DirectusSdkFile, Query } from '@directus/sdk'
 import { uploadFiles } from '@directus/sdk'
 import { useDirectus, useDirectusUrl } from './directus'
 
@@ -8,13 +8,13 @@ interface DirectusFileUpload {
   data?: Partial<Record<keyof DirectusFile, string>>
 }
 
-export async function uploadDirectusFile(file: DirectusFileUpload, query?: Query<DirectusSchema, DirectusFile>) {
+export async function uploadDirectusFile(file: DirectusFileUpload, query?: Query<DirectusSchema, DirectusSdkFile<DirectusSchema>>) {
   const result = await uploadDirectusFiles([file], query)
 
   return (Array.isArray(result) ? result[0] : result)
 }
 
-export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Query<DirectusSchema, DirectusFile>) {
+export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Query<DirectusSchema, DirectusSdkFile<DirectusSchema>>) {
   const directus = useDirectus()
   const formData = new FormData()
 

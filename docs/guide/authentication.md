@@ -319,7 +319,7 @@ Returns an object with auth methods and state:
 const {
   user, // Ref<DirectusUser | null>
   loggedIn, // ComputedRef<boolean>
-  readMe, // () => Promise<DirectusUser>
+  readMe, // () => Promise<DirectusUser | null>
   updateMe, // (data) => Promise<DirectusUser>
   login, // (email, password, options?) => Promise<DirectusUser>
   loginWithProvider, // (provider, redirect?) => Promise<void>
