@@ -11,6 +11,7 @@
 
 - [✨ &nbsp;Release Notes](https://github.com/rolleyio/nuxt-directus-sdk/releases)
 - [📚 &nbsp;Documentation](https://nuxt-directus-sdk.rolley.io)
+- [🛝 &nbsp;Live Playground](https://playground.nuxt-directus-sdk.rolley.io)
 
 ## Features
 

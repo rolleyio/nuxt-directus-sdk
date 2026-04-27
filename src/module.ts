@@ -1,4 +1,4 @@
-import type { Query } from '@directus/sdk'
+import type { DirectusUser, Query } from '@directus/sdk'
 import type { ImageModifiers, ImageProviders } from '@nuxt/image'
 import type { InlinePreset } from 'unimport'
 
@@ -13,7 +13,7 @@ import { useUrl } from './runtime/utils'
 import { discoverSdkImports } from './sdk-imports'
 
 export type DirectusUrl = string | { client: string, server: string }
-export type ReadMeFields = Query<DirectusSchema, DirectusUser>['fields']
+export type ReadMeFields = Query<DirectusSchema, DirectusUser<DirectusSchema>>['fields']
 
 export interface ModuleOptions {
   /**
@@ -275,12 +275,15 @@ export default defineNuxtModule<ModuleOptions>({
     },
   },
   async setup(options, nuxtApp) {
+    // set up array to send logs in messagebox
+    const loggerMessage: string[] = []
+
     // Resolve client and server URLs from the url option
     const clientUrl = typeof options.url === 'string' ? options.url : options.url?.client
     const serverUrl = typeof options.url === 'string' ? options.url : options.url?.server
 
     if (!clientUrl) {
-      logger.warn('No Directus URL found at build time. Set it in config options, .env file as DIRECTUS_URL, or at runtime via NUXT_PUBLIC_DIRECTUS_URL.')
+      loggerMessage.push(`⚠️ No Directus URL found at build time:`, `  - Set it in config options, .env file as DIRECTUS_URL or at runtime via NUXT_PUBLIC_DIRECTUS_URL.`, '')
     }
 
     const resolver = createResolver(import.meta.url)
@@ -297,8 +300,6 @@ export default defineNuxtModule<ModuleOptions>({
         ;(nuxtApp.options as any)[key] = defu((nuxtApp.options as any)[key], moduleOptions)
       }
     }
-    // set up array to send logs in messagebox
-    const loggerMessage: string[] = []
 
     // Normalize devProxy options
     const devProxyConfig = typeof options.devProxy === 'boolean'
@@ -401,7 +402,7 @@ export default defineNuxtModule<ModuleOptions>({
         wsPath: wsProxyPath,
       }
     }
-    else if (!nuxtApp.options.dev) {
+    else if (!nuxtApp.options.dev && directusUrl) {
       loggerMessage.push(`🌐 Production Mode:`, `  - SDK connects directly to ${colors.dim(`${directusUrl}`)}`, '')
       options.devProxy = false
     }

@@ -15,12 +15,12 @@ interface DirectusAuth {
   user: Ref<DirectusUsers | null>
   loggedIn: ComputedRef<boolean>
   readMe: () => Promise<DirectusUsers | null>
-  updateMe: (data: Partial<DirectusUsers>) => Promise<DirectusUsers | null>
+  updateMe: (data: UpdateMeInput) => Promise<DirectusUsers>
   login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<DirectusUsers | null>
   loginWithProvider: (provider: string, redirectOnLogin?: boolean | string) => Promise<void>
   logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
-  createUser: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
-  register: (data: Partial<DirectusUsers>) => Promise<DirectusUsers>
+  createUser: (data: RegisterUserInput) => Promise<DirectusUsers>
+  register: (data: RegisterUserInput) => Promise<DirectusUsers>
   inviteUser: (email: string, role: string, inviteUrl?: string) => Promise<void>
   acceptUserInvite: (token: string, password: string) => Promise<void>
   passwordRequest: (email: string, resetUrl?: string) => Promise<void>
@@ -101,9 +101,9 @@ const user = await readMe()
 Update the current user's profile.
 
 **Parameters:**
-- `data: Partial<DirectusUsers>` - Fields to update
+- `data: UpdateMeInput` - Fields to update. `role` and `policies` are excluded to prevent privilege escalation. `avatar` accepts a pre-uploaded file ID (`string`), not a file object — upload the file first, then pass its ID here.
 
-**Returns:** `Promise<DirectusUsers | null>`
+**Returns:** `Promise<DirectusUsers>`
 
 ```typescript
 const { updateMe } = useDirectusAuth()
@@ -111,8 +111,10 @@ const { updateMe } = useDirectusAuth()
 await updateMe({
   first_name: 'John',
   last_name: 'Doe',
-  avatar: 'file-uuid',
 })
+
+// To update avatar, first upload the file, then attach its ID
+await updateMe({ avatar: 'file-uuid' })
 ```
 
 ##### `login(email, password, options?)`
@@ -192,7 +194,7 @@ await logout('/login')
 Create a new user account. `register()` is an alias for `createUser()`.
 
 **Parameters:**
-- `data: Partial<DirectusUsers>` - User data
+- `data: RegisterUserInput` - User registration data
 
 **Returns:** `Promise<DirectusUsers>`
 

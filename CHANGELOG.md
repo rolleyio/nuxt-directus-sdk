@@ -1,5 +1,83 @@
 # Changelog
 
+## v6.0.0-beta.2
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v6.0.0-beta.1...v6.0.0-beta.2)
+
+### 🚀 Enhancements
+
+- Auto-import all functions from @directus/sdk dynamically ([79778d6](https://github.com/rolleyio/nuxt-directus-sdk/commit/79778d6))
+- **playground:** Add visual editor ([a069eaf](https://github.com/rolleyio/nuxt-directus-sdk/commit/a069eaf))
+- **playground:** Demo for visual editor and auto-import ([e14a356](https://github.com/rolleyio/nuxt-directus-sdk/commit/e14a356))
+- **playground:** Add clarity on where configuration is necessary ([b26cddc](https://github.com/rolleyio/nuxt-directus-sdk/commit/b26cddc))
+
+### 🔥 Performance
+
+- **playground:** Add nav composable for consolidated presentation of playground features ([80a4af0](https://github.com/rolleyio/nuxt-directus-sdk/commit/80a4af0))
+
+### 🩹 Fixes
+
+- **playground:** Clean up todo's and improve styling ([94a7f19](https://github.com/rolleyio/nuxt-directus-sdk/commit/94a7f19))
+- **playground:** Update useServerDirectus -> useSessionDirectus ([6adf36d](https://github.com/rolleyio/nuxt-directus-sdk/commit/6adf36d))
+- **eslint:** Convert empty interfaces to type alias ([67dc680](https://github.com/rolleyio/nuxt-directus-sdk/commit/67dc680))
+- **eslint:** Replace DiffChange<any> with imported types ([7372710](https://github.com/rolleyio/nuxt-directus-sdk/commit/7372710))
+- **eslint:** Change cast of any to unknown in directus-visual-editor ([af21d88](https://github.com/rolleyio/nuxt-directus-sdk/commit/af21d88))
+- **eslint:** Any to unknown in logger arguments and query param helper ([655299d](https://github.com/rolleyio/nuxt-directus-sdk/commit/655299d))
+- **eslint:** Assign DirectusFileUpload data to Partial<...> ([d6f0838](https://github.com/rolleyio/nuxt-directus-sdk/commit/d6f0838))
+- **eslint:** Change any to unknown in useState, setConfig mirrors type in config ([9b6e70c](https://github.com/rolleyio/nuxt-directus-sdk/commit/9b6e70c))
+- **eslint:** Any to unknown ([8771510](https://github.com/rolleyio/nuxt-directus-sdk/commit/8771510))
+- **eslint:** Options as any to FetchOptions for $fetch ([029313e](https://github.com/rolleyio/nuxt-directus-sdk/commit/029313e))
+- **eslint:** Remove unnecessary cast as any in config ([c248774](https://github.com/rolleyio/nuxt-directus-sdk/commit/c248774))
+- **rules:** Cast SDK response to locally defined Payload types ([f8153fb](https://github.com/rolleyio/nuxt-directus-sdk/commit/f8153fb))
+- **rules:** Replace any with QueryFilter ([4ee9d73](https://github.com/rolleyio/nuxt-directus-sdk/commit/4ee9d73))
+- **playground:** Replace any with proper types ([ad4b95f](https://github.com/rolleyio/nuxt-directus-sdk/commit/ad4b95f))
+- **playground:** Replace any with explicitly defined types ([d76c7d5](https://github.com/rolleyio/nuxt-directus-sdk/commit/d76c7d5))
+- **types:** Omit directus_* from DirectusSchema map ([#65](https://github.com/rolleyio/nuxt-directus-sdk/pull/65))
+- **types:** Add directus_* collections to DirectusSchema as non-array values ([f85fd6f](https://github.com/rolleyio/nuxt-directus-sdk/commit/f85fd6f))
+- **types:** Clean up workarounds made unnecessary by f85fd6f ([88153d1](https://github.com/rolleyio/nuxt-directus-sdk/commit/88153d1))
+- **module:** Use loggerMessage for url warning and guard prod log on directusUrl ([d5ae65e](https://github.com/rolleyio/nuxt-directus-sdk/commit/d5ae65e))
+- **auth:** Align DirectusAuth interface with implementation ([7897f6a](https://github.com/rolleyio/nuxt-directus-sdk/commit/7897f6a))
+
+### 💅 Refactors
+
+- Move discoverSdkImports to it's own file ([0e40f13](https://github.com/rolleyio/nuxt-directus-sdk/commit/0e40f13))
+- Error as any switched to error as unknown ([233bed0](https://github.com/rolleyio/nuxt-directus-sdk/commit/233bed0))
+- Remove casting as any from `$CURRENT_USER` in test ([4d13de3](https://github.com/rolleyio/nuxt-directus-sdk/commit/4d13de3))
+
+### 📖 Documentation
+
+- Update README development section for pnpm/corepack and contributing guidelines ([d4d5fa5](https://github.com/rolleyio/nuxt-directus-sdk/commit/d4d5fa5))
+- Improve clarity on auto-import ([bcf7c54](https://github.com/rolleyio/nuxt-directus-sdk/commit/bcf7c54))
+
+### 🌊 Types
+
+- Remove any from files runtime composable and typegenerator ([36858a9](https://github.com/rolleyio/nuxt-directus-sdk/commit/36858a9))
+
+### 🏡 Chore
+
+- **ci:** Drop redundant prepack step from release workflow ([3d89af3](https://github.com/rolleyio/nuxt-directus-sdk/commit/3d89af3))
+- Add PR template ([52e6d7e](https://github.com/rolleyio/nuxt-directus-sdk/commit/52e6d7e))
+- **playground:** Switch to @nuxt/ui + Tailwind ([755add2](https://github.com/rolleyio/nuxt-directus-sdk/commit/755add2))
+- Bump eslint ([c8e341e](https://github.com/rolleyio/nuxt-directus-sdk/commit/c8e341e))
+- **eslint:** Global change to no-empty-object-type ([ded0db9](https://github.com/rolleyio/nuxt-directus-sdk/commit/ded0db9))
+- **eslint:** Add eslint-disable for no-explicit-any that are intentional ([eb194d0](https://github.com/rolleyio/nuxt-directus-sdk/commit/eb194d0))
+
+### ✅ Tests
+
+- Add test for discoverSdkImports ([ad2492f](https://github.com/rolleyio/nuxt-directus-sdk/commit/ad2492f))
+- **types:** Add known-issues-upstream test file & update generate-types test ([b99a899](https://github.com/rolleyio/nuxt-directus-sdk/commit/b99a899))
+
+### 🎨 Styles
+
+- Lint --fix ([c886bbf](https://github.com/rolleyio/nuxt-directus-sdk/commit/c886bbf))
+- Standardize error varnames ([00e682b](https://github.com/rolleyio/nuxt-directus-sdk/commit/00e682b))
+
+### ❤️ Contributors
+
+- K Heiner <rolleyio@heiner.work>
+- Matthew Rollinson <matt@rolley.io>
+- Kevin Heiner <kheiner@gmail.com>
+
 ## v6.0.0-beta.1
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v6.0.0-beta.0...v6.0.0-beta.1)
