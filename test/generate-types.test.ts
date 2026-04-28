@@ -1,6 +1,6 @@
 import * as directusSdk from '@directus/sdk'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { FALLBACK_TYPE_STRING, generateTypesFromDirectus } from '../src/runtime/types/generate'
+import { generateTypesFromDirectus } from '../src/runtime/types/generate'
 import { mockDirectusRequest, requestMock } from './fixtures/directus-sdk/schema-introspection.mock'
 
 vi.mock('@directus/sdk', async () => {
@@ -37,14 +37,14 @@ describe('generateTypesFromDirectus()', () => {
   it('logs network failure to present to user', async () => {
     requestMock.mockRejectedValue(new Error('Network error'))
     const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
-    expect(result.typeString).toBe(FALLBACK_TYPE_STRING)
+    expect(result.typeString).toBeNull()
     expect(result.logs).toBeInstanceOf(Array)
     expect(result.logs[0]).toContain('  - Error: Network error')
   })
   it('returns fallback and logs error when collections, fields, or relations are empty', async () => {
     mockDirectusRequest().withVersion('latest')
     const result = await generateTypesFromDirectus('http://localhost', 'empty', 'App')
-    expect(result.typeString).toBe(FALLBACK_TYPE_STRING)
+    expect(result.typeString).toBeNull()
     expect(result.logs.some(log => log.toLowerCase().includes('error'))).toBe(true)
   })
   it('logs directus errors to present to user', async () => {
@@ -58,7 +58,7 @@ describe('generateTypesFromDirectus()', () => {
       ],
     })
     const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
-    expect(result.typeString).toBe(FALLBACK_TYPE_STRING)
+    expect(result.typeString).toBeNull()
     expect(result.logs).toBeInstanceOf(Array)
     expect(result.logs[0]).toContain('  - Directus error [FORBIDDEN] UniqueMessage')
   })
@@ -105,7 +105,7 @@ describe('generateTypesFromDirectus()', () => {
 
       // Extract just the DirectusSchema interface body so we don't match
       // directus_* strings that appear in unrelated interface bodies.
-      const schemaBlock = result.typeString.match(/interface DirectusSchema \{([\s\S]*?)\n\}/)
+      const schemaBlock = result.typeString!.match(/interface DirectusSchema \{([\s\S]*?)\n\}/)
       expect(schemaBlock, 'DirectusSchema interface should be emitted').not.toBeNull()
 
       // Every directus_* entry must be singular (no trailing []) so that
@@ -123,7 +123,7 @@ describe('generateTypesFromDirectus()', () => {
       mockDirectusRequest().withVersion('latest')
       const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
 
-      const enumBlock = result.typeString.match(/enum AppCollectionNames \{([\s\S]*?)\n\}/)
+      const enumBlock = result.typeString!.match(/enum AppCollectionNames \{([\s\S]*?)\n\}/)
       expect(enumBlock, 'AppCollectionNames enum should be emitted').not.toBeNull()
       expect(enumBlock![1]).not.toMatch(/\bdirectus_\w+\s*=/)
     })
@@ -153,7 +153,7 @@ describe('generateTypesFromDirectus()', () => {
       // custom collections (posts, pages, blocks…) plus a subset of system collections.
       mockDirectusRequest().withVersion('latest')
       const result = await generateTypesFromDirectus('http://localhost', 'not_admin', 'App')
-      expect(result.typeString).not.toBe(FALLBACK_TYPE_STRING)
+      expect(result.typeString).not.toBeNull()
       expect(result.typeString).toContain('interface AppPost')
       expect(result.typeString).toContain('interface AppPage')
     })

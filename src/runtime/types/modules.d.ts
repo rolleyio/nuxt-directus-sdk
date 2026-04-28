@@ -1,8 +1,8 @@
-import type { DirectusUsers } from 'nuxt/app'
+export {}
 
 declare module '#app' {
   interface RuntimeNuxtHooks {
-    'directus:loggedIn': (user: DirectusUsers | null) => void
+    'directus:loggedIn': (user: DirectusUser | null) => void
   }
 
   interface NuxtApp {

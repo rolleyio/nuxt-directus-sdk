@@ -1,7 +1,12 @@
 export {}
 
 declare global {
-  // Empty by design - generated types augment this; the fallback keeps DirectusSchema always declared.
+  interface DirectusFile {
+    id: string
+  }
+  interface DirectusUser {
+    id: string
+  }
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface DirectusSchema {
   }
