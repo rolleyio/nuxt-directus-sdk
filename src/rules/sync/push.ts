@@ -89,13 +89,12 @@ export async function pushRules<Schema>(
 
     // Create new policies
     const policiesToCreate = diff.policies.filter(p => p.type === 'added')
-    let policyCreateIdx = 0
-    for (const change of policiesToCreate) {
+    for (const [idx, change] of policiesToCreate.entries()) {
       onProgress?.({
         phase: 'policies',
         action: 'create',
         name: change.name,
-        current: ++policyCreateIdx,
+        current: idx + 1,
         total: policiesToCreate.length,
       })
 
@@ -132,13 +131,12 @@ export async function pushRules<Schema>(
     // Update modified policies
     if (!addOnly) {
       const policiesToUpdate = diff.policies.filter(p => p.type === 'modified')
-      let policyUpdateIdx = 0
-      for (const change of policiesToUpdate) {
+      for (const [idx, change] of policiesToUpdate.entries()) {
         onProgress?.({
           phase: 'policies',
           action: 'update',
           name: change.name,
-          current: ++policyUpdateIdx,
+          current: idx + 1,
           total: policiesToUpdate.length,
         })
 
@@ -181,13 +179,12 @@ export async function pushRules<Schema>(
     // 4. Push roles (now that policies exist)
     // Create new roles
     const rolesToCreate = diff.roles.filter(r => r.type === 'added')
-    let roleCreateIdx = 0
-    for (const change of rolesToCreate) {
+    for (const [idx, change] of rolesToCreate.entries()) {
       onProgress?.({
         phase: 'roles',
         action: 'create',
         name: change.name,
-        current: ++roleCreateIdx,
+        current: idx + 1,
         total: rolesToCreate.length,
       })
 
@@ -221,13 +218,12 @@ export async function pushRules<Schema>(
     // Update modified roles
     if (!addOnly) {
       const rolesToUpdate = diff.roles.filter(r => r.type === 'modified')
-      let roleUpdateIdx = 0
-      for (const change of rolesToUpdate) {
+      for (const [idx, change] of rolesToUpdate.entries()) {
         onProgress?.({
           phase: 'roles',
           action: 'update',
           name: change.name,
-          current: ++roleUpdateIdx,
+          current: idx + 1,
           total: rolesToUpdate.length,
         })
 
@@ -263,13 +259,12 @@ export async function pushRules<Schema>(
     // 5. Push permissions (after policies exist)
     // Create new permissions
     const permsToCreate = diff.permissions.filter(p => p.type === 'added')
-    let permCreateIdx = 0
-    for (const change of permsToCreate) {
+    for (const [idx, change] of permsToCreate.entries()) {
       onProgress?.({
         phase: 'permissions',
         action: 'create',
         name: change.name,
-        current: ++permCreateIdx,
+        current: idx + 1,
         total: permsToCreate.length,
       })
 
@@ -304,13 +299,12 @@ export async function pushRules<Schema>(
     // Update modified permissions
     if (!addOnly) {
       const permsToUpdate = diff.permissions.filter(p => p.type === 'modified')
-      let permUpdateIdx = 0
-      for (const change of permsToUpdate) {
+      for (const [idx, change] of permsToUpdate.entries()) {
         onProgress?.({
           phase: 'permissions',
           action: 'update',
           name: change.name,
-          current: ++permUpdateIdx,
+          current: idx + 1,
           total: permsToUpdate.length,
         })
 
@@ -341,13 +335,12 @@ export async function pushRules<Schema>(
     if (!skipDeletes && !addOnly) {
       // Delete permissions first
       const permsToDelete = diff.permissions.filter(p => p.type === 'removed')
-      let permDeleteIdx = 0
-      for (const change of permsToDelete) {
+      for (const [idx, change] of permsToDelete.entries()) {
         onProgress?.({
           phase: 'permissions',
           action: 'delete',
           name: change.name,
-          current: ++permDeleteIdx,
+          current: idx + 1,
           total: permsToDelete.length,
         })
 
@@ -367,13 +360,12 @@ export async function pushRules<Schema>(
 
       // Delete roles
       const rolesToDelete = diff.roles.filter(r => r.type === 'removed')
-      let roleDeleteIdx = 0
-      for (const change of rolesToDelete) {
+      for (const [idx, change] of rolesToDelete.entries()) {
         onProgress?.({
           phase: 'roles',
           action: 'delete',
           name: change.name,
-          current: ++roleDeleteIdx,
+          current: idx + 1,
           total: rolesToDelete.length,
         })
 
@@ -393,13 +385,12 @@ export async function pushRules<Schema>(
 
       // Delete policies last
       const policiesToDelete = diff.policies.filter(p => p.type === 'removed')
-      let policyDeleteIdx = 0
-      for (const change of policiesToDelete) {
+      for (const [idx, change] of policiesToDelete.entries()) {
         onProgress?.({
           phase: 'policies',
           action: 'delete',
           name: change.name,
-          current: ++policyDeleteIdx,
+          current: idx + 1,
           total: policiesToDelete.length,
         })
 
