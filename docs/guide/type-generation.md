@@ -2,7 +2,7 @@
 
 The module generates TypeScript types from your Directus schema at build time, so your app code is fully typed against real collections and fields.
 
-## Quick start
+## Quick Start
 
 Type generation is enabled by default. Set `DIRECTUS_ADMIN_TOKEN` in your `.env`:
 
@@ -26,7 +26,7 @@ When you run `nuxi dev` or `nuxi build`, the module fetches your Directus schema
 Type generation is a dev/build-time operation. You only need an admin token in the environment where you run `nuxi dev` / `nuxi build` / CI, not in production runtime. If you don't set one, type generation is skipped and a minimal fallback shape is used.
 :::
 
-## What gets generated
+## What Gets Generated
 
 For a Directus instance with collections `posts`, `pages`, and the standard system collections, you get:
 
@@ -64,7 +64,7 @@ enum CollectionNames {
 
 Every `@directus/sdk` call in your app is typed against `DirectusSchema`, so `readItems('posts', ...)` knows the return shape and `readItems('notACollection')` is a type error.
 
-## Type prefix
+## Type Prefix
 
 If your custom collection names collide with TypeScript globals or other types in your app (for example, you have a `Page` interface elsewhere), add a prefix:
 
@@ -110,7 +110,7 @@ interface DirectusUser {
 - Directus system collections (`DirectusUser`, `DirectusFile`, etc.) are never prefixed
 - All internal type references update to use the prefixed names
 
-## Disabling
+## Disabling <Badge type="warning" text="advanced" />
 
 Set `types: false` to skip generation:
 
@@ -122,9 +122,12 @@ export default defineNuxtConfig({
 })
 ```
 
-You'll still get a minimal fallback shape that covers the SDK's core needs (a `DirectusSchema` stub, `DirectusFile`, `DirectusUser`), so your code compiles; it just won't be typed against your real schema.
+::: warning
+This module creates a minimal fallback shape that covers the SDK's core needs (a `DirectusSchema` stub, `DirectusFile`, `DirectusUser`), so your code compiles.
+Follow the [Directus Advanced Types Guide](https://directus.io/docs/tutorials/tips-and-tricks/advanced-types-with-the-directus-sdk#custom-fields-on-core-collections) using the interface `DirectusSchema` for direct plug-and-play integration. 
+:::
 
-## Generating types outside a Nuxt build
+## Generating Types Outside a Nuxt Build
 
 A standalone CLI lets you generate types on demand, without a running Nuxt instance. Useful for CI, pre-commit hooks, and non-Nuxt consumers.
 
@@ -134,7 +137,7 @@ npx nuxt-directus-sdk generate-types --prefix App -o types/directus.d.ts
 
 See the [`generate-types` CLI reference](/cli/generate-types) for every flag and example.
 
-## Advanced: filtering collections <Badge type="warning" text="advanced" />
+## Filtering Collections <Badge type="warning" text="advanced" />
 
 For most apps you won't need anything below this line. The defaults emit every collection in your Directus schema, which is what you want unless the generated `.d.ts` is getting unwieldy.
 
@@ -194,7 +197,7 @@ When expansion is on and collections are pulled in, a log line reports the delta
  - Expanded include from 2 → 7 collections (+5 via references)
 ```
 
-### How missing references are handled
+### How Missing References Are Handled
 
 When a field on an emitted collection references a missing collection (not in the include list and not pulled in by expansion, or explicitly excluded), the generator rewrites the reference so the emitted types stay resolvable:
 
@@ -208,7 +211,7 @@ After generation, a summary log line reports how many fields were rewritten and 
  - 14 field references across 3 targets collapsed to string (excluded)
 ```
 
-### Verbose logging
+### Verbose Logging
 
 Enable `verbose: true` to see each rewritten target grouped and listed (capped at 5 fields per collection):
 
@@ -232,14 +235,14 @@ Produces:
      posts.user_created, posts.user_updated, pages.user_created, pages.user_updated, blocks.user_created, …and 87 more
 ```
 
-### When to use each
+### When to Use Each
 
 - **`exclude`** is most common. Keeps most of your types, drops a handful of collections you don't care about (`directus_activity`, `directus_revisions`, `directus_sessions`). Smaller `.d.ts`, faster TypeScript compile.
 - **`include`** is for when you have a large Directus instance but your app touches only a narrow subset. More restrictive but produces the smallest possible `.d.ts`.
 
 The same options are available on the CLI. See the [`generate-types` CLI reference](/cli/generate-types#filtering-collections) for flag-level usage.
 
-## See also
+## See Also
 
 - [Module options: `types`](/api/configuration/module#types)
 - [CLI reference: `generate-types`](/cli/generate-types)
