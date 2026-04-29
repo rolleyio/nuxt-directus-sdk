@@ -1,1 +1,1 @@
-export { FALLBACK_TYPE_STRING, generateTypesFromDirectus } from './generate'
+export { generateTypesFromDirectus } from './generate'

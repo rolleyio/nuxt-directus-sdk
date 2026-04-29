@@ -336,7 +336,8 @@ export default defineNuxtConfig({
 See the [Type Generation guide](/guide/type-generation) for:
 
 - [Type prefix](/guide/type-generation#type-prefix) to avoid naming conflicts
-- [Advanced: filtering collections](/guide/type-generation#advanced-filtering-collections) with `include` / `exclude` / `expandReferences` / `verbose`
+- [Filtering collections<Badge type="warning" text="advanced" /> ](/guide/type-generation#filtering-collections) with `include` / `exclude` / `expandReferences` / `verbose`
+- [Manually Generating Types<Badge type="warning" text="advanced" />](/guide/type-generation#disabling) that work with the module
 - [Using the CLI](/guide/type-generation#generating-types-outside-a-nuxt-build) for on-demand generation
 
 ### SDK Auto-Imports

@@ -107,7 +107,7 @@ npx nuxt-directus-sdk rules:diff-remote \
 | `--target-url <url>` | URL of the target Directus instance |
 | `--target-token <token>` | Admin token for the target instance |
 
-## See also
+## See Also
 
 - [Rules Sync guide](/guide/rules-sync) — full workflow including the code-first authoring API
 - [Defining Rules](/guide/rules) — reference for the rules DSL

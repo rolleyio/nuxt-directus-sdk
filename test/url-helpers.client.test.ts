@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { makeRuntimeConfig } from './fixtures/nuxt/runtime-config.data'
 
 // Client-side tests: import.meta.client = true, import.meta.server = false
 // We mock window.location.origin since vitest runs in Node
@@ -23,24 +24,8 @@ beforeEach(() => {
   vi.stubGlobal('window', { location: { origin: MOCK_ORIGIN } })
 })
 
-function setConfig(overrides: {
-  url?: string | { client: string, server: string }
-  directusUrl?: string
-  serverDirectusUrl?: string
-  devProxy?: boolean | { enabled: boolean, path?: string }
-}) {
-  mockRuntimeConfig.mockReturnValue({
-    public: {
-      directus: {
-        url: overrides.url ?? 'https://public.example.com',
-        directusUrl: overrides.directusUrl,
-        devProxy: overrides.devProxy ?? false,
-      },
-    },
-    directus: {
-      serverDirectusUrl: overrides.serverDirectusUrl,
-    },
-  })
+function setConfig(overrides: Parameters<typeof makeRuntimeConfig>[0]) {
+  mockRuntimeConfig.mockReturnValue(makeRuntimeConfig(overrides))
 }
 
 describe('useDirectusOriginUrl (client-side)', () => {

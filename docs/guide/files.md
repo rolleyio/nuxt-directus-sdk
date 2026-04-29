@@ -235,7 +235,7 @@ const sizes = {
 </template>
 ```
 
-## Using with Nuxt Image
+## Using Nuxt Image
 
 The module automatically integrates with `@nuxt/image` for advanced image optimization. The Directus provider is pre-configured and ready to use:
 

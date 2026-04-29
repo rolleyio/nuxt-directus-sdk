@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { makeRuntimeConfig } from './fixtures/nuxt/runtime-config.data'
 
 // Server-side tests: import.meta.server = true, import.meta.client = false
 
@@ -19,24 +20,8 @@ beforeEach(() => {
   }))
 })
 
-function setConfig(overrides: {
-  url?: string | { client: string, server: string }
-  directusUrl?: string
-  serverDirectusUrl?: string
-  devProxy?: boolean | { enabled: boolean, path?: string, wsPath?: string }
-}) {
-  mockRuntimeConfig.mockReturnValue({
-    public: {
-      directus: {
-        url: overrides.url ?? 'https://public.example.com',
-        directusUrl: overrides.directusUrl,
-        devProxy: overrides.devProxy ?? false,
-      },
-    },
-    directus: {
-      serverDirectusUrl: overrides.serverDirectusUrl,
-    },
-  })
+function setConfig(overrides: Parameters<typeof makeRuntimeConfig>[0]) {
+  mockRuntimeConfig.mockReturnValue(makeRuntimeConfig(overrides))
 }
 
 describe('useDirectusOriginUrl (server-side)', () => {

@@ -10,16 +10,16 @@ import {
   serializeToDirectusApi,
 } from '../../src/rules'
 
-// TODO: upcoming refactor for more consistent testing schema
-// https://github.com/rolleyio/nuxt-directus-sdk/issues/63
 const payload = JSON.parse(readFileSync('./test/rules/fixtures/rules.json', 'utf-8'))
 const remoteRules = loadRulesFromPayload<DirectusSchema>(payload)
 
-// Extend with additional policies and roles
+// Extend the sandbox rules with additional local-only roles and policies.
+// Role/policy names are chosen to not conflict with sandbox names
+// (Administrator, Writer, Editor, Content Admin).
 const rules = extendRules(remoteRules, {
   policies: [
     {
-      name: 'Post Editor',
+      name: 'Post Editor Policy',
       permissions: {
         posts: { read: true, create: true, update: true },
       },
@@ -27,10 +27,10 @@ const rules = extendRules(remoteRules, {
   ],
   roles: [
     {
-      name: 'Editor',
+      name: 'Local Content Editor',
       policies: [
         {
-          name: 'Content Management',
+          name: 'Local Content Management',
           permissions: {
             posts: { read: true, create: true, update: true },
             pages: { read: true },
@@ -39,7 +39,7 @@ const rules = extendRules(remoteRules, {
       ],
     },
     {
-      name: 'Admin',
+      name: 'Local Admin',
       policies: [createAdminPolicy('Full Access')],
     },
   ],
@@ -47,7 +47,7 @@ const rules = extendRules(remoteRules, {
 
 const tester = createRulesTester(rules)
 
-describe('remote rules (from directus)', () => {
+describe('remote rules (from directus sandbox)', () => {
   it('public policy allows reading posts', () => {
     expect(tester.can('$t:public_label', 'read', 'posts').allowed).toBe(true)
   })
@@ -59,47 +59,57 @@ describe('remote rules (from directus)', () => {
   it('public policy does not allow creating posts', () => {
     expect(tester.can('$t:public_label', 'create', 'posts').allowed).toBe(false)
   })
+
+  it('sandbox Writer role can create posts (Content - Self policy)', () => {
+    expect(tester.can('Writer', 'create', 'posts').allowed).toBe(true)
+  })
+
+  it('sandbox Editor role can read and update all posts (Content - Manage policy)', () => {
+    expect(tester.can('Editor', 'read', 'posts').allowed).toBe(true)
+    expect(tester.can('Editor', 'update', 'posts').allowed).toBe(true)
+  })
+
+  it('sandbox Content Admin role has full content access', () => {
+    expect(tester.can('Content Admin', 'read', 'posts').allowed).toBe(true)
+    expect(tester.can('Content Admin', 'update', 'posts').allowed).toBe(true)
+    expect(tester.can('Content Admin', 'delete', 'posts').allowed).toBe(true)
+  })
 })
 
 describe('extended rules (local additions)', () => {
-  it('editor role can read and create posts', () => {
-    expect(tester.can('Editor', 'read', 'posts').allowed).toBe(true)
-    expect(tester.can('Editor', 'create', 'posts').allowed).toBe(true)
+  it('local content editor role can read and create posts', () => {
+    expect(tester.can('Local Content Editor', 'read', 'posts').allowed).toBe(true)
+    expect(tester.can('Local Content Editor', 'create', 'posts').allowed).toBe(true)
   })
 
-  it('editor role can read pages', () => {
-    expect(tester.can('Editor', 'read', 'pages').allowed).toBe(true)
+  it('local content editor role can read pages', () => {
+    expect(tester.can('Local Content Editor', 'read', 'pages').allowed).toBe(true)
   })
 
-  it('admin role has full access via adminAccess', () => {
-    const result = tester.can('Admin', 'read', 'posts')
+  it('local admin role has full access via adminAccess', () => {
+    const result = tester.can('Local Admin', 'read', 'posts')
     expect(result.allowed).toBe(true)
     expect(result.reason).toBe('Admin access granted')
   })
 
-  it('admin role can do anything', () => {
-    expect(tester.can('Admin', 'delete', 'posts').allowed).toBe(true)
-    expect(tester.can('Admin', 'create', 'pages').allowed).toBe(true)
+  it('local admin role can do anything', () => {
+    expect(tester.can('Local Admin', 'delete', 'posts').allowed).toBe(true)
+    expect(tester.can('Local Admin', 'create', 'pages').allowed).toBe(true)
   })
 
   it('standalone policy can be tested directly', () => {
-    expect(tester.can('Post Editor', 'read', 'posts').allowed).toBe(true)
-    expect(tester.can('Post Editor', 'create', 'posts').allowed).toBe(true)
+    expect(tester.can('Post Editor Policy', 'read', 'posts').allowed).toBe(true)
+    expect(tester.can('Post Editor Policy', 'create', 'posts').allowed).toBe(true)
   })
 })
 
 describe('diff functionality', () => {
   it('shows diff between remote and extended rules', () => {
-    // Serialize our extended rules to the Directus API format
     const localPayload = serializeToDirectusApi(rules)
-
-    // Compare with the original remote payload
     const diff = compareRulesPayloads(localPayload, payload)
-
-    // Print the diff
+    // TODO: Does this need to be printed to the console? ask @matt-rolley
     console.log(`\n${formatDiff(diff)}`)
 
-    // We added new roles and policies, so there should be changes
     expect(diff.hasChanges).toBe(true)
     expect(diff.summary.roles.added).toBeGreaterThan(0)
     expect(diff.summary.policies.added).toBeGreaterThan(0)
@@ -107,8 +117,6 @@ describe('diff functionality', () => {
 
   it('serializes extended rules for CLI diff', () => {
     const localPayload = serializeToDirectusApi(rules)
-
-    // Verify the payload is valid JSON that could be written to a file
     expect(localPayload.roles).toBeDefined()
     expect(localPayload.policies).toBeDefined()
     expect(localPayload.permissions).toBeDefined()

@@ -4,7 +4,7 @@ outline: deep
 
 # Environment Variables
 
-### .env for development
+### .env for Development
 
 ```dotenv
 # Required
@@ -14,7 +14,7 @@ DIRECTUS_URL=http://localhost:8055
 DIRECTUS_ADMIN_TOKEN=your-admin-token-here
 ```
 
-### .env for production
+### .env for Production
 
 For production, set environment variables in your hosting platform:
 
