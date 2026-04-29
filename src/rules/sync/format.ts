@@ -178,10 +178,10 @@ function formatAddedFields(
 /**
  * Format field-level changes for a modified item
  */
-function formatModifiedFields(
+function formatModifiedFields<T extends object>(
   lines: string[],
-  local: object,
-  remote: object,
+  local: T,
+  remote: T,
   excludeKeys: string[],
 ): void {
   const allKeys = new Set([...Object.keys(local), ...Object.keys(remote)])
