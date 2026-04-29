@@ -54,7 +54,7 @@ const created = await directus.request(createItem('articles', {
 }))
 ```
 
-### Functions excluded from auto-import
+### Functions Excluded from Auto-Import
 
 A small number of SDK functions are intentionally not auto-imported — either because this module provides a composable wrapper, or because the function is an internal SDK detail. All of them can still be imported manually from `@directus/sdk` when you have a specific reason.
 
@@ -85,7 +85,7 @@ If you need one of these, import it directly:
 import { createDirectus, graphql, rest } from '@directus/sdk'
 ```
 
-### Disabling or customising auto-imports
+### Disabling or Customizing Auto-Imports
 
 You can turn auto-imports off or narrow the list via the [`autoImportSdk`](/api/configuration/module#autoimportsdk) option in your Nuxt config.
 

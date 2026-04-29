@@ -53,7 +53,7 @@ Informational logs (e.g. `Fetched 42 collections`) go to stderr, so they do not 
 Running `generate-types` in CI and committing the output is a common pattern. It keeps your team working with consistent types without requiring each developer to have their own admin token or a local Nuxt build. Just make sure the CI job has access to the Directus instance and an admin token.
 :::
 
-## Filtering collections <Badge type="warning" text="advanced" />
+## Filtering Collections <Badge type="warning" text="advanced" />
 
 You can narrow what the CLI emits in the same way as the [module's `types` option](/api/configuration/module#types):
 
@@ -81,7 +81,7 @@ References to collections that are not emitted are rewritten so the generated ty
 
 See the [Type Generation guide](/guide/type-generation#advanced-filtering-collections) for the full story with config-level examples.
 
-## See also
+## See Also
 
 - [Type Generation guide](/guide/type-generation) — the feature-level overview
 - [Module option: `types`](/api/configuration/module#types) — same behaviour in `nuxt.config.ts`
