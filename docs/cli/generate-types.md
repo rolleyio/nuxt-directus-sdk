@@ -28,7 +28,9 @@ npx nuxt-directus-sdk generate-types \
   --token $DIRECTUS_ADMIN_TOKEN \
   -o types/directus.d.ts
 
-# Add a prefix to custom collection type names
+# Add a prefix — applies to AppPost, AppDirectusSchema, AppCollectionNames, etc.
+# Most projects don't need this; the default DirectusSchema is what the rest
+# of the @directus/sdk ecosystem expects.
 npx nuxt-directus-sdk generate-types --prefix App -o types/directus.d.ts
 
 # Emit without the `declare global { ... }` wrapper (non-Nuxt consumers)
@@ -40,7 +42,7 @@ npx nuxt-directus-sdk generate-types --no-declare-global -o types/directus.d.ts
 | Flag | Type | Default | Description |
 | --- | --- | --- | --- |
 | `-o, --output <file>` | path | stdout | Output file. Parent directories are created automatically. |
-| `--prefix <prefix>` | string | `''` | Prefix for custom collection type names (e.g. `App` produces `AppBlog`). System collection interfaces like `DirectusUser` are never prefixed. |
+| `--prefix <prefix>` | string | `''` | Prefix for type names. With `--prefix App`, custom interfaces (`AppBlog`, `AppPost`), the schema interface (`AppDirectusSchema`), and the names enum (`AppCollectionNames`) all get the prefix. SDK-owned interfaces like `DirectusUser` and `DirectusFile` are never prefixed. Most projects don't need this — leave it unset for the standard `DirectusSchema` global that the rest of the ecosystem expects. |
 | `--no-declare-global` | boolean | wrapper on | Emit top-level `interface` declarations instead of wrapping everything in `declare global { ... }`. Useful for non-Nuxt consumers. |
 | `--include <names>` | CSV | — | Emit only these collections (see [Filtering collections](#filtering-collections)). |
 | `--exclude <names>` | CSV | — | Drop these collections (see [Filtering collections](#filtering-collections)). |

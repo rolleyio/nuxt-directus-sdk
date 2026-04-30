@@ -761,7 +761,7 @@ function generateDirectusSchemaInterface(
     return `\t${collection.collection}: ${valueType};`
   })
 
-  return `interface DirectusSchema {\n${entries.join('\n')}\n}`
+  return `interface ${prefix}DirectusSchema {\n${entries.join('\n')}\n}`
 }
 
 /**

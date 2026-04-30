@@ -76,7 +76,7 @@ The module ships with a CLI for type generation and permissions/rules sync that 
 
 ```bash
 # Generate TypeScript types from a Directus schema
-npx nuxt-directus-sdk generate-types --prefix App -o types/directus.d.ts
+npx nuxt-directus-sdk generate-types -o types/directus.d.ts
 
 # Pull permissions/rules to a JSON file
 npx nuxt-directus-sdk rules:pull -o rules.json

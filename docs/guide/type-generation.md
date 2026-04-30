@@ -22,6 +22,19 @@ export default defineNuxtConfig({
 
 When you run `nuxi dev` or `nuxi build`, the module fetches your Directus schema and writes a `.d.ts` file into `#build/types/directus.d.ts`. Nuxt picks it up automatically.
 
+::: tip Types are global — no import needed
+The generated `.d.ts` is wrapped in `declare global { ... }`, so `DirectusSchema`, `CollectionNames`, and every collection interface are available everywhere in your Nuxt app without an `import`. Just reference them:
+
+```typescript
+import { defineDirectusRules } from 'nuxt-directus-sdk/rules'
+
+// DirectusSchema is global — no import line
+const rules = defineDirectusRules<DirectusSchema>({ ... })
+```
+
+If you want to consume the same types from a non-Nuxt script (a standalone Bun or Node file that runs outside the Nuxt build), see [Generating types outside a Nuxt build](#generating-types-outside-a-nuxt-build).
+:::
+
 ::: tip No admin token?
 Type generation is a dev/build-time operation. You only need an admin token in the environment where you run `nuxi dev` / `nuxi build` / CI, not in production runtime. If you don't set one, type generation is skipped and a minimal fallback shape is used.
 :::
@@ -66,6 +79,10 @@ Every `@directus/sdk` call in your app is typed against `DirectusSchema`, so `re
 
 ## Type prefix
 
+::: warning You probably don't need this
+Most projects should leave the prefix unset. The default `DirectusSchema` and `CollectionNames` names are what the rest of the `@directus/sdk` ecosystem expects, and most other Directus integrations and code samples reference them directly. Only set a prefix if you have a real naming collision with another global type in your app.
+:::
+
 If your custom collection names collide with TypeScript globals or other types in your app (for example, you have a `Page` interface elsewhere), add a prefix:
 
 ```typescript
@@ -91,9 +108,14 @@ interface AppPage {
   title: string
 }
 
-interface DirectusSchema {
+interface AppDirectusSchema {
   posts: AppPost[]
   pages: AppPage[]
+}
+
+enum AppCollectionNames {
+  posts = 'posts',
+  pages = 'pages',
 }
 
 // Directus system collections are NOT prefixed
@@ -106,8 +128,9 @@ interface DirectusUser {
 **How it works:**
 
 - Custom collection interface names get prefixed (`Post` becomes `AppPost`)
-- `DirectusSchema` keys stay unchanged (they match the API endpoints)
-- Directus system collections (`DirectusUser`, `DirectusFile`, etc.) are never prefixed
+- `DirectusSchema` and `CollectionNames` get prefixed (`AppDirectusSchema`, `AppCollectionNames`) so the prefix is applied consistently across every name we own
+- The keys *inside* `AppDirectusSchema` stay unchanged — they're collection names that have to match the API endpoints
+- Directus system collection names (`DirectusUser`, `DirectusFile`, etc.) are SDK-owned and never prefixed
 - All internal type references update to use the prefixed names
 
 ## Disabling
@@ -129,10 +152,35 @@ You'll still get a minimal fallback shape that covers the SDK's core needs (a `D
 A standalone CLI lets you generate types on demand, without a running Nuxt instance. Useful for CI, pre-commit hooks, and non-Nuxt consumers.
 
 ```bash
-npx nuxt-directus-sdk generate-types --prefix App -o types/directus.d.ts
+npx nuxt-directus-sdk generate-types -o types/directus.d.ts
 ```
 
 See the [`generate-types` CLI reference](/cli/generate-types) for every flag and example.
+
+### Using the generated types in standalone scripts
+
+When you run a script outside the Nuxt build (a `bun server/scripts/push-rules.ts` or a plain `node` script), Nuxt's `#build/types/directus.d.ts` is not on the TypeScript path. The generated `declare global` block won't be picked up, so `DirectusSchema` won't resolve.
+
+The standalone CLI is the way around this. Generate the types into a regular file and reference it from your script:
+
+```bash
+# Generate the types alongside the script that needs them
+npx nuxt-directus-sdk generate-types -o server/scripts/directus.d.ts
+```
+
+```typescript
+// server/scripts/push-rules.ts
+
+/// <reference path="./directus.d.ts" />
+import { defineDirectusRules } from 'nuxt-directus-sdk/rules'
+
+// DirectusSchema is now visible in this script
+const rules = defineDirectusRules<DirectusSchema>({ ... })
+```
+
+The triple-slash reference tells TypeScript to load the `.d.ts` file when type-checking this script, the same way Nuxt's auto-generated reference does inside the Nuxt build.
+
+If you want to share one set of generated types across both Nuxt and standalone scripts, point the CLI at a path that's already on your `tsconfig.json` `include` (for example `types/directus.d.ts`) and let the standard config pick it up — no triple-slash reference needed.
 
 ## Advanced: filtering collections <Badge type="warning" text="advanced" />
 

@@ -2,6 +2,10 @@
 
 The Rules DSL lets you define Directus roles, policies, and permissions as code. Instead of configuring access control through the Directus UI and hoping it stays in sync, you define it in TypeScript, test it, and push it to any Directus instance.
 
+::: tip `DirectusSchema` is global
+Inside a Nuxt project, `DirectusSchema` is generated into `#build/types/directus.d.ts` and exposed via `declare global` — you don't need to import it. If you're authoring rules in a standalone script that runs outside the Nuxt build (Bun, Node, CI), see [Using types in standalone scripts](/guide/type-generation#using-the-generated-types-in-standalone-scripts) for the triple-slash reference pattern.
+:::
+
 ## Quick Start
 
 ```typescript

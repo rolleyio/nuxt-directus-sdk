@@ -76,7 +76,22 @@ The auto-import set tracks whichever version of `@directus/sdk` the user has ins
 
 Types are generated from the Directus schema at build time and made available globally (`DirectusSchema`, `CollectionNames`, one interface per collection). Enabled by default when `DIRECTUS_ADMIN_TOKEN` is set.
 
-Options: `prefix` to namespace custom collection types, `include` / `exclude` to narrow what's emitted (references to missing collections collapse to `string` / `string[]`), `expandReferences` to auto-pull referenced collections when using `include`, and `verbose` for per-reference rewrite logs. See the [Type Generation guide](https://nuxt-directus-sdk.rolley.io/guide/type-generation) for the full story.
+**Inside Nuxt apps the generated types are global — do NOT add `import type { DirectusSchema } from '#build/...'` (or anywhere else) when authoring rules, schemas, or composables.** The generated `.d.ts` is wrapped in `declare global { ... }` and Nuxt picks it up automatically. Just reference `DirectusSchema`, `CollectionNames`, or any collection interface directly.
+
+For standalone scripts that run outside the Nuxt build (`bun server/scripts/foo.ts`, plain Node scripts, CI tasks), the global declaration isn't visible. Use the standalone CLI to emit a regular `.d.ts` and reference it from the script:
+
+```bash
+npx nuxt-directus-sdk generate-types -o types/directus.d.ts
+```
+
+```typescript
+/// <reference path="../types/directus.d.ts" />
+import { defineDirectusRules } from 'nuxt-directus-sdk/rules'
+
+const rules = defineDirectusRules<DirectusSchema>({ ... })
+```
+
+Options: `prefix` to namespace types (applies to custom interfaces *and* to `DirectusSchema` / `CollectionNames` — most projects should leave it unset), `include` / `exclude` to narrow what's emitted (references to missing collections collapse to `string` / `string[]`), `expandReferences` to auto-pull referenced collections when using `include`, and `verbose` for per-reference rewrite logs. See the [Type Generation guide](https://nuxt-directus-sdk.rolley.io/guide/type-generation) for the full story.
 
 ## Breaking changes in 6.0
 
@@ -84,3 +99,4 @@ Options: `prefix` to namespace custom collection types, `include` / `exclude` to
 - `@directus/types` peer dep bumped to `>=15`
 - `@directus/visual-editing` peer dep bumped to `>=2.0` (requires Directus v11.16.0+)
 - `DirectusAddButton` and `DirectusEditButton` components removed; use `useDirectusVisualEditor()` or `@directus/visual-editing`'s `apply()` directly for custom UI
+- `--prefix` (and `types.prefix`) now also prefixes the schema interface and names enum: `App` produces `AppDirectusSchema` and `AppCollectionNames` (previously only custom collection interfaces were prefixed). Most projects don't use a prefix; if you do, search-and-replace `DirectusSchema` → `<Prefix>DirectusSchema` and `CollectionNames` → `<Prefix>CollectionNames` in your code. The recommended path for new projects is to leave `--prefix` unset.

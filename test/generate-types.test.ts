@@ -93,6 +93,28 @@ describe('generateTypesFromDirectus()', () => {
       expect(result.typeString).toContain('DirectusUser')
       expect(result.typeString).not.toContain('AppDirectusUser')
     })
+
+    it('applied to the DirectusSchema interface', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
+      expect(result.typeString).toContain('interface AppDirectusSchema')
+      // Bare `interface DirectusSchema` should not be emitted when prefix is set
+      expect(result.typeString).not.toMatch(/\binterface DirectusSchema\b/)
+    })
+
+    it('applied to the CollectionNames enum', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', 'App')
+      expect(result.typeString).toContain('enum AppCollectionNames')
+      expect(result.typeString).not.toMatch(/\benum CollectionNames\b/)
+    })
+
+    it('without a prefix the schema interface is named DirectusSchema', async () => {
+      mockDirectusRequest().directusVersion('latest')
+      const result = await generateTypesFromDirectus('http://localhost', 'admin', '')
+      expect(result.typeString).toMatch(/\binterface DirectusSchema\b/)
+      expect(result.typeString).toMatch(/\benum CollectionNames\b/)
+    })
   })
 
   // Regression guard for #65: readItems('directus_users') should not be a
@@ -105,8 +127,8 @@ describe('generateTypesFromDirectus()', () => {
 
       // Extract just the DirectusSchema interface body so we don't match
       // directus_* strings that appear in unrelated interface bodies.
-      const schemaBlock = result.typeString.match(/interface DirectusSchema \{([\s\S]*?)\n\}/)
-      expect(schemaBlock, 'DirectusSchema interface should be emitted').not.toBeNull()
+      const schemaBlock = result.typeString.match(/interface AppDirectusSchema \{([\s\S]*?)\n\}/)
+      expect(schemaBlock, 'AppDirectusSchema interface should be emitted').not.toBeNull()
 
       // Every directus_* entry must be singular (no trailing []) so that
       // MergeCoreCollection in the SDK can find the key and merge custom fields,
