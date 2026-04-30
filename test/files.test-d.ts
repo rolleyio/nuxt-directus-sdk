@@ -34,6 +34,7 @@ describe('DirectusFile SDK alignment', () => {
       | 'storage'
       | 'filename_disk'
       | 'filename_download'
+      | 'folder'
     >>
     expectTypeOf<DirectusFile>().toMatchTypeOf<FallbackStringFields>()
   })

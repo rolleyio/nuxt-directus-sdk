@@ -9,7 +9,7 @@ outline: deep
 Upload a single file to Directus.
 
 **Parameters:**
-- `file: { file: File, data?: Record<string, string> }` - File and metadata
+- `file: { file: File, data?: Partial<Record<keyof DirectusFile, string>> }` - File and metadata
 - `query?: Query` - Directus query options
 
 **Returns:** `Promise<DirectusFile>`
@@ -38,7 +38,7 @@ console.log('Uploaded:', uploaded.id)
 Upload multiple files to Directus.
 
 **Parameters:**
-- `files: Array<{ file: File, data?: Record<string, string> }>` - Files and metadata
+- `files: Array<{ file: File, data?: Partial<Record<keyof DirectusFile, string>> }>` - Files and metadata
 - `query?: Query` - Directus query options
 
 **Returns:** `Promise<DirectusFile[] | DirectusFile>`
