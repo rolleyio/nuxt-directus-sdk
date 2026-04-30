@@ -335,21 +335,15 @@ export function loadRulesFromPayload<Schema>(
     permissionsByPolicy.get(key)!.push(perm)
   }
 
-  // Convert policies
+  // Convert policies and build ID map in a single pass
+  const policyById = new Map<string, PolicyConfig<Schema>>()
   const policies = payload.policies.map((policy) => {
     const policyPerms = permissionsByPolicy.get(policy.id ?? null) ?? []
-    return convertPayloadPolicy<Schema>(policy, policyPerms)
-  })
-
-  // Build a map of policy ID -> PolicyConfig for role reference
-  const policyById = new Map<string, PolicyConfig<Schema>>()
-  payload.policies.forEach((apiPolicy, i) => {
-    if (apiPolicy.id) {
-      const policy = policies[i]
-      if (policy) {
-        policyById.set(apiPolicy.id, policy)
-      }
+    const converted = convertPayloadPolicy<Schema>(policy, policyPerms)
+    if (policy.id) {
+      policyById.set(policy.id, converted)
     }
+    return converted
   })
 
   // Convert roles with their attached policies
