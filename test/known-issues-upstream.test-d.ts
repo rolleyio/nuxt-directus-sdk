@@ -29,7 +29,7 @@ interface IsolatedSchema {
   directus_settings: IsolatedDirectusSettings
 }
 
-const client = createDirectus<IsolatedSchema>('https://directus.example').with(rest())
+const client = createDirectus<IsolatedSchema>('https://directus.example.com').with(rest())
 
 describe('known issues upstream', () => {
   describe('directus/sdk pr#27196', () => {
