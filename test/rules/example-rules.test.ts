@@ -107,9 +107,6 @@ describe('diff functionality', () => {
   it('shows diff between remote and extended rules', () => {
     const localPayload = serializeToDirectusApi(rules)
     const diff = compareRulesPayloads(localPayload, payload)
-    // TODO: Does this need to be printed to the console? ask @matt-rolley
-    console.log(`\n${formatDiff(diff)}`)
-
     expect(diff.hasChanges).toBe(true)
     expect(diff.summary.roles.added).toBeGreaterThan(0)
     expect(diff.summary.policies.added).toBeGreaterThan(0)
