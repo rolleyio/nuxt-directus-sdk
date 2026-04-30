@@ -5,7 +5,6 @@ import {
   createAdminPolicy,
   createRulesTester,
   extendRules,
-  formatDiff,
   loadRulesFromPayload,
   serializeToDirectusApi,
 } from '../../src/rules'
