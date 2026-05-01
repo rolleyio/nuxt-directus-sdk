@@ -5,7 +5,7 @@ export default defineConfig({
   title: 'Nuxt Directus SDK',
   description: 'The best way to integrate Directus with Nuxt - featuring authentication, realtime, file management, and more',
   sitemap: {
-    hostname: 'https://nuxt-directus-sdk.rolley.io',
+    hostname: 'https://www.nuxt-directus-sdk.com',
   },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
