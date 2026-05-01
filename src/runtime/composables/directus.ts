@@ -1,5 +1,5 @@
 import type { Ref } from '#imports'
-import type { WebSocketAuthModes } from '@directus/sdk'
+import type { AuthenticationClient, DirectusClient, RestClient, WebSocketAuthModes, WebSocketClient } from '@directus/sdk'
 import { useRequestHeaders, useRuntimeConfig, useState } from '#imports'
 import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
 import { useUrl } from '../utils'
@@ -125,18 +125,24 @@ function createDirectusClient() {
   return directus
 }
 
-let directus: ReturnType<typeof createDirectusClient> | null = null
+type DirectusClientWithExtensions<TSchema extends object>
+  = DirectusClient<TSchema>
+    & AuthenticationClient<TSchema>
+    & RestClient<TSchema>
+    & WebSocketClient<TSchema>
 
-export function useDirectus() {
+let directus: DirectusClientWithExtensions<DirectusSchema> | null = null
+
+export function useDirectus<TSchema extends object = DirectusSchema>(): DirectusClientWithExtensions<TSchema> {
   // On server, always create a fresh client to capture current request headers
   // On client, use singleton to maintain state
   if (import.meta.server) {
-    return createDirectusClient()
+    return createDirectusClient() as unknown as DirectusClientWithExtensions<TSchema>
   }
 
   if (!directus) {
     directus = createDirectusClient()
   }
 
-  return directus
+  return directus as unknown as DirectusClientWithExtensions<TSchema>
 }
