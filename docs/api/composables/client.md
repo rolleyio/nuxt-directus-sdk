@@ -4,11 +4,14 @@ outline: deep
 
 # Client Composables
 
-### `useDirectus()`
+### `useDirectus<TSchema>()`
 
 Get the Directus client instance for making API requests.
 
-**Returns:** `DirectusClient<DirectusSchema>`
+**Type parameters:**
+- `TSchema` (optional) - Schema to type the client against. Defaults to the generated `DirectusSchema` global. Pass a custom schema to extend or narrow the typing for a specific call site.
+
+**Returns:** `DirectusClient<TSchema> & AuthenticationClient<TSchema> & RestClient<TSchema> & WebSocketClient<TSchema>`
 
 ```typescript
 const directus = useDirectus()
@@ -57,6 +60,23 @@ await directus.request(deleteItem('collection', 'id'))
 // Singletons
 const singleton = await directus.request(readSingleton('settings'))
 await directus.request(updateSingleton('settings', data))
+```
+
+**Custom schema:**
+
+You can pass a schema generic when you want to override or extend the generated `DirectusSchema` for a specific call site (for example: tests, or code talking to a second Directus instance with a different schema).
+
+```typescript
+interface MySchema {
+  posts: {
+    id: number
+    title: string
+  }
+}
+
+const directus = useDirectus<MySchema>()
+const posts = await directus.request(readItems('posts'))
+//    ^? { id: number, title: string }[]
 ```
 
 ---

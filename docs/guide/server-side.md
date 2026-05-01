@@ -159,6 +159,30 @@ export default defineEventHandler(async (event) => {
 })
 ```
 
+## Custom Schema
+
+All three server composables (`useSessionDirectus`, `useAdminDirectus`, `useTokenDirectus`) accept an optional `TSchema` generic. By default the client is typed against the generated `DirectusSchema`, which is what you want most of the time. Pass a custom schema when you need to override or extend the typing for a specific route:
+
+```typescript
+interface MySchema {
+  posts: {
+    id: number
+    title: string
+  }
+}
+
+export default defineEventHandler(async (event) => {
+  const directus = useSessionDirectus<MySchema>(event)
+  const posts = await directus.request(readItems('posts'))
+  //    ^? { id: number, title: string }[]
+})
+```
+
+This is most useful when:
+- Talking to a second Directus instance with a different schema from the same Nuxt app
+- Narrowing the schema in a server route to a known subset of collections
+- Writing tests against a fixture schema
+
 ## Manual Token Extraction
 
 ### `getDirectusSessionToken(event)`
