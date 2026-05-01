@@ -1,5 +1,66 @@
 # Changelog
 
+## v6.0.0-beta.3
+
+[compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v6.0.0-beta.2...v6.0.0-beta.3)
+
+### 🚀 Enhancements
+
+- **test:** Enable typecheck via vitest ([#72](https://github.com/rolleyio/nuxt-directus-sdk/pull/72))
+- **types:** Add minimial core type declarations ([1faa898](https://github.com/rolleyio/nuxt-directus-sdk/commit/1faa898))
+
+### 🩹 Fixes
+
+- **types:** Null type guards in rules & runtime ([a0035a7](https://github.com/rolleyio/nuxt-directus-sdk/commit/a0035a7))
+- **types:** Derive types from return value in playground/pages/files.vue ([ccd2719](https://github.com/rolleyio/nuxt-directus-sdk/commit/ccd2719))
+- **rules:** Convert index loops to for-of (satisfy no-unckeced-index-access) ([71b993a](https://github.com/rolleyio/nuxt-directus-sdk/commit/71b993a))
+- **rules:** Fix Schema[K] to CollectionItem<Schema, K> ([00005f2](https://github.com/rolleyio/nuxt-directus-sdk/commit/00005f2))
+- **rules:** Correct payload parameter types ([b81bc7b](https://github.com/rolleyio/nuxt-directus-sdk/commit/b81bc7b))
+- **runtime:** Resolve strict TypeScript errors ([f9818a5](https://github.com/rolleyio/nuxt-directus-sdk/commit/f9818a5))
+- **typegenerator:** Always emit `types/directus.d.ts` when typegen enabled ([215c323](https://github.com/rolleyio/nuxt-directus-sdk/commit/215c323))
+- **test:** Add extra non-null assertion to array ([ac74d5f](https://github.com/rolleyio/nuxt-directus-sdk/commit/ac74d5f))
+- **files:** Correct type errors and improve safety in composable ([58d5da1](https://github.com/rolleyio/nuxt-directus-sdk/commit/58d5da1))
+- **playground:** Correct imports in server API routes, add demo schema stubs ([8e8715f](https://github.com/rolleyio/nuxt-directus-sdk/commit/8e8715f))
+- **types:** Consolidate fallback into a single source of truth (fallback.d.ts) ([436c8c3](https://github.com/rolleyio/nuxt-directus-sdk/commit/436c8c3))
+
+### 💅 Refactors
+
+- **rules:** Build policyById map in single pass ([327ab14](https://github.com/rolleyio/nuxt-directus-sdk/commit/327ab14))
+
+### 📖 Documentation
+
+- Add live playground link to README ([e632db9](https://github.com/rolleyio/nuxt-directus-sdk/commit/e632db9))
+- Update type names and return types ([1bbed31](https://github.com/rolleyio/nuxt-directus-sdk/commit/1bbed31))
+- Clarify node versions in ci/cd ([fbee833](https://github.com/rolleyio/nuxt-directus-sdk/commit/fbee833))
+- Title case for headings ([aedfd96](https://github.com/rolleyio/nuxt-directus-sdk/commit/aedfd96))
+- Add details for using manually created types ([97ad8d2](https://github.com/rolleyio/nuxt-directus-sdk/commit/97ad8d2))
+
+### 🏡 Chore
+
+- Add issue number to todolines ([63189b5](https://github.com/rolleyio/nuxt-directus-sdk/commit/63189b5))
+- Require Node 22+ via engines field ([a90bd74](https://github.com/rolleyio/nuxt-directus-sdk/commit/a90bd74))
+- Update domain references to nuxt-directus-sdk.com ([9bd7ef4](https://github.com/rolleyio/nuxt-directus-sdk/commit/9bd7ef4))
+
+### ✅ Tests
+
+- **types:** Add type testing with vue-tsc ([dbc38cd](https://github.com/rolleyio/nuxt-directus-sdk/commit/dbc38cd))
+- Add non-null assertions to array element ([9942f57](https://github.com/rolleyio/nuxt-directus-sdk/commit/9942f57))
+- Add wsPath to devProxy mock type ([5beae25](https://github.com/rolleyio/nuxt-directus-sdk/commit/5beae25))
+- Add cast for permissions shape ([1163926](https://github.com/rolleyio/nuxt-directus-sdk/commit/1163926))
+- **rules:** Update mock data to match playground ([8b61638](https://github.com/rolleyio/nuxt-directus-sdk/commit/8b61638))
+- Add type contract tests for auth composable ([01de50a](https://github.com/rolleyio/nuxt-directus-sdk/commit/01de50a))
+- Re-write known-issues-upstream with isolated schema ([1e24aa0](https://github.com/rolleyio/nuxt-directus-sdk/commit/1e24aa0))
+- Add ficture infrastructure ([3fed1f1](https://github.com/rolleyio/nuxt-directus-sdk/commit/3fed1f1))
+- Relocate fixtures and standardize mock-builder API ([fe69370](https://github.com/rolleyio/nuxt-directus-sdk/commit/fe69370))
+- **auth:** Implement auth composable test suite ([1ff2590](https://github.com/rolleyio/nuxt-directus-sdk/commit/1ff2590))
+- **rules:** Aligns fixtures and tests with directus `cms` sandbox template ([cff0c44](https://github.com/rolleyio/nuxt-directus-sdk/commit/cff0c44))
+- **files:** Remove SDK alignment assertion (introduced in fba559b) ([f5c8a4e](https://github.com/rolleyio/nuxt-directus-sdk/commit/f5c8a4e))
+
+### ❤️ Contributors
+
+- Matthew Rollinson <matt@rolley.io>
+- K Heiner <rolleyio@heiner.work>
+
 ## v6.0.0-beta.2
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v6.0.0-beta.1...v6.0.0-beta.2)
