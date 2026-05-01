@@ -6,7 +6,7 @@
   "description": "A Nuxt module for Directus with built-in authentication, realtime, file management, type generation, and visual editor support.",
   "author": "Matthew Rollinson <matt@rolley.io>",
   "license": "MIT",
-  "homepage": "https://nuxt-directus-sdk.rolley.io",
+  "homepage": "https://www.nuxt-directus-sdk.com",
   "repository": {
     "type": "git",
     "url": "https://github.com/rolleyio/nuxt-directus-sdk"

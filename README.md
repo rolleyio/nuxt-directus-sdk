@@ -10,8 +10,8 @@
 > A Nuxt module for Directus with built-in authentication, realtime, file management, type generation, and visual editor support.
 
 - [✨ &nbsp;Release Notes](https://github.com/rolleyio/nuxt-directus-sdk/releases)
-- [📚 &nbsp;Documentation](https://nuxt-directus-sdk.rolley.io)
-- [🛝 &nbsp;Live Playground](https://playground.nuxt-directus-sdk.rolley.io)
+- [📚 &nbsp;Documentation](https://www.nuxt-directus-sdk.com)
+- [🛝 &nbsp;Live Playground](https://playground.nuxt-directus-sdk.com)
 
 ## Features
 
@@ -64,11 +64,11 @@ DIRECTUS_URL=https://your-directus-url.com
 DIRECTUS_ADMIN_TOKEN=your_admin_token # Optional: required for type generation
 ```
 
-4. **Configure your Directus backend** for cross-domain authentication (see the [Authentication Guide](https://nuxt-directus-sdk.rolley.io/guide/authentication.html))
+4. **Configure your Directus backend** for cross-domain authentication (see the [Authentication Guide](https://www.nuxt-directus-sdk.com/guide/authentication.html))
 
 That's it! You can now use Directus within your Nuxt app ✨
 
-For cross-domain setups (e.g. `app.example.com` and `api.example.com`), see the [Authentication Guide](https://nuxt-directus-sdk.rolley.io/guide/authentication.html).
+For cross-domain setups (e.g. `app.example.com` and `api.example.com`), see the [Authentication Guide](https://www.nuxt-directus-sdk.com/guide/authentication.html).
 
 ## CLI
 
@@ -85,7 +85,7 @@ npx nuxt-directus-sdk rules:pull -o rules.json
 npx nuxt-directus-sdk --help
 ```
 
-See the [CLI documentation](https://nuxt-directus-sdk.rolley.io/api/configuration/module#types) for flags and examples.
+See the [CLI documentation](https://www.nuxt-directus-sdk.com/api/configuration/module#types) for flags and examples.
 
 ## Development
 
