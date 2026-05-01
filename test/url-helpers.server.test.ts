@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { makeRuntimeConfig } from './fixtures/nuxt/runtime-config.data'
 
 // Server-side tests: import.meta.server = true, import.meta.client = false
 
@@ -19,30 +20,14 @@ beforeEach(() => {
   }))
 })
 
-function setConfig(overrides: {
-  url?: string | { client: string, server: string }
-  directusUrl?: string
-  serverDirectusUrl?: string
-  devProxy?: boolean | { enabled: boolean, path?: string }
-}) {
-  mockRuntimeConfig.mockReturnValue({
-    public: {
-      directus: {
-        url: overrides.url ?? 'https://public.example.com',
-        directusUrl: overrides.directusUrl,
-        devProxy: overrides.devProxy ?? false,
-      },
-    },
-    directus: {
-      serverDirectusUrl: overrides.serverDirectusUrl,
-    },
-  })
+function setConfig(overrides: Parameters<typeof makeRuntimeConfig>[0]) {
+  mockRuntimeConfig.mockReturnValue(makeRuntimeConfig(overrides))
 }
 
 describe('useDirectusOriginUrl (server-side)', () => {
   it('returns directusUrl (the pre-resolved client URL)', async () => {
     setConfig({
-      url: 'https://fallback.com',
+      url: 'http://internal:8055',
       directusUrl: 'https://client.example.com',
     })
 
@@ -62,26 +47,26 @@ describe('useDirectusOriginUrl (server-side)', () => {
 
   it('appends path correctly', async () => {
     setConfig({
-      directusUrl: 'https://real.directus.com',
+      directusUrl: 'https://directus.example.com',
     })
 
     const { useDirectusOriginUrl } = await import('../src/runtime/composables/directus')
-    const result = useDirectusOriginUrl('/auth/login/google?redirect=http://localhost')
+    const result = useDirectusOriginUrl('/auth/login/google?redirect=https://app.example.com')
 
-    expect(result).toContain('real.directus.com')
+    expect(result).toContain('directus.example.com')
     expect(result).toContain('/auth/login/google')
   })
 
   it('ignores devProxy — always returns the real client URL', async () => {
     setConfig({
-      directusUrl: 'https://real.directus.com',
+      directusUrl: 'https://directus.example.com',
       devProxy: { enabled: true, path: '/directus', wsPath: '/directus-ws' },
     })
 
     const { useDirectusOriginUrl } = await import('../src/runtime/composables/directus')
     const result = useDirectusOriginUrl()
 
-    expect(result).toContain('real.directus.com')
+    expect(result).toContain('directus.example.com')
     expect(result).not.toContain('/directus/')
   })
 

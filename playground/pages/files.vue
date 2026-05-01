@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { DirectusFile, DirectusThumbnailFit, DirectusThumbnailFormat } from '#imports'
+import type { DirectusThumbnailFit, DirectusThumbnailFormat } from '#imports'
 import { computed, getDirectusFileUrl, ref, uploadDirectusFile, uploadDirectusFiles } from '#imports'
 
 const fileInput = ref<HTMLInputElement | null>(null)
-const uploadedFile = ref<DirectusFile | null>(null)
+const uploadedFile = ref<Awaited<ReturnType<typeof uploadDirectusFile>> | null>(null)
 const uploadError = ref('')
 
 async function handleUpload() {
@@ -21,7 +21,7 @@ async function handleUpload() {
 }
 
 const batchInput = ref<HTMLInputElement | null>(null)
-const batchResult = ref<DirectusFile[]>([])
+const batchResult = ref<Awaited<ReturnType<typeof uploadDirectusFiles>>[]>([])
 const batchError = ref('')
 
 async function handleBatchUpload() {

@@ -235,7 +235,7 @@ const sizes = {
 </template>
 ```
 
-## Using with Nuxt Image
+## Using Nuxt Image
 
 The module automatically integrates with `@nuxt/image` for advanced image optimization. The Directus provider is pre-configured and ready to use:
 
@@ -505,27 +505,27 @@ const sources = {
 Upload a single file to Directus.
 
 **Parameters:**
-- `file: { file: File, data?: Partial<DirectusFiles> }` - File and metadata
+- `file: { file: File, data?: Record<string, string> }` - File and metadata
 - `query?: Query` - Directus query options
 
-**Returns:** `Promise<DirectusFiles>`
+**Returns:** `Promise<DirectusFile>`
 
 ### `uploadDirectusFiles(files, query?)`
 
 Upload multiple files to Directus.
 
 **Parameters:**
-- `files: Array<{ file: File, data?: Partial<DirectusFiles> }>` - Files and metadata
+- `files: Array<{ file: File, data?: Record<string, string> }>` - Files and metadata
 - `query?: Query` - Directus query options
 
-**Returns:** `Promise<DirectusFiles[]>`
+**Returns:** `Promise<DirectusFile[] | DirectusFile>`
 
 ### `getDirectusFileUrl(file, options?)`
 
 Generate a URL for a Directus file with optional transformations.
 
 **Parameters:**
-- `file: string | DirectusFiles` - File ID or file object
+- `file: string | DirectusFile` - File ID or file object
 - `options?: DirectusFileOptions` - Transformation options
 
 **Options:**

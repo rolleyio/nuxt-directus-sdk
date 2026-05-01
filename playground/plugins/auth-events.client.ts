@@ -6,7 +6,9 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // Register listener for future hook calls (e.g. explicit login during the session)
   nuxtApp.hook('directus:loggedIn', (user) => {
-    lastEvent.value = { user, firedAt: new Date().toISOString() }
+    if (user) {
+      lastEvent.value = { user, firedAt: new Date().toISOString() }
+    }
   })
 
   // The hook fires inside directus-plugin's setup(), which runs before app plugins.

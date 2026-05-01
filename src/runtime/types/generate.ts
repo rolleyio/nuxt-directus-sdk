@@ -3,8 +3,6 @@ import type { TypegenExtension } from './extensions'
 import { createDirectus, isDirectusError, readCollections, readFields, readRelations, rest, staticToken } from '@directus/sdk'
 import { typegenExtensions } from './extensions'
 
-export const FALLBACK_TYPE_STRING = 'declare global {\n\ninterface DirectusFile {\n\tid: string;\n}\ninterface DirectusUser {\n\tid: string;\n}\ninterface DirectusSchema { }\n}\n\nexport {};'
-
 /** Augmented SnapshotField shape used inside determineFieldType — adds optional relation metadata */
 interface FieldWithRelation extends SnapshotField {
   relation?: {
@@ -87,7 +85,7 @@ export async function generateTypesFromDirectus(
   token: string,
   prefix: string,
   options: GenerateTypesOptions = {},
-): Promise<{ typeString: string, logs: string[] }> {
+): Promise<{ typeString: string | null, logs: string[] }> {
   const logs: string[] = []
   const client = createDirectus(url).with(rest()).with(staticToken(token))
 
@@ -118,7 +116,7 @@ export async function generateTypesFromDirectus(
     else {
       logs.push(`  - Error: ${error instanceof Error ? error.message : String(error)}`)
     }
-    return { typeString: FALLBACK_TYPE_STRING, logs }
+    return { typeString: null, logs }
   }
 
   // Validate option interaction: include wins, with a warning if exclude was
@@ -852,7 +850,7 @@ function determineFieldType(field: FieldWithRelation): string {
     const unionOfChoices = [...new Set(choiceValues)].join(' | ')
 
     const interfacesWithMultiSelect = ['select-multiple', 'select-multiple-dropdown', 'select-multiple-checkbox']
-    if (interfacesWithMultiSelect.includes(field.meta.interface)) {
+    if (interfacesWithMultiSelect.includes(field.meta.interface ?? '')) {
       return `Array<${unionOfChoices}>`
     }
 

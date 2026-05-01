@@ -1,4 +1,3 @@
-import type { DirectusFile, DirectusSchema } from '#build/types/directus'
 import type { DirectusFile as DirectusSdkFile, Query } from '@directus/sdk'
 import { uploadFiles } from '@directus/sdk'
 import { useDirectus, useDirectusUrl } from './directus'
@@ -10,8 +9,12 @@ interface DirectusFileUpload {
 
 export async function uploadDirectusFile(file: DirectusFileUpload, query?: Query<DirectusSchema, DirectusSdkFile<DirectusSchema>>) {
   const result = await uploadDirectusFiles([file], query)
+  const uploaded = Array.isArray(result) ? result[0] : result
 
-  return (Array.isArray(result) ? result[0] : result)
+  if (!uploaded)
+    throw new Error('Upload did not return a file')
+
+  return uploaded
 }
 
 export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Query<DirectusSchema, DirectusSdkFile<DirectusSchema>>) {
@@ -21,7 +24,7 @@ export async function uploadDirectusFiles(files: DirectusFileUpload[], query?: Q
   files.forEach(({ file, data }) => {
     if (data) {
       Object.entries(data).forEach(([key, value]) => {
-        formData.set(key, value)
+        if (value !== undefined) formData.set(key, value)
       })
     }
 

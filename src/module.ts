@@ -7,6 +7,7 @@ import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRoute
 import { colors } from 'consola/utils'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
+import { readFileSync } from 'node:fs'
 import { name, version } from '../package.json'
 import { generateTypesFromDirectus } from './runtime/types'
 import { useUrl } from './runtime/utils'
@@ -287,6 +288,7 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     const resolver = createResolver(import.meta.url)
+    const fallbackTypeContent = readFileSync(resolver.resolve('./runtime/types/fallback.d.ts'), 'utf-8')
 
     // Helper function to register modules
     // NuxtOptions has no public index signature for module config keys.
@@ -552,14 +554,17 @@ export default defineNuxtModule<ModuleOptions>({
     const typesExclude = typeof options.types === 'object' ? options.types.exclude ?? [] : []
     const typesVerbose = typeof options.types === 'object' ? options.types.verbose ?? false : false
 
+    let typeString = fallbackTypeContent
+
     if (typesEnabled) {
       loggerMessage.push('📋 Directus Type Generator Enabled')
+
       if (!options.adminToken) {
-        loggerMessage.push(`  ${colors.bgRedBright(`${colors.red('⚑ ERROR:')} Unable to generate Types`)}`, `   Fix: Set adminToken in config or DIRECTUS_ADMIN_TOKEN in .env`)
+        loggerMessage.push(`  ${colors.bgRedBright(`${colors.red('⚑ ERROR:')} Unable to generate Types`)}`, `   Fix: Set adminToken in config or DIRECTUS_ADMIN_TOKEN in .env`, `  - Fallback DirectusSchema is being used ${colors.dim('(not recommended)')}`)
       }
       else {
         try {
-          const { typeString, logs } = await generateTypesFromDirectus(directusUrl, options.adminToken!, typesPrefix, {
+          const { typeString: generated, logs } = await generateTypesFromDirectus(directusUrl, options.adminToken!, typesPrefix, {
             include: typesInclude,
             expandReferences: typesExpandReferences,
             exclude: typesExclude,
@@ -567,23 +572,32 @@ export default defineNuxtModule<ModuleOptions>({
           })
           loggerMessage.push(...logs)
 
-          addTypeTemplate({
-            filename: `types/${configKey}.d.ts`,
-            getContents() {
-              return typeString
-            },
-          }, { nitro: true, nuxt: true })
-
-          if (logs.some(log => log.toLowerCase().includes('error'))) {
-            throw new Error(`  ${colors.bgRedBright(`${colors.red('⚑ ERROR:')} TypeGenerator returned an error`)}`)
+          if (generated !== null) {
+            typeString = generated
+            if (!logs.some(log => log.toLowerCase().includes('error'))) {
+              loggerMessage.push(`  - Directus Types saved successfully to ${colors.dim(`#build/types/${configKey}.d.ts`)}`)
+            }
+            else {
+              throw new Error(`  ${colors.bgRedBright(`${colors.red('⚑ ERROR:')} TypeGenerator returned an error`)}`)
+            }
           }
-          loggerMessage.push(`  - Directus Types saved successfully to ${colors.dim(`#build/types/${configKey}.d.ts`)}`)
+          else {
+            loggerMessage.push(`  - Fallback DirectusSchema is being used ${colors.dim('(not recommended)')}`)
+          }
         }
         catch (error) {
+          typeString = fallbackTypeContent
           loggerMessage.push(`${error instanceof Error ? error.message : String(error)}`, `  - Fallback DirectusSchema is being used ${colors.dim('(not recommended)')}`)
         }
       }
     }
+
+    addTypeTemplate({
+      filename: `types/${configKey}.d.ts`,
+      getContents() {
+        return typeString
+      },
+    }, { nitro: true, nuxt: true })
     logger.box({ message: loggerMessage.join('\n'), title: `${colors.magenta(`Nuxt Directus SDK Version: ${colors.magentaBright(`${version}`)}`)}`, style: { padding: 3, borderColor: 'magenta', borderStyle: 'double-single-rounded' } })
   },
 })

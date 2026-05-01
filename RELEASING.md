@@ -20,8 +20,8 @@ The pushed tag fires `.github/workflows/release.yml`, which re-runs CI (via `wor
 
 ### Node versions
 
-- **CI** runs on Node `lts/jod` (currently Node 22) — matches Nuxt's LTS floor, which is what end users run against.
-- **Release** runs on Node 24 — required for npm Trusted Publishing's OIDC handshake (needs npm 11, which ships with Node 24). CI passing on LTS gates whether release runs at all.
+- **CI** runs on Node `lts/jod` (v22) — matches Nuxt's LTS floor, which is what end users run against.
+- **Release** runs on Node `lts/krypton` (v24) — required for npm Trusted Publishing's OIDC handshake (needs npm 11, which ships with Node 24). CI passing on LTS gates whether release runs at all.
 
 ### Prereleases
 

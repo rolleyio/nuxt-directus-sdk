@@ -84,11 +84,11 @@
     "ufo": "^1.6.3"
   },
   "devDependencies": {
-    "@nuxt/eslint-config": "^1.15.2",
     "@directus/sdk": "^21.2.2",
     "@directus/types": "^15.0.2",
     "@directus/visual-editing": "^2.0.0",
     "@nuxt/devtools": "^3.2.4",
+    "@nuxt/eslint-config": "^1.15.2",
     "@nuxt/image": "^2.0.0",
     "@nuxt/module-builder": "^1.0.2",
     "@nuxt/schema": "^4.4.2",
@@ -100,7 +100,7 @@
     "typescript": "^6.0.3",
     "vitepress": "^1.6.4",
     "vitest": "^4.1.4",
-    "vue-tsc": "^3.0.8"
+    "vue-tsc": "^3.2.7"
   },
   "unbuild": {
     "failOnWarn": false,

@@ -3,6 +3,7 @@
  */
 
 import type {
+  CollectionItem,
   PermissionAction,
   PermissionConfig,
   PolicyConfig,
@@ -18,12 +19,12 @@ import type {
  * @param collection - The collection name
  * @returns Array of accessible field names, '*' for all, or empty array for none
  */
-export function getAccessibleFields<Schema>(
+export function getAccessibleFields<Schema, K extends keyof Schema>(
   rules: RulesConfig<Schema>,
   roleOrPolicy: string,
   action: PermissionAction,
-  collection: keyof Schema,
-): (keyof Schema[typeof collection])[] | '*' {
+  collection: K,
+): (keyof CollectionItem<Schema, K>)[] | '*' {
   const policies = getPoliciesFor(rules, roleOrPolicy)
 
   if (!policies.length) {
@@ -31,7 +32,7 @@ export function getAccessibleFields<Schema>(
   }
 
   // Collect all accessible fields from all matching policies
-  const allFields = new Set<keyof Schema[typeof collection]>()
+  const allFields = new Set<keyof CollectionItem<Schema, K>>()
   let hasWildcard = false
 
   for (const policy of policies) {
@@ -49,7 +50,7 @@ export function getAccessibleFields<Schema>(
       hasWildcard = true
     }
     else if (perm && typeof perm === 'object') {
-      const permConfig = perm as PermissionConfig<Schema, typeof collection>
+      const permConfig = perm as PermissionConfig<Schema, K>
       if (permConfig.fields === '*') {
         hasWildcard = true
       }
@@ -82,12 +83,12 @@ export function getAccessibleFields<Schema>(
  * @param field - The field to check
  * @returns true if the field is accessible
  */
-export function canAccessField<Schema>(
+export function canAccessField<Schema, K extends keyof Schema>(
   rules: RulesConfig<Schema>,
   roleOrPolicy: string,
   action: PermissionAction,
-  collection: keyof Schema,
-  field: keyof Schema[typeof collection],
+  collection: K,
+  field: keyof CollectionItem<Schema, K>,
 ): boolean {
   const accessibleFields = getAccessibleFields(rules, roleOrPolicy, action, collection)
 
@@ -107,12 +108,12 @@ export function canAccessField<Schema>(
  * @param collection - The collection name
  * @returns The presets object or null
  */
-export function getPresets<Schema>(
+export function getPresets<Schema, K extends keyof Schema>(
   rules: RulesConfig<Schema>,
   roleOrPolicy: string,
   action: PermissionAction,
-  collection: keyof Schema,
-): Partial<Schema[typeof collection]> | null {
+  collection: K,
+): Partial<CollectionItem<Schema, K>> | null {
   const policies = getPoliciesFor(rules, roleOrPolicy)
 
   for (const policy of policies) {
@@ -122,9 +123,11 @@ export function getPresets<Schema>(
 
     const perm = collectionPerms[action]
     if (perm && typeof perm === 'object') {
-      const permConfig = perm as PermissionConfig<Schema, typeof collection>
+      const permConfig = perm as PermissionConfig<Schema, K>
       if (permConfig.presets) {
-        return permConfig.presets
+        // presets may be Record<string,unknown> from API payloads; cast to the
+        // typed form since we control how configs are defined.
+        return permConfig.presets as Partial<CollectionItem<Schema, K>>
       }
     }
   }

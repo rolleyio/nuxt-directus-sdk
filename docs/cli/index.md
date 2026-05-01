@@ -15,7 +15,7 @@ npx nuxt-directus-sdk --help
 - **[`generate-types`](/cli/generate-types)** — generate TypeScript types from a Directus schema. Pairs with the [Type Generation](/guide/type-generation) feature.
 - **[`rules:*`](/cli/rules)** — pull, push, and diff Directus permissions and policies as JSON. Pairs with the [Rules Sync](/guide/rules-sync) guide.
 
-## Connection settings
+## Connection Settings
 
 Every command that talks to Directus reads the same two values:
 
@@ -28,7 +28,7 @@ Precedence: **CLI flag → exported/inline env var → `.env` file in the curren
 
 The CLI auto-loads a `.env` from the current working directory. Existing exported env vars win over the file, so inline overrides like `DIRECTUS_URL=https://other.example.com npx nuxt-directus-sdk …` work as expected.
 
-## Exit codes
+## Exit Codes
 
 - **0** — success
 - **1** — error (missing connection config, Directus returned an error, diff found differences, etc.)

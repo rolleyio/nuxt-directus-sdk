@@ -5,8 +5,8 @@ import { setAttr } from '@directus/visual-editing'
 import { useDirectusVisualEditor } from '../composables/directus'
 import { Slot } from '../utils'
 
-type SingleDirectusCollection = DirectusSchema[T] extends Array<unknown>
-  ? DirectusSchema[T][0]
+type SingleDirectusCollection = DirectusSchema[T] extends Array<infer U>
+  ? U
   : DirectusSchema[T]
 type FieldKey = keyof SingleDirectusCollection
 

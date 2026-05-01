@@ -8,6 +8,7 @@
  */
 
 import type {
+  CollectionItem,
   CollectionPermissions,
   DirectusPermissionPayload,
   DirectusPolicyPayload,
@@ -17,6 +18,7 @@ import type {
   PermissionAction,
   PermissionConfig,
   PolicyConfig,
+  QueryFilter,
   RoleConfig,
   RulesConfig,
 } from '../types'
@@ -191,9 +193,9 @@ function parsePermissionConfig<Schema, Collection extends keyof Schema>(
   }
 
   return {
-    fields: config.fields as '*' | (keyof Schema[Collection])[] | undefined,
+    fields: config.fields as '*' | (keyof CollectionItem<Schema, Collection>)[] | undefined,
     filter: config.filter as QueryFilter<Schema, CollectionItem<Schema, Collection>> | undefined,
-    presets: config.presets as Partial<Schema[Collection]> | undefined,
+    presets: config.presets as Partial<CollectionItem<Schema, Collection>> | undefined,
     validation: config.validation as DirectusValidation | undefined,
   }
 }
@@ -333,20 +335,16 @@ export function loadRulesFromPayload<Schema>(
     permissionsByPolicy.get(key)!.push(perm)
   }
 
-  // Convert policies
+  // Convert policies and build ID map in a single pass
+  const policyById = new Map<string, PolicyConfig<Schema>>()
   const policies = payload.policies.map((policy) => {
     const policyPerms = permissionsByPolicy.get(policy.id ?? null) ?? []
-    return convertPayloadPolicy<Schema>(policy, policyPerms)
-  })
-
-  // Build a map of policy ID -> PolicyConfig for role reference
-  const policyById = new Map<string, PolicyConfig<Schema>>()
-  for (let i = 0; i < payload.policies.length; i++) {
-    const apiPolicy = payload.policies[i]
-    if (apiPolicy.id) {
-      policyById.set(apiPolicy.id, policies[i])
+    const converted = convertPayloadPolicy<Schema>(policy, policyPerms)
+    if (policy.id) {
+      policyById.set(policy.id, converted)
     }
-  }
+    return converted
+  })
 
   // Convert roles with their attached policies
   const roles = payload.roles.map((role) => {
@@ -450,7 +448,7 @@ function convertPayloadPermission<Schema>(
 
   return {
     fields: perm.fields
-      ? (perm.fields.includes('*') ? '*' : perm.fields) as '*' | (keyof Schema[keyof Schema])[]
+      ? (perm.fields.includes('*') ? '*' : perm.fields) as '*' | (keyof CollectionItem<Schema, keyof Schema>)[]
       : undefined,
     filter: (perm.permissions ?? undefined) as QueryFilter<Schema, CollectionItem<Schema, keyof Schema>> | undefined,
     presets: perm.presets ?? undefined,
