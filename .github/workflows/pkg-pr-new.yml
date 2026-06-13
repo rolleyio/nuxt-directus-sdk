@@ -3,7 +3,7 @@ name: Preview packages (pkg.pr.new)
 on:
   pull_request:
   push:
-    branches: [next]
+    branches: [next, v7]
 
 permissions:
   contents: read

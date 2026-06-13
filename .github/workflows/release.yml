@@ -41,10 +41,12 @@ jobs:
       - name: Determine npm tag
         id: npm-tag
         run: |
-          # Any tag containing a hyphen after the version (e.g. v6.0.0-0,
-          # v6.0.0-beta.1, v6.0.0-rc.2) is a prerelease → publish under `next`.
-          # Clean semver tags (e.g. v6.0.0) → publish under `latest`.
+          # v7 prereleases (v7.x.x-alpha/beta/rc) get a dedicated `v7` dist-tag
+          # so they don't compete with v6.x prereleases on `next`.
+          # Other prerelease tags (v6.x.x-beta.0, etc.) → `next`.
+          # Clean semver tags (v6.1.2, v7.0.0) → `latest`.
           case "${{ github.ref_name }}" in
+            v7.*-*) echo "tag=v7" >> "$GITHUB_OUTPUT" ;;
             *-*) echo "tag=next" >> "$GITHUB_OUTPUT" ;;
             *) echo "tag=latest" >> "$GITHUB_OUTPUT" ;;
           esac
