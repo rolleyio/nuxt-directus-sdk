@@ -13,6 +13,7 @@ import {
   passwordRequest as directusPasswordRequest,
   passwordReset as directusPasswordReset,
   readMe as directusReadMe,
+  registerUser as directusRegisterUser,
   updateMe as directusUpdateMe,
 } from '@directus/sdk'
 import { joinURL, withoutTrailingSlash } from 'ufo'
@@ -31,6 +32,18 @@ export type UpdateMeInput = Omit<NestedPartial<DirectusUserSDK<DirectusSchema>>,
   avatar?: string | null
 }
 
+/**
+ * Public registration payload for {@link useDirectusAuth.register}.
+ * Maps onto Directus `POST /users/register` via `registerUser`.
+ */
+export interface DirectusRegisterInput {
+  email: string
+  password: string
+  first_name?: string
+  last_name?: string
+  verification_url?: string
+}
+
 // Field selection is driven by runtime config (`readMeFields`), so TypeScript cannot
 // infer return types from the SDK generics. This interface is the explicit public contract.
 export interface DirectusAuth {
@@ -41,8 +54,10 @@ export interface DirectusAuth {
   login: (email: string, password: string, options?: LoginOptions & { redirect?: boolean | RouteLocationRaw }) => Promise<DirectusUser | null>
   loginWithProvider: (provider: string, redirectOnLogin?: boolean | string) => Promise<void>
   logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
+  /** Privileged user creation (`POST /users`). Requires create-users permission. */
   createUser: (data: RegisterUserInput) => Promise<DirectusUser>
-  register: (data: RegisterUserInput) => Promise<DirectusUser>
+  /** Public registration (`POST /users/register`). Does not require auth. */
+  register: (data: DirectusRegisterInput) => Promise<void>
   inviteUser: (email: string, role: string, inviteUrl?: string | undefined) => Promise<void>
   acceptUserInvite: (token: string, password: string) => Promise<void>
   passwordRequest: (email: string, resetUrl?: string | undefined) => Promise<void>
@@ -154,9 +169,13 @@ export function useDirectusAuth(): DirectusAuth {
     return response as unknown as DirectusUser
   }
 
-  // Alias for createUser
-  async function register(data: RegisterUserInput) {
-    return createUser(data as RegisterUserInput)
+  async function register(data: DirectusRegisterInput) {
+    const { email, password, first_name, last_name, verification_url } = data
+    await directus.request(directusRegisterUser(email, password, {
+      first_name,
+      last_name,
+      verification_url,
+    }))
   }
 
   async function inviteUser(email: string, role: string, inviteUrl?: string | undefined) {
