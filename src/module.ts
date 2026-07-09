@@ -720,6 +720,8 @@ export default defineNuxtModule<ModuleOptions>({
           'useSessionDirectus',
           'useDirectusUrl',
           'useTokenDirectus',
+          'requireDirectusUser',
+          'requireDirectusAdmin',
         ],
       })
     })
