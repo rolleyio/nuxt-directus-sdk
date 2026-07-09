@@ -244,6 +244,71 @@ function isInternalSystemCollection(collection: string): boolean {
 }
 
 /**
+ * Remap local policy/role IDs onto remote IDs by matching entity names.
+ *
+ * Code-authored rules assign ephemeral UUIDs in {@link serializeToDirectusApi}.
+ * Roles and policies are matched by name, but permissions are keyed by
+ * `` `${policyId}:${collection}:${action}` `` and role equality compares
+ * policy ID arrays. Without remapping, semantically identical local/remote
+ * states always appear as delete+create for permissions and modified roles.
+ *
+ * Returns a shallow-cloned local payload with IDs rewritten where a remote
+ * counterpart with the same name exists. The input is never mutated.
+ */
+export function alignLocalIdsToRemote(
+  local: DirectusRulesPayload,
+  remote: DirectusRulesPayload,
+): DirectusRulesPayload {
+  const remotePolicyIdByName = new Map<string, string>()
+  for (const policy of remote.policies) {
+    if (policy.name && policy.id)
+      remotePolicyIdByName.set(policy.name, policy.id)
+  }
+
+  const remoteRoleIdByName = new Map<string, string>()
+  for (const role of remote.roles) {
+    if (role.name && role.id)
+      remoteRoleIdByName.set(role.name, role.id)
+  }
+
+  const localPolicyIdToRemote = new Map<string, string>()
+  for (const policy of local.policies) {
+    if (!policy.id)
+      continue
+    const remoteId = remotePolicyIdByName.get(policy.name)
+    if (remoteId)
+      localPolicyIdToRemote.set(policy.id, remoteId)
+  }
+
+  const mapPolicyId = (id: string | null | undefined): string | null | undefined => {
+    if (id == null)
+      return id
+    return localPolicyIdToRemote.get(id) ?? id
+  }
+
+  return {
+    roles: local.roles.map(role => ({
+      ...role,
+      id: (role.id && remoteRoleIdByName.get(role.name)) || role.id,
+      parent: role.parent
+        ? (remoteRoleIdByName.get(
+            local.roles.find(r => r.id === role.parent)?.name ?? '',
+          ) ?? remoteRoleIdByName.get(role.parent) ?? role.parent)
+        : role.parent,
+      policies: role.policies?.map(id => mapPolicyId(id) ?? id),
+    })),
+    policies: local.policies.map(policy => ({
+      ...policy,
+      id: (policy.id && remotePolicyIdByName.get(policy.name)) || policy.id,
+    })),
+    permissions: local.permissions.map(permission => ({
+      ...permission,
+      policy: mapPolicyId(permission.policy) ?? permission.policy,
+    })),
+  }
+}
+
+/**
  * Compare two DirectusRulesPayload objects and generate diff
  *
  * Exported for testing and direct use when you already have both payloads.
@@ -266,14 +331,18 @@ export function compareRulesPayloads(
 ): RulesDiff {
   const { excludeSystemCollections = true } = options
 
-  const roles = compareRoles(local.roles, remote.roles)
-  const policies = comparePolicies(local.policies, remote.policies)
+  // Align local policy/role IDs to remote by name so code-authored rules
+  // (random UUIDs) converge with a live instance on subsequent syncs.
+  const alignedLocal = alignLocalIdsToRemote(local, remote)
+
+  const roles = compareRoles(alignedLocal.roles, remote.roles)
+  const policies = comparePolicies(alignedLocal.policies, remote.policies)
 
   // Filter permissions:
   // - Exclude internal system collections if option is set
   // - Always exclude permissions with policy: null (these are Directus "app access" permissions
   //   that aren't managed through the rules DSL)
-  const localPerms = local.permissions.filter((p) => {
+  const localPerms = alignedLocal.permissions.filter((p) => {
     if (p.policy === null)
       return false
     if (excludeSystemCollections && isInternalSystemCollection(p.collection))

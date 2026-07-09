@@ -763,3 +763,76 @@ describe('sync: round-trip payload consistency', () => {
     expect(diff.hasChanges).toBe(false)
   })
 })
+
+describe('sync: name-based policy ID alignment', () => {
+  it('treats semantically identical rules as unchanged when local policy UUIDs differ', () => {
+    // Remote IDs come from Directus. Local IDs come from serializeToDirectusApi
+    // assigning random UUIDs when defineDirectusRules has no explicit ids.
+    const local: DirectusRulesPayload = {
+      roles: [{
+        name: 'Editor',
+        icon: 'edit',
+        description: null,
+        parent: null,
+        policies: ['local-policy-uuid'],
+      }],
+      policies: [{
+        id: 'local-policy-uuid',
+        name: 'Content',
+        icon: 'article',
+        description: null,
+        ip_access: null,
+        enforce_tfa: false,
+        admin_access: false,
+        app_access: true,
+      }],
+      permissions: [{
+        policy: 'local-policy-uuid',
+        collection: 'posts',
+        action: 'read',
+        permissions: null,
+        validation: null,
+        presets: null,
+        fields: ['*'],
+      }],
+    }
+
+    const remote: DirectusRulesPayload = {
+      roles: [{
+        id: 'remote-role',
+        name: 'Editor',
+        icon: 'edit',
+        description: null,
+        parent: null,
+        policies: ['remote-policy-uuid'],
+      }],
+      policies: [{
+        id: 'remote-policy-uuid',
+        name: 'Content',
+        icon: 'article',
+        description: null,
+        ip_access: null,
+        enforce_tfa: false,
+        admin_access: false,
+        app_access: true,
+      }],
+      permissions: [{
+        id: 42,
+        policy: 'remote-policy-uuid',
+        collection: 'posts',
+        action: 'read',
+        permissions: null,
+        validation: null,
+        presets: null,
+        fields: ['*'],
+      }],
+    }
+
+    const diff = compareRulesPayloads(local, remote)
+
+    expect(diff.hasChanges).toBe(false)
+    expect(diff.summary.roles.modified).toBe(0)
+    expect(diff.summary.permissions.added).toBe(0)
+    expect(diff.summary.permissions.removed).toBe(0)
+  })
+})
