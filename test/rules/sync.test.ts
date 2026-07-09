@@ -5,6 +5,7 @@ import type {
 } from '../../src/rules'
 import { describe, expect, it } from 'vitest'
 import {
+  alignLocalIdsToRemote,
   compareRulesPayloads,
   formatDiff,
   formatPushResult,
@@ -834,5 +835,82 @@ describe('sync: name-based policy ID alignment', () => {
     expect(diff.summary.roles.modified).toBe(0)
     expect(diff.summary.permissions.added).toBe(0)
     expect(diff.summary.permissions.removed).toBe(0)
+  })
+
+  it('does not remap when a remote policy name is duplicated', () => {
+    // Directus does not enforce unique policy names. Remapping onto either
+    // duplicate could target the wrong entity, so ambiguous names are left as-is.
+    const basePolicy = {
+      name: 'Content',
+      icon: 'article',
+      description: null,
+      ip_access: null,
+      enforce_tfa: false,
+      admin_access: false,
+      app_access: true,
+    }
+
+    const local: DirectusRulesPayload = {
+      roles: [],
+      policies: [{ ...basePolicy, id: 'local-policy-uuid' }],
+      permissions: [{
+        policy: 'local-policy-uuid',
+        collection: 'posts',
+        action: 'read',
+        permissions: null,
+        validation: null,
+        presets: null,
+        fields: ['*'],
+      }],
+    }
+
+    const remote: DirectusRulesPayload = {
+      roles: [],
+      policies: [
+        { ...basePolicy, id: 'remote-policy-a' },
+        { ...basePolicy, id: 'remote-policy-b' },
+      ],
+      permissions: [],
+    }
+
+    const aligned = alignLocalIdsToRemote(local, remote)
+
+    expect(aligned.policies[0]!.id).toBe('local-policy-uuid')
+    expect(aligned.permissions[0]!.policy).toBe('local-policy-uuid')
+  })
+
+  it('does not remap when a local name is duplicated', () => {
+    const basePolicy = {
+      name: 'Content',
+      icon: 'article',
+      description: null,
+      ip_access: null,
+      enforce_tfa: false,
+      admin_access: false,
+      app_access: true,
+    }
+
+    const local: DirectusRulesPayload = {
+      roles: [
+        { id: 'local-role-a', name: 'Editor', icon: 'edit', description: null, parent: null },
+        { id: 'local-role-b', name: 'Editor', icon: 'edit', description: null, parent: null },
+      ],
+      policies: [
+        { ...basePolicy, id: 'local-policy-a' },
+        { ...basePolicy, id: 'local-policy-b' },
+      ],
+      permissions: [],
+    }
+
+    const remote: DirectusRulesPayload = {
+      roles: [{ id: 'remote-role', name: 'Editor', icon: 'edit', description: null, parent: null }],
+      policies: [{ ...basePolicy, id: 'remote-policy' }],
+      permissions: [],
+    }
+
+    const aligned = alignLocalIdsToRemote(local, remote)
+
+    expect(aligned.roles.map(r => r.id)).toEqual(['local-role-a', 'local-role-b'])
+    expect(aligned.policies.map(p => p.id)).toEqual(['local-policy-a', 'local-policy-b'])
   })
 })
