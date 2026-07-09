@@ -85,14 +85,14 @@ export function normalizeRules<Schema>(
       return existingId
     }
 
-    // Assign ID if missing
+    // Clone before assigning an ID so we never mutate the caller's config.
     const id = policy.id ?? generateUuid()
-    if (!policy.id) {
-      policy.id = id
-    }
+    const stored: PolicyConfig<Schema> = policy.id
+      ? policy
+      : { ...policy, id }
 
     policyMap.set(policy, id)
-    allPolicies.push(policy)
+    allPolicies.push(stored)
     return id
   }
 

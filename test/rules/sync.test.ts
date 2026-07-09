@@ -2,6 +2,7 @@ import type {
   DirectusRolePayload,
   DirectusRulesPayload,
   PushResult,
+  RulesConfig,
 } from '../../src/rules'
 import { describe, expect, it } from 'vitest'
 import {
@@ -10,8 +11,45 @@ import {
   formatDiff,
   formatPushResult,
   loadRulesFromPayload,
+  normalizeRules,
   serializeToDirectusApi,
 } from '../../src/rules'
+
+describe('sync: normalizeRules', () => {
+  it('assigns generated policy IDs without mutating caller-owned policies', () => {
+    const policy = {
+      name: 'Content',
+      permissions: new Map(),
+    }
+    const rules: RulesConfig<Record<string, unknown>> = {
+      policies: [policy],
+      roles: [{ name: 'Editor', policies: [policy] }],
+    }
+
+    const normalized = normalizeRules(rules)
+    const normalizedPolicy = normalized.policies[0]!
+
+    expect(policy).not.toHaveProperty('id')
+    expect(normalizedPolicy).not.toBe(policy)
+    expect(normalizedPolicy.id).toBeTypeOf('string')
+    expect(normalized.roles[0]!.policyIds).toEqual([normalizedPolicy.id])
+  })
+
+  it('does not mutate policies during API serialization', () => {
+    const policy = {
+      name: 'Content',
+      permissions: new Map(),
+    }
+    const rules: RulesConfig<Record<string, unknown>> = {
+      policies: [],
+      roles: [{ name: 'Editor', policies: [policy] }],
+    }
+
+    serializeToDirectusApi(rules)
+
+    expect(policy).not.toHaveProperty('id')
+  })
+})
 
 describe('sync: compareRulesPayloads', () => {
   describe('ip_access normalization', () => {
