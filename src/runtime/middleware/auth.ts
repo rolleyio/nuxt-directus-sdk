@@ -34,7 +34,7 @@ export default defineNuxtRouteMiddleware((to) => {
   if (!user.value) {
     return navigateTo({
       path: loginPath,
-      query: { redirect: to.path !== homePath ? encodeURIComponent(to.fullPath) : undefined },
+      query: { redirect: to.fullPath !== homePath ? encodeURIComponent(to.fullPath) : undefined },
     })
   }
 })
