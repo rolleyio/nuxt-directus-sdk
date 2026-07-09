@@ -1,8 +1,8 @@
 import type { Ref } from '#imports'
 import type { WebSocketAuthModes } from '@directus/sdk'
-import { useRequestHeaders, useRuntimeConfig, useState } from '#imports'
+import { useRequestHeaders, useRequestURL, useRuntimeConfig, useState } from '#imports'
 import { authentication, createDirectus, realtime, rest } from '@directus/sdk'
-import { useUrl } from '../utils'
+import { resolveForwardedProtocol, useUrl } from '../utils'
 import { useDirectusStorage } from './storage'
 
 export function useDirectusPreview(): Ref<boolean> {
@@ -52,10 +52,21 @@ export function useDirectusUrl(path = ''): string {
       return useUrl(`${window.location.origin}${proxyPath}`, path)
     }
     else {
-      // Server-side: get host from request headers if available
-      const requestHeaders = useRequestHeaders(['host'])
+      // Server-side: use the incoming request URL so protocol respects
+      // x-forwarded-proto / platform TLS termination.
+      try {
+        const reqUrl = useRequestURL()
+        const protocol = resolveForwardedProtocol(reqUrl?.protocol.replace(/:$/, ''))
+        if (reqUrl?.host && protocol)
+          return useUrl(`${protocol}://${reqUrl.host}${proxyPath}`, path)
+      }
+      catch {
+        // No request context (e.g. module setup), so fall through.
+      }
+      const requestHeaders = useRequestHeaders(['host', 'x-forwarded-proto'])
       if (requestHeaders?.host) {
-        const protocol = import.meta.dev ? 'http' : 'https'
+        const protocol = resolveForwardedProtocol(requestHeaders['x-forwarded-proto'])
+          ?? (import.meta.dev ? 'http' : 'https')
         return useUrl(`${protocol}://${requestHeaders.host}${proxyPath}`, path)
       }
     }

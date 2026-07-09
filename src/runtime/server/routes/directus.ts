@@ -3,7 +3,7 @@ import { defineEventHandler, getRequestIP, getRequestURL, proxyRequest, setRespo
 import { joinURL } from 'ufo'
 import { resolvePublicDirectusUrl } from '../../utils/directus-url'
 import type { ProxyConfig } from './directus-proxy-path'
-import { rewriteProxiedSetCookie } from './directus-cookie'
+import { isRequestHttps, rewriteProxiedSetCookie } from './directus-cookie'
 import { resolveProxyPath, stripProxyPrefix } from './directus-proxy-path'
 
 export default defineEventHandler(async (event) => {
@@ -19,9 +19,10 @@ export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)
   const path = stripProxyPrefix(url.pathname, proxyPath) + url.search
 
-  // Whether the request reaching us is HTTPS. We preserve Secure/SameSite=None
-  // on HTTPS (production, staging) and downgrade only on HTTP (localhost dev).
-  const isHttps = url.protocol === 'https:'
+  // Whether the request reaching us is HTTPS. Prefer x-forwarded-proto when
+  // sitting behind a TLS-terminating proxy so Secure/SameSite cookies stay correct.
+  const forwardedProto = event.node.req.headers['x-forwarded-proto']
+  const isHttps = isRequestHttps(url, forwardedProto)
 
   // Normalise the forwarded client IP.
   //

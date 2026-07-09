@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest'
-import { rewriteProxiedSetCookie } from '../src/runtime/server/routes/directus-cookie'
+import { isRequestHttps, rewriteProxiedSetCookie } from '../src/runtime/server/routes/directus-cookie'
+
+describe('isRequestHttps()', () => {
+  it('detects HTTPS from the request URL', () => {
+    expect(isRequestHttps(new URL('https://app.example.com'))).toBe(true)
+  })
+
+  it('detects HTTPS behind a TLS-terminating proxy', () => {
+    expect(isRequestHttps(new URL('http://localhost'), 'HTTPS, http')).toBe(true)
+    expect(isRequestHttps(new URL('http://localhost'), ['https'])).toBe(true)
+  })
+
+  it('does not treat other forwarded protocols as HTTPS', () => {
+    expect(isRequestHttps(new URL('http://localhost'), 'javascript')).toBe(false)
+  })
+})
 
 describe('rewriteProxiedSetCookie() — HTTPS (production/staging)', () => {
   it('preserves Secure and SameSite=None on HTTPS so cross-context flows keep working', () => {

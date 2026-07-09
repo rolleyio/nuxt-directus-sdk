@@ -12,6 +12,15 @@ export interface RewriteOptions {
   isHttps: boolean
 }
 
+export function isRequestHttps(
+  url: Pick<URL, 'protocol'>,
+  forwardedProtocol?: string | string[],
+): boolean {
+  const raw = Array.isArray(forwardedProtocol) ? forwardedProtocol[0] : forwardedProtocol
+  const protocol = raw?.split(',')[0]?.trim().toLowerCase()
+  return protocol === 'https' || url.protocol === 'https:'
+}
+
 /**
  * Rewrite a single `Set-Cookie` header value from a proxied Directus response
  * so it works on the proxy origin (e.g. `your-app.vercel.app` or `localhost`).

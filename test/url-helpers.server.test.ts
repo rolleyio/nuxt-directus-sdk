@@ -5,6 +5,7 @@ import { makeRuntimeConfig } from './fixtures/nuxt/runtime-config.data'
 
 let mockRuntimeConfig: ReturnType<typeof vi.fn>
 let mockRequestHeaders: ReturnType<typeof vi.fn>
+let mockRequestURL: ReturnType<typeof vi.fn>
 
 beforeEach(() => {
   vi.resetModules()
@@ -12,10 +13,14 @@ beforeEach(() => {
 
   mockRuntimeConfig = vi.fn()
   mockRequestHeaders = vi.fn(() => ({}))
+  mockRequestURL = vi.fn(() => {
+    throw new Error('No request context')
+  })
 
   vi.doMock('#imports', () => ({
     useRuntimeConfig: mockRuntimeConfig,
     useRequestHeaders: mockRequestHeaders,
+    useRequestURL: mockRequestURL,
     useState: vi.fn((_key: string, init: () => unknown) => ({ value: init() })),
   }))
 })
@@ -87,6 +92,55 @@ describe('useDirectusOriginUrl (server-side)', () => {
 })
 
 describe('useDirectusUrl (server-side)', () => {
+  it('uses the incoming request URL protocol and host for proxy requests', async () => {
+    setConfig({
+      directusUrl: 'https://public.example.com',
+      proxy: { enabled: true, path: '/directus' },
+    })
+    mockRequestURL.mockReturnValue(new URL('https://app.example.com/current'))
+
+    const { useDirectusUrl } = await import('../src/runtime/composables/directus')
+
+    expect(useDirectusUrl('/items/posts')).toBe('https://app.example.com/directus/items/posts/')
+  })
+
+  it('falls back to x-forwarded-proto when request URL context is unavailable', async () => {
+    setConfig({
+      directusUrl: 'https://public.example.com',
+      proxy: { enabled: true, path: '/directus' },
+    })
+    mockRequestHeaders.mockReturnValue({ 'host': 'app.example.com', 'x-forwarded-proto': 'https, http' })
+
+    const { useDirectusUrl } = await import('../src/runtime/composables/directus')
+
+    expect(useDirectusUrl()).toBe('https://app.example.com/directus/')
+  })
+
+  it('falls back to validated headers when the request URL protocol is invalid', async () => {
+    setConfig({
+      directusUrl: 'https://public.example.com',
+      proxy: { enabled: true, path: '/directus' },
+    })
+    mockRequestURL.mockReturnValue(new URL('javascript://app.example.com/current'))
+    mockRequestHeaders.mockReturnValue({ 'host': 'app.example.com', 'x-forwarded-proto': 'https' })
+
+    const { useDirectusUrl } = await import('../src/runtime/composables/directus')
+
+    expect(useDirectusUrl()).toBe('https://app.example.com/directus/')
+  })
+
+  it('ignores invalid forwarded protocols', async () => {
+    setConfig({
+      directusUrl: 'https://public.example.com',
+      proxy: { enabled: true, path: '/directus' },
+    })
+    mockRequestHeaders.mockReturnValue({ 'host': 'app.example.com', 'x-forwarded-proto': 'javascript' })
+
+    const { useDirectusUrl } = await import('../src/runtime/composables/directus')
+
+    expect(useDirectusUrl()).toBe('http://app.example.com/directus/')
+  })
+
   it('returns client URL when no proxy and no serverDirectusUrl', async () => {
     setConfig({
       directusUrl: 'https://public.example.com',
