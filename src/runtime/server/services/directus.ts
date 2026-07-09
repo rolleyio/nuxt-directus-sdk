@@ -3,6 +3,7 @@ import { useRuntimeConfig } from '#imports'
 import { authentication, createDirectus, rest } from '@directus/sdk'
 import { getCookie } from 'h3'
 import { useUrl } from '../../utils'
+import { resolvePublicDirectusUrl } from '../../utils/directus-url'
 
 export function getDirectusSessionToken(event: H3Event): string | undefined {
   // Session mode: look for the session token cookie set by Directus
@@ -12,7 +13,7 @@ export function getDirectusSessionToken(event: H3Event): string | undefined {
 export function useDirectusUrl(path = ''): string {
   const config = useRuntimeConfig()
   const serverUrl = config.directus?.serverDirectusUrl
-  const fallback = config.public.directus.directusUrl || config.public.directus.url
+  const fallback = resolvePublicDirectusUrl(config.public.directus)
   const url = serverUrl || fallback || process.env.DIRECTUS_URL || ''
   return useUrl(url, path)
 }

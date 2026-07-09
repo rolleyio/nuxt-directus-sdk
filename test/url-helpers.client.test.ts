@@ -29,8 +29,19 @@ function setConfig(overrides: Parameters<typeof makeRuntimeConfig>[0]) {
 }
 
 describe('useDirectusOriginUrl (client-side)', () => {
-  it('returns directusUrl (the pre-resolved client URL)', async () => {
+  it('prefers the runtime public URL over the build-time URL', async () => {
     setConfig({
+      url: 'https://runtime.example.com',
+      directusUrl: 'https://build.example.com',
+    })
+
+    const { useDirectusOriginUrl } = await import('../src/runtime/composables/directus')
+    expect(useDirectusOriginUrl()).toContain('runtime.example.com')
+  })
+
+  it('falls back to the build-time client URL when runtime URL is empty', async () => {
+    setConfig({
+      url: '',
       directusUrl: 'https://client.example.com',
     })
 
@@ -280,6 +291,7 @@ describe('simple string URL (client-side)', () => {
 
   it('useDirectusOriginUrl appends path correctly', async () => {
     setConfig({
+      url: 'https://cms.example.com',
       directusUrl: 'https://cms.example.com',
     })
 

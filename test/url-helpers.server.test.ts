@@ -27,7 +27,7 @@ function setConfig(overrides: Parameters<typeof makeRuntimeConfig>[0]) {
 describe('useDirectusOriginUrl (server-side)', () => {
   it('returns directusUrl (the pre-resolved client URL)', async () => {
     setConfig({
-      url: 'http://internal:8055',
+      url: 'https://client.example.com',
       directusUrl: 'https://client.example.com',
     })
 
@@ -47,6 +47,7 @@ describe('useDirectusOriginUrl (server-side)', () => {
 
   it('appends path correctly', async () => {
     setConfig({
+      url: 'https://directus.example.com',
       directusUrl: 'https://directus.example.com',
     })
 
@@ -59,6 +60,7 @@ describe('useDirectusOriginUrl (server-side)', () => {
 
   it('ignores proxy — always returns the real client URL', async () => {
     setConfig({
+      url: 'https://directus.example.com',
       directusUrl: 'https://directus.example.com',
       proxy: { enabled: true, path: '/directus', wsPath: '/directus-ws' },
     })
@@ -93,6 +95,20 @@ describe('useDirectusUrl (server-side)', () => {
 
     const { useDirectusUrl } = await import('../src/runtime/composables/directus')
     expect(useDirectusUrl()).toContain('public.example.com')
+  })
+
+  it('prefers runtime public url over baked directusUrl when no explicit serverDirectusUrl exists', async () => {
+    setConfig({
+      url: 'https://runtime.example.com',
+      directusUrl: 'https://build.example.com',
+      serverDirectusUrl: '',
+    })
+
+    const { useDirectusUrl } = await import('../src/runtime/composables/directus')
+    const result = useDirectusUrl()
+
+    expect(result).toContain('runtime.example.com')
+    expect(result).not.toContain('build.example.com')
   })
 
   it('returns serverDirectusUrl when set (Docker/K8s internal URL)', async () => {

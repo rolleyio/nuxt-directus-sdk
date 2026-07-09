@@ -20,7 +20,13 @@ export function useDirectusVisualEditor(): Ref<boolean> {
 
 function resolveClientUrl(): string {
   const config = useRuntimeConfig()
-  return config.public.directus.directusUrl || config.public.directus.url
+  const directus = config.public.directus
+  const configuredUrl = directus.url as string | { client?: string } | undefined
+  const runtimeUrl = typeof configuredUrl === 'string'
+    ? configuredUrl
+    : configuredUrl?.client
+
+  return runtimeUrl || directus.directusUrl || ''
 }
 
 function resolveServerUrl(): string {

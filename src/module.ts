@@ -522,7 +522,7 @@ export default defineNuxtModule<ModuleOptions>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(options as any).directusUrl = clientUrl
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(options as any).serverDirectusUrl = serverUrl || clientUrl
+    ;(options as any).serverDirectusUrl = serverUrl || ''
 
     // runtimeConfig is indexed by the module configKey which is not statically known.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -533,12 +533,17 @@ export default defineNuxtModule<ModuleOptions>({
 
     // Strip server-only fields before they reach the public runtime config.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (nuxtApp.options.runtimeConfig.public[configKey] as any).adminToken
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (nuxtApp.options.runtimeConfig.public[configKey] as any).serverDirectusUrl
+    const publicDirectus = nuxtApp.options.runtimeConfig.public[configKey] as any
+    delete publicDirectus.adminToken
+    delete publicDirectus.serverDirectusUrl
+    // Never expose internal split-server hostnames to the client payload.
+    if (publicDirectus.url && typeof publicDirectus.url === 'object') {
+      publicDirectus.url = publicDirectus.url.client || clientUrl
+    }
+    // Keep public.directusUrl as the client-facing URL only.
+    publicDirectus.directusUrl = clientUrl
     // Strip the deprecated alias so runtime reads from `proxy` only.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (nuxtApp.options.runtimeConfig.public[configKey] as any).devProxy
+    delete publicDirectus.devProxy
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (nuxtApp.options.runtimeConfig[configKey] as any).devProxy
 

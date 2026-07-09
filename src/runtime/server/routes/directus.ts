@@ -1,6 +1,7 @@
 import { useRuntimeConfig } from '#imports'
 import { defineEventHandler, getRequestIP, getRequestURL, proxyRequest, setResponseHeaders } from 'h3'
 import { joinURL } from 'ufo'
+import { resolvePublicDirectusUrl } from '../../utils/directus-url'
 import type { ProxyConfig } from './directus-proxy-path'
 import { rewriteProxiedSetCookie } from './directus-cookie'
 import { resolveProxyPath, stripProxyPrefix } from './directus-proxy-path'
@@ -8,7 +9,7 @@ import { resolveProxyPath, stripProxyPrefix } from './directus-proxy-path'
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const serverUrl = config.directus?.serverDirectusUrl
-  const directusUrl = serverUrl || config.public.directus.directusUrl
+  const directusUrl = serverUrl || resolvePublicDirectusUrl(config.public.directus)
 
   // Strip the configured proxy mount path (not a hardcoded /directus) so
   // custom `proxy.path` values forward the correct upstream URL.
