@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { createRulesTester, loadRulesFromJson, rulesToJson } from '../../src/rules'
+import type { DirectusRulesPayload } from '../../src/rules'
+import { createRulesTester, loadRulesFromJson, loadRulesFromPayload, rulesToJson } from '../../src/rules'
 
 // Test schema type
 interface TestSchema {
@@ -15,6 +16,37 @@ interface TestSchema {
     name: string
   }
 }
+
+function payloadWithIpAccess(ipAccess: string | string[]): DirectusRulesPayload {
+  return {
+    roles: [],
+    policies: [{
+      id: 'policy-1',
+      name: 'Restricted',
+      icon: 'shield',
+      description: null,
+      ip_access: ipAccess,
+      enforce_tfa: false,
+      admin_access: false,
+      app_access: true,
+    }],
+    permissions: [],
+  }
+}
+
+describe('loadRulesFromPayload ip_access', () => {
+  it('loads a CSV string as trimmed entries', () => {
+    const rules = loadRulesFromPayload(payloadWithIpAccess('10.0.0.1, 10.0.0.2'))
+
+    expect(rules.policies[0]!.ipAccess).toEqual(['10.0.0.1', '10.0.0.2'])
+  })
+
+  it('loads an array and removes blank entries', () => {
+    const rules = loadRulesFromPayload(payloadWithIpAccess([' 10.0.0.1 ', '', '10.0.0.2']))
+
+    expect(rules.policies[0]!.ipAccess).toEqual(['10.0.0.1', '10.0.0.2'])
+  })
+})
 
 describe('loadRulesFromJson', () => {
   it('loads rules from JSON object', () => {

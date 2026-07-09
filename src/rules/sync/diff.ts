@@ -605,13 +605,27 @@ function deepEqualRole(a: DirectusRolePayload, b: DirectusRolePayload): boolean 
 }
 
 /**
+ * Normalize `ip_access` for comparison.
+ * Directus may return CSV string or string[]; the DSL always serializes CSV.
+ */
+function normalizeIpAccess(value: string | string[] | null | undefined): string | null {
+  if (value == null || value === '')
+    return null
+  const parts = Array.isArray(value)
+    ? value
+    : String(value).split(',')
+  const normalized = parts.map(s => s.trim()).filter(Boolean).sort()
+  return normalized.length ? normalized.join(',') : null
+}
+
+/**
  * Deep equality check for policies (ignoring id differences)
  */
 function deepEqualPolicy(a: DirectusPolicyPayload, b: DirectusPolicyPayload): boolean {
   return a.name === b.name
     && a.icon === b.icon
     && a.description === b.description
-    && a.ip_access === b.ip_access
+    && normalizeIpAccess(a.ip_access as string | string[] | null) === normalizeIpAccess(b.ip_access as string | string[] | null)
     && a.enforce_tfa === b.enforce_tfa
     && a.admin_access === b.admin_access
     && a.app_access === b.app_access

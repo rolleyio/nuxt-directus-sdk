@@ -28,7 +28,8 @@ export interface DirectusPolicyPayload {
   name: string
   icon: string
   description: string | null
-  ip_access: string | null
+  /** CSV string from the REST API, or string[] from some SDK/type surfaces */
+  ip_access: string | string[] | null
   enforce_tfa: boolean
   admin_access: boolean
   app_access: boolean

@@ -426,7 +426,14 @@ function convertPayloadPolicy<Schema>(
     name: policy.name,
     icon: policy.icon,
     description: policy.description ?? undefined,
-    ipAccess: policy.ip_access ? policy.ip_access.split(',').map(s => s.trim()) : undefined,
+    ipAccess: (() => {
+      const raw = policy.ip_access
+      if (raw == null || raw === '')
+        return undefined
+      if (Array.isArray(raw))
+        return raw.map(s => String(s).trim()).filter(Boolean)
+      return String(raw).split(',').map(s => s.trim()).filter(Boolean)
+    })(),
     enforceTfa: policy.enforce_tfa,
     adminAccess: policy.admin_access,
     appAccess: policy.app_access,

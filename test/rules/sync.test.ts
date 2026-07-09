@@ -14,6 +14,42 @@ import {
 } from '../../src/rules'
 
 describe('sync: compareRulesPayloads', () => {
+  describe('ip_access normalization', () => {
+    it('treats CSV string and array forms as equal', () => {
+      const local: DirectusRulesPayload = {
+        roles: [],
+        policies: [{
+          name: 'Content',
+          icon: 'article',
+          description: null,
+          ip_access: '10.0.0.1,10.0.0.2',
+          enforce_tfa: false,
+          admin_access: false,
+          app_access: true,
+        }],
+        permissions: [],
+      }
+      const remote: DirectusRulesPayload = {
+        roles: [],
+        policies: [{
+          id: 'p1',
+          name: 'Content',
+          icon: 'article',
+          description: null,
+          ip_access: ['10.0.0.2', '10.0.0.1'],
+          enforce_tfa: false,
+          admin_access: false,
+          app_access: true,
+        }],
+        permissions: [],
+      }
+
+      const diff = compareRulesPayloads(local, remote)
+      expect(diff.policies.find(p => p.name === 'Content')?.type).toBe('unchanged')
+      expect(diff.hasChanges).toBe(false)
+    })
+  })
+
   describe('roles', () => {
     it('detects added roles', () => {
       const local: DirectusRulesPayload = {
