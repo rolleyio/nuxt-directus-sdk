@@ -249,7 +249,7 @@ describe('useDirectusAuth', () => {
 
       await useDirectusAuth().login('user@example.com', 'secret')
 
-      expect(navigateToMock).toHaveBeenCalledWith({ path: '/dashboard' })
+      expect(navigateToMock).toHaveBeenCalledWith('/dashboard')
     })
 
     it('redirects to the provided RouteLocationRaw when redirect option is a non-boolean', async () => {

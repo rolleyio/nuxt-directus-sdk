@@ -16,6 +16,7 @@ import {
   updateMe as directusUpdateMe,
 } from '@directus/sdk'
 import { joinURL, withoutTrailingSlash } from 'ufo'
+import { resolveSafeRedirectPath } from '../utils/redirect'
 import { useDirectus, useDirectusOriginUrl } from './directus'
 
 /**
@@ -118,7 +119,8 @@ export function useDirectusAuth(): DirectusAuth {
         await navigateTo(redirect)
       }
       else if (route?.query?.redirect) {
-        await navigateTo({ path: decodeURIComponent(route.query.redirect as string) })
+        const home = config.public.directus.auth?.redirect?.home ?? '/'
+        await navigateTo(resolveSafeRedirectPath(route.query.redirect, home))
       }
       else {
         await navigateTo(config.public.directus.auth?.redirect?.home ?? '/')
