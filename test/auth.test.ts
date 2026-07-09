@@ -309,6 +309,11 @@ describe('useDirectusAuth', () => {
   })
 
   describe('loginWithProvider', () => {
+    function getProviderRedirect(): string | null {
+      const target = navigateToMock.mock.lastCall?.[0]
+      return new URL(String(target)).searchParams.get('redirect')
+    }
+
     it('navigates externally to the Directus SSO endpoint with encoded redirect', async () => {
       await useDirectusAuth().loginWithProvider('google')
 
@@ -322,13 +327,10 @@ describe('useDirectusAuth', () => {
       )
     })
 
-    it('uses auth.redirect.login as redirect path when redirectOnLogin is true', async () => {
+    it('uses auth.redirect.home as redirect path when redirectOnLogin is true', async () => {
       await useDirectusAuth().loginWithProvider('google', true)
 
-      expect(navigateToMock).toHaveBeenCalledWith(
-        expect.stringContaining(encodeURIComponent('/auth/login')),
-        { external: true },
-      )
+      expect(getProviderRedirect()).toBe('http://localhost:3000')
     })
 
     it('uses current href as redirect path when redirectOnLogin is false', async () => {
@@ -336,32 +338,27 @@ describe('useDirectusAuth', () => {
 
       await useDirectusAuth().loginWithProvider('google', false)
 
-      // When redirectOnLogin is false, uses href as redirect path (the redirect= param is present)
-      expect(navigateToMock).toHaveBeenCalledWith(
-        expect.stringContaining('redirect='),
-        { external: true },
-      )
+      expect(getProviderRedirect()).toBe('http://localhost:3000/page')
     })
 
     it('uses the provided string as redirect path when redirectOnLogin is a string', async () => {
       await useDirectusAuth().loginWithProvider('google', '/after-login')
 
-      expect(navigateToMock).toHaveBeenCalledWith(
-        expect.stringContaining(encodeURIComponent('http://localhost:3000/after-login')),
-        { external: true },
-      )
+      expect(getProviderRedirect()).toBe('http://localhost:3000/after-login')
+    })
+
+    it('preserves an absolute redirect URL', async () => {
+      await useDirectusAuth().loginWithProvider('google', 'https://app.example.com/after-login')
+
+      expect(getProviderRedirect()).toBe('https://app.example.com/after-login')
     })
 
     it('strips trailing slash from the redirect URL', async () => {
       useRequestURLMock.mockReturnValue({ origin: 'http://localhost:3000/', href: 'http://localhost:3000/' })
 
-      await useDirectusAuth().loginWithProvider('google', '/auth/login')
+      await useDirectusAuth().loginWithProvider('google', '/auth/login/')
 
-      // The encoded redirect should not end with a trailing slash
-      expect(navigateToMock).toHaveBeenCalledWith(
-        expect.not.stringMatching(/redirect=.*\/$/),
-        { external: true },
-      )
+      expect(getProviderRedirect()).toBe('http://localhost:3000/auth/login')
     })
   })
 

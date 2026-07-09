@@ -158,7 +158,8 @@ export function useDirectusAuth(): DirectusAuth {
     let redirectPath: string
 
     if (typeof redirectOnLogin === 'boolean') {
-      redirectPath = redirectOnLogin ? config.public.directus.auth.redirect.login : href
+      // true → post-SSO destination is the app home (not the login page)
+      redirectPath = redirectOnLogin ? (config.public.directus.auth?.redirect?.home ?? '/') : href
     }
     else if (redirectOnLogin) {
       redirectPath = redirectOnLogin
@@ -166,7 +167,7 @@ export function useDirectusAuth(): DirectusAuth {
     else {
       redirectPath = href
     }
-    const redirect = joinURL(origin, redirectPath)
+    const redirect = new URL(redirectPath, joinURL(origin, '/')).href
     const sanitizedRedirect = withoutTrailingSlash(redirect)
 
     // Use the real Directus URL — SSO requires direct browser navigation to Directus, not through the dev proxy
