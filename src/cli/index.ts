@@ -467,6 +467,10 @@ async function main(): Promise<void> {
           console.error('Usage: npx nuxt-directus-sdk rules:push <file> [--dry-run]')
           process.exit(1)
         }
+        if (values['skip-deletes'] && values.delete) {
+          console.error('Error: --skip-deletes and --delete cannot be used together')
+          process.exit(1)
+        }
         const connection = getConnectionConfig(
           values['source-url'] ?? values.url,
           values['source-token'] ?? values.token,

@@ -372,8 +372,12 @@ export async function pushRules<Schema>(
         })
 
         if (change.remote && isProtectedRole(change.remote)) {
-          const message = `Skipped deleting protected role "${change.name}"`
-          result.roles.push({ type: 'skipped', name: change.name, id: change.remote.id, error: message })
+          result.roles.push({
+            type: 'skipped',
+            name: change.name,
+            id: change.remote.id,
+            reason: `Protected role "${change.name}" was not deleted`,
+          })
           continue
         }
 
@@ -403,8 +407,12 @@ export async function pushRules<Schema>(
         })
 
         if (change.remote && isProtectedPolicy(change.remote)) {
-          const message = `Skipped deleting protected policy "${change.name}"`
-          result.policies.push({ type: 'skipped', name: change.name, id: change.remote.id, error: message })
+          result.policies.push({
+            type: 'skipped',
+            name: change.name,
+            id: change.remote.id,
+            reason: `Protected policy "${change.name}" was not deleted`,
+          })
           continue
         }
 
@@ -448,6 +456,17 @@ export function formatPushResult(result: PushResult): string {
   lines.push(`  Policies: +${summary.policies.created} ~${summary.policies.updated} -${summary.policies.deleted}${summary.policies.errors ? ` (${summary.policies.errors} errors)` : ''}`)
   lines.push(`  Roles:    +${summary.roles.created} ~${summary.roles.updated} -${summary.roles.deleted}${summary.roles.errors ? ` (${summary.roles.errors} errors)` : ''}`)
   lines.push(`  Perms:    +${summary.permissions.created} ~${summary.permissions.updated} -${summary.permissions.deleted}${summary.permissions.errors ? ` (${summary.permissions.errors} errors)` : ''}`)
+
+  const skipped = [...result.policies, ...result.roles, ...result.permissions]
+    .filter(item => item.type === 'skipped' && item.reason)
+
+  if (skipped.length > 0) {
+    lines.push('')
+    lines.push('Skipped:')
+    for (const item of skipped) {
+      lines.push(`  - ${item.reason}`)
+    }
+  }
 
   if (result.errors.length > 0) {
     lines.push('')

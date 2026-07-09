@@ -107,6 +107,8 @@ export interface PushOperationResult {
   name: string
   id?: string
   error?: string
+  /** Present when the item was skipped intentionally (e.g. protected system entity) */
+  reason?: string
 }
 
 /** Result of pushing rules */
