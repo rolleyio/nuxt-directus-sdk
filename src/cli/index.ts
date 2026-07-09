@@ -16,7 +16,6 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { createDirectus, rest, staticToken } from '@directus/sdk'
-import { loadRulesFromPayload } from '../rules/loaders'
 import {
   compareRulesPayloads,
   diffRemoteRules,
@@ -27,7 +26,7 @@ import {
   pushRules,
 } from '../rules/sync'
 import { generateTypesFromDirectus } from '../runtime/types/generate'
-import { parseCsv, resolveNegatableBoolean } from './helpers'
+import { parseCsv, prepareRulesPayload, resolveNegatableBoolean } from './helpers'
 
 interface ConnectionConfig {
   url: string
@@ -235,7 +234,8 @@ async function commandDiff(
   localFile: string,
   connection: ConnectionConfig,
 ): Promise<void> {
-  const local = loadJsonFile(localFile)
+  const payload = loadJsonFile(localFile)
+  const { serialized: local } = prepareRulesPayload(payload)
 
   console.log(`Comparing ${localFile} with ${connection.url}...`)
 
@@ -254,8 +254,8 @@ async function commandDiff(
 async function commandDiffFiles(fileA: string, fileB: string): Promise<void> {
   console.log(`Comparing ${fileA} with ${fileB}...`)
 
-  const rulesA = loadJsonFile(fileA)
-  const rulesB = loadJsonFile(fileB)
+  const { serialized: rulesA } = prepareRulesPayload(loadJsonFile(fileA))
+  const { serialized: rulesB } = prepareRulesPayload(loadJsonFile(fileB))
 
   const diff = compareRulesPayloads(rulesA, rulesB)
 
@@ -298,15 +298,16 @@ async function commandPush(
   options: PushCommandOptions,
 ): Promise<void> {
   const payload = loadJsonFile(localFile)
-  const rules = loadRulesFromPayload(payload)
+  const { rules, serialized: local } = prepareRulesPayload(payload)
 
   const client = createClient(connection.url, connection.token)
 
   if (options.dryRun) {
-    // Dry run: just show the diff
+    // Dry run must use the same load → serialize path as pushRules so injected
+    // defaults (icon, app_access, etc.) match what would actually be applied.
     console.log(`Dry run: comparing ${localFile} with ${connection.url}...`)
     const remote = await fetchRemoteRules(client)
-    const diff = compareRulesPayloads(payload, remote)
+    const diff = compareRulesPayloads(local, remote)
 
     console.log()
     console.log(formatDiff(diff))

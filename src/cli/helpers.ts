@@ -3,6 +3,19 @@
  * be unit-tested without spawning a subprocess or loading the main CLI with
  * its top-level `loadEnv` side effect.
  */
+import type { DirectusRulesPayload, RulesConfig } from '../rules'
+import { loadRulesFromPayload, serializeToDirectusApi } from '../rules'
+
+export function prepareRulesPayload<Schema>(payload: DirectusRulesPayload): {
+  rules: RulesConfig<Schema>
+  serialized: DirectusRulesPayload
+} {
+  const rules = loadRulesFromPayload<Schema>(payload)
+  return {
+    rules,
+    serialized: serializeToDirectusApi(rules),
+  }
+}
 
 /**
  * Parse a comma-separated string into a trimmed, non-empty string array.
