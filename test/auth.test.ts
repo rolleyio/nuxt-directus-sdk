@@ -16,10 +16,12 @@ import {
 } from './fixtures/directus-sdk/auth.mock'
 import {
   mockRuntimeConfig,
+  mockNuxtApp,
   navigateToMock,
   resetMockRuntimeConfig,
   routerState,
   stateStore,
+  useNuxtAppMock,
   useRequestURLMock,
   useRouterMock,
 } from './fixtures/nuxt/composables.mock'
@@ -27,9 +29,10 @@ import {
 import { useDirectusAuth, useDirectusUser } from '../src/runtime/composables/auth'
 
 vi.mock('#app', async () => {
-  const { navigateToMock, useRouterMock, mockRuntimeConfig } = await import('./fixtures/nuxt/composables.mock')
+  const { navigateToMock, useNuxtAppMock, useRouterMock, mockRuntimeConfig } = await import('./fixtures/nuxt/composables.mock')
   return {
     navigateTo: navigateToMock,
+    useNuxtApp: useNuxtAppMock,
     useRouter: useRouterMock,
     useRuntimeConfig: vi.fn(() => mockRuntimeConfig),
   }
@@ -78,6 +81,7 @@ vi.mock('@directus/sdk', async () => {
 
 beforeEach(() => {
   stateStore.clear()
+  mockNuxtApp.$directusReadMeInFlight = undefined
   routerState.query = {}
   resetMockRuntimeConfig()
   useRequestURLMock.mockReturnValue({ origin: 'http://localhost:3000', href: 'http://localhost:3000/' })
@@ -86,6 +90,7 @@ beforeEach(() => {
   loginMock.mockReset()
   logoutMock.mockReset()
   navigateToMock.mockReset()
+  useNuxtAppMock.mockClear()
   readMeSdkMock.mockReset()
   updateMeSdkMock.mockReset()
   createUserSdkMock.mockReset()
@@ -136,7 +141,7 @@ describe('useDirectusAuth', () => {
       expect(user.value).toBeNull()
     })
 
-    it('prevents concurrent calls - second call while loading returns current user.value', async () => {
+    it('shares in-flight readMe so concurrent callers await the same result', async () => {
       let resolveRequest: (v: unknown) => void = () => {}
       requestMock.mockImplementationOnce(() =>
         new Promise((resolve) => { resolveRequest = resolve }))
@@ -146,11 +151,32 @@ describe('useDirectusAuth', () => {
       const p1 = readMe()
       const p2 = readMe() // called while p1 is in progress
 
-      await expect(p2).resolves.toBeNull()
       expect(requestMock).toHaveBeenCalledOnce()
 
       resolveRequest(mockUser)
-      await p1
+      await expect(p1).resolves.toStrictEqual(mockUser)
+      await expect(p2).resolves.toStrictEqual(mockUser)
+    })
+
+    it('does not share in-flight readMe across different Nuxt app instances', async () => {
+      let resolveFirst: (v: unknown) => void = () => {}
+      let resolveSecond: (v: unknown) => void = () => {}
+      requestMock
+        .mockImplementationOnce(() => new Promise((resolve) => { resolveFirst = resolve }))
+        .mockImplementationOnce(() => new Promise((resolve) => { resolveSecond = resolve }))
+
+      useNuxtAppMock.mockReturnValueOnce({})
+      const first = useDirectusAuth().readMe()
+
+      useNuxtAppMock.mockReturnValueOnce({})
+      const second = useDirectusAuth().readMe()
+
+      expect(requestMock).toHaveBeenCalledTimes(2)
+
+      resolveFirst(mockUser)
+      resolveSecond(mockUser)
+      await first
+      await second
     })
 
     it('logs a warning when the response does not include an id field', async () => {

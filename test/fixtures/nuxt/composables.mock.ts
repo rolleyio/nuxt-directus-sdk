@@ -17,6 +17,8 @@ export const routerState = {
 }
 
 export const navigateToMock = vi.fn()
+export const mockNuxtApp: Record<string, unknown> = {}
+export const useNuxtAppMock = vi.fn(() => mockNuxtApp)
 export const useRouterMock = vi.fn(() => ({
   currentRoute: { value: { query: routerState.query } },
 }))

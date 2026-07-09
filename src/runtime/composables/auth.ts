@@ -4,7 +4,7 @@ import type { DirectusUser as DirectusUserSDK, NestedPartial, LoginOptions, Quer
 import type {
   RegisterUserInput,
 } from '@directus/types'
-import { navigateTo, useRouter, useRuntimeConfig } from '#app'
+import { navigateTo, useNuxtApp, useRouter, useRuntimeConfig } from '#app'
 import { computed, useRequestURL, useState } from '#imports'
 import {
   acceptUserInvite as directusAcceptUserInvite,
@@ -73,40 +73,47 @@ function useDirectusUserLoading(): Ref<boolean> {
   return useState('directus.user.loading', () => false)
 }
 
+type DirectusAuthNuxtApp = ReturnType<typeof useNuxtApp> & {
+  $directusReadMeInFlight?: Promise<DirectusUser | null> | null
+}
+
 export function useDirectusAuth(): DirectusAuth {
   const config = useRuntimeConfig()
   const router = useRouter()
   const directus = useDirectus()
   const user = useDirectusUser()
   const loading = useDirectusUserLoading()
+  const nuxtApp = useNuxtApp() as DirectusAuthNuxtApp
 
   const loggedIn = computed(() => user.value !== null)
 
   async function readMe() {
-    // Prevent duplicate concurrent calls
-    if (loading.value) {
-      return user.value
-    }
+    if (nuxtApp.$directusReadMeInFlight)
+      return nuxtApp.$directusReadMeInFlight
 
     loading.value = true
-
-    try {
-      const fields = config.public.directus.auth?.readMeFields
-      const response = await directus.request(directusReadMe(fields?.length ? { fields: fields as QueryFields<DirectusSchema, DirectusUserSDK<DirectusSchema>> } : undefined))
-      if (!response.id) {
-        console.warn('Directus is not configured to return the \'id\' field for DirectusUsers.')
+    nuxtApp.$directusReadMeInFlight = (async () => {
+      try {
+        const fields = config.public.directus.auth?.readMeFields
+        const response = await directus.request(directusReadMe(fields?.length ? { fields: fields as QueryFields<DirectusSchema, DirectusUserSDK<DirectusSchema>> } : undefined))
+        if (!response.id) {
+          console.warn('Directus is not configured to return the \'id\' field for DirectusUsers.')
+        }
+        user.value = response as unknown as DirectusUser
       }
-      user.value = response as unknown as DirectusUser
-    }
-    catch (error) {
-      console.error('[Auth] Failed to fetch user:', error)
-      user.value = null
-    }
-    finally {
-      loading.value = false
-    }
+      catch (error) {
+        console.error('[Auth] Failed to fetch user:', error)
+        user.value = null
+      }
+      finally {
+        loading.value = false
+        nuxtApp.$directusReadMeInFlight = null
+      }
 
-    return user.value
+      return user.value
+    })()
+
+    return nuxtApp.$directusReadMeInFlight
   }
   async function updateMe(data: UpdateMeInput): Promise<DirectusUser> {
     const currentUser = user.value
