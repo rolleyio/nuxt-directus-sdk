@@ -18,6 +18,11 @@ describe('data composable types', () => {
     expectTypeOf(useDirectusSingleton('test_settings')).toEqualTypeOf<AsyncData<TestSettings | undefined, NuxtError | undefined>>()
   })
 
+  it('accepts content version options on item and singleton reads', () => {
+    useDirectusItem('test_posts', 1, { query: { version: 'draft', versionRaw: true } })
+    useDirectusSingleton('test_settings', { query: { version: 'draft' } })
+  })
+
   it('keeps regular and singleton collections separate', () => {
     // @ts-expect-error regular collections cannot use the singleton endpoint
     useDirectusSingleton('test_posts')

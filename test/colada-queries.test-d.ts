@@ -18,6 +18,11 @@ describe('colada query composable types', () => {
     expectTypeOf(useDirectusSingletonQuery('test_settings')).toEqualTypeOf<UseQueryReturn<TestSettings>>()
   })
 
+  it('accepts content version options on item and singleton reads', () => {
+    useDirectusItemQuery('test_posts', 1, { query: { version: 'draft', versionRaw: true } })
+    useDirectusSingletonQuery('test_settings', { query: { version: 'draft' } })
+  })
+
   it('keeps regular and singleton collections separate', () => {
     // @ts-expect-error regular collections cannot use the singleton endpoint
     useDirectusSingletonQuery('test_posts')

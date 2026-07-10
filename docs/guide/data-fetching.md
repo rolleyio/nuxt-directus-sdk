@@ -120,3 +120,29 @@ queryCache.invalidateQueries({ key: ['directus', 'items', 'posts'] })
 | Best for | simple pages, minimal deps | shared data (nav, settings, lists) | route-driven page data |
 
 If you are already using Pinia Colada (or fetch the same data in several components), prefer the Colada layer. Otherwise the `useAsyncData` composables are all you need. For route-driven page data where you want the fetch to happen during navigation, look at the experimental [data loaders](/guide/experimental-data-loaders).
+
+## Content Versions
+
+For collections with [content versioning](https://directus.com/docs/guides/content/content-versioning) enabled, pass `version` in the query to fetch a specific version instead of the published item. This works on the single-item and singleton composables in both families:
+
+```vue
+<script setup lang="ts">
+const route = useRoute()
+
+// Fetch the draft version, e.g. behind a preview flag
+const preview = route.query.preview === 'true'
+
+const { data: post } = await useDirectusItem('posts', route.params.id as string, {
+  query: {
+    fields: ['*'],
+    ...(preview ? { version: 'draft' } : {}),
+  },
+})
+</script>
+```
+
+The version is part of the generated cache key, so a draft fetch never collides with the published entry. Add `versionRaw: true` to receive the raw version delta instead of the version merged onto the main item.
+
+::: tip Directus 12 Editorial Workflows
+Directus 12 makes draft and published states explicit: published items in versioned collections are locked and edits happen on drafts. The `main` version was renamed, so use `version: 'published'` where you previously used `version: 'main'`. Reading a draft requires a token or session with permission to read versions, so wire preview modes through [server routes](/guide/server-side) or an authenticated session rather than exposing drafts publicly.
+:::

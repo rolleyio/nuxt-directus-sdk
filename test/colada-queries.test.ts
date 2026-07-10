@@ -79,6 +79,19 @@ describe('colada query composables', () => {
     expect(mocks.readItem).toHaveBeenCalledWith('test_posts', 8, undefined)
   })
 
+  it('keys content versions separately and passes them through', async () => {
+    mocks.request.mockResolvedValueOnce({ id: 7, title: 'Draft title' })
+    const { useDirectusItemQuery } = await import('../src/runtime/colada/queries')
+
+    const query = { version: 'draft' }
+    useDirectusItemQuery('test_posts', 7, { query })
+
+    expect(currentKey()).toEqual(['directus', 'item', 'test_posts', 7, query])
+
+    await (mocks.options?.query as () => Promise<unknown>)()
+    expect(mocks.readItem).toHaveBeenCalledWith('test_posts', 7, query)
+  })
+
   it('forwards colada options and honours an explicit key', async () => {
     const { useDirectusSingletonQuery } = await import('../src/runtime/colada/queries')
 

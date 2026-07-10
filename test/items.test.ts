@@ -65,6 +65,30 @@ describe('data composables', () => {
     expect(mocks.useAsyncData).toHaveBeenCalledWith('post-7', expect.any(Function), { immediate: false })
   })
 
+  it('passes content version queries through and keys versions separately', async () => {
+    mocks.request.mockResolvedValue({ id: 7, title: 'Draft title' })
+    const { useDirectusItem } = await import('../src/runtime/composables/items')
+
+    useDirectusItem('test_posts', 7, { query: { version: 'draft', versionRaw: true } })
+    await mocks.handler?.()
+    expect(mocks.readItem).toHaveBeenCalledWith('test_posts', 7, { version: 'draft', versionRaw: true })
+
+    useDirectusItem('test_posts', 7)
+    const draftKey = mocks.useAsyncData.mock.calls[0]?.[0]
+    const publishedKey = mocks.useAsyncData.mock.calls[1]?.[0]
+    expect(draftKey).not.toEqual(publishedKey)
+  })
+
+  it('passes content versions through to singleton reads', async () => {
+    mocks.request.mockResolvedValueOnce({ site_name: 'Draft name' })
+    const { useDirectusSingleton } = await import('../src/runtime/composables/items')
+
+    useDirectusSingleton('test_settings', { query: { version: 'draft' } })
+    await mocks.handler?.()
+
+    expect(mocks.readSingleton).toHaveBeenCalledWith('test_settings', { version: 'draft' })
+  })
+
   it('uses the singleton SDK command for singleton collections', async () => {
     mocks.request.mockResolvedValueOnce({ site_name: 'Example' })
     const { useDirectusSingleton } = await import('../src/runtime/composables/items')
