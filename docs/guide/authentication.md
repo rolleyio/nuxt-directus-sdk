@@ -55,13 +55,13 @@ For SSO to work with external redirects, you must add your frontend URL to the D
 
 ```dotenv
 # Directus .env
-AUTH_<PROVIDER>_REDIRECT_ALLOW_LIST=https://yourapp.com,http://localhost:3000
+AUTH_<PROVIDER>_REDIRECT_ALLOW_LIST=https://app.example.com,http://localhost:3000
 ```
 
 For example:
 ```dotenv
-AUTH_GOOGLE_REDIRECT_ALLOW_LIST=https://yourapp.com,http://localhost:3000
-AUTH_GITHUB_REDIRECT_ALLOW_LIST=https://yourapp.com,http://localhost:3000
+AUTH_GOOGLE_REDIRECT_ALLOW_LIST=https://app.example.com,http://localhost:3000
+AUTH_GITHUB_REDIRECT_ALLOW_LIST=https://app.example.com,http://localhost:3000
 ```
 
 This is a security setting in Directus to prevent open redirect vulnerabilities.
@@ -111,7 +111,7 @@ const newUser = await register({
 const { passwordRequest, passwordReset } = useDirectusAuth()
 
 // Request password reset
-await passwordRequest('user@example.com', 'https://yourapp.com/reset-password')
+await passwordRequest('user@example.com', 'https://app.example.com/reset-password')
 
 // Reset password with token
 await passwordReset('reset-token', 'new-password')
@@ -122,7 +122,7 @@ For password reset links to work with external domains, you must add them to the
 
 ```dotenv
 # Directus .env
-PASSWORD_RESET_URL_ALLOW_LIST=https://yourapp.com/auth/password-reset,http://localhost:3000/auth/password-reset
+PASSWORD_RESET_URL_ALLOW_LIST=https://app.example.com/auth/password-reset,http://localhost:3000/auth/password-reset
 ```
 
 This is a security setting in Directus to prevent open redirect vulnerabilities when users accept invitations.
@@ -134,7 +134,7 @@ This is a security setting in Directus to prevent open redirect vulnerabilities 
 const { inviteUser, acceptUserInvite } = useDirectusAuth()
 
 // Invite a user
-await inviteUser('newuser@example.com', 'role-id', 'https://yourapp.com/accept-invite')
+await inviteUser('newuser@example.com', 'role-id', 'https://app.example.com/accept-invite')
 
 // Accept invite
 await acceptUserInvite('invite-token', 'password')
@@ -145,7 +145,7 @@ For invite URLs to work with external domains, you must add them to the Directus
 
 ```dotenv
 # Directus .env
-USER_INVITE_URL_ALLOW_LIST=https://yourapp.com/accept-invite,http://localhost:3000/accept-invite
+USER_INVITE_URL_ALLOW_LIST=https://app.example.com/accept-invite,http://localhost:3000/accept-invite
 ```
 
 This is a security setting in Directus to prevent open redirect vulnerabilities when users accept invitations.
@@ -295,7 +295,7 @@ CORS_CREDENTIALS=true
 
 #### Cross-Domain Setup
 
-For production with separate domains (e.g., `app.example.com` and `api.example.com`):
+For production with separate domains (e.g., `app.example.com` and `directus.example.com`):
 
 ```dotenv
 # Directus .env

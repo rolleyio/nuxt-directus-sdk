@@ -69,7 +69,7 @@ const globals = await directus.request(readSingleton('globals'))</pre>
 
       <pre class="bg-elevated border border-default rounded p-4 text-xs overflow-x-auto mb-3">import { createDirectus, rest, staticToken } from '@directus/sdk'
 
-const publicClient = createDirectus('https://your-directus.example.com')
+const publicClient = createDirectus('https://directus.example.com')
   .with(staticToken('your-static-token'))
   .with(rest())
 

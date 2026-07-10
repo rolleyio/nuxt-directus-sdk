@@ -27,13 +27,13 @@ vercel env add DIRECTUS_ADMIN_TOKEN production
 **Netlify:**
 ```bash
 # In Netlify UI: Site settings → Environment variables
-DIRECTUS_URL=https://your-directus.com
+DIRECTUS_URL=https://directus.example.com
 DIRECTUS_ADMIN_TOKEN=your-token
 ```
 
 **Docker:**
 ```dockerfile
-ENV DIRECTUS_URL=https://your-directus.com
+ENV DIRECTUS_URL=https://directus.example.com
 ENV DIRECTUS_ADMIN_TOKEN=your-token
 ```
 
@@ -43,7 +43,7 @@ When using Docker Compose, you can use the object URL form in `nuxt.config.ts` t
 export default defineNuxtConfig({
   directus: {
     url: {
-      client: 'https://cms.example.com',
+      client: 'https://directus.example.com',
       server: 'http://directus:8055', // Docker service name
     },
   }

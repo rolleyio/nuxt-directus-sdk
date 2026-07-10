@@ -40,7 +40,7 @@ export default defineNuxtConfig({
     // Core configuration — simple string
     url: process.env.DIRECTUS_URL,
     // Or split URLs for Docker/K8s:
-    // url: { client: 'https://cms.example.com', server: 'http://directus:8055' },
+    // url: { client: 'https://directus.example.com', server: 'http://directus:8055' },
     adminToken: process.env.DIRECTUS_ADMIN_TOKEN,
 
     // Development
@@ -96,11 +96,11 @@ Your Directus instance URL. Can be a simple string, or an object with separate `
 export default defineNuxtConfig({
   directus: {
     // Simple string — used everywhere
-    url: 'https://your-directus-instance.com',
+    url: 'https://directus.example.com',
 
     // Or split URLs for Docker/K8s
     url: {
-      client: 'https://cms.example.com', // Browser requests
+      client: 'https://directus.example.com', // Browser requests
       server: 'http://directus:8055', // SSR / server-side requests
     },
   },
@@ -110,7 +110,7 @@ export default defineNuxtConfig({
 Or use environment variable (string form only):
 
 ```dotenv
-DIRECTUS_URL=https://your-directus-instance.com
+DIRECTUS_URL=https://directus.example.com
 ```
 
 ::: tip When to use split URLs
@@ -377,6 +377,43 @@ export default defineNuxtConfig({
 Your `exclude` list is added to the module's built-in exclusions; you don't need to repeat `createDirectus`, `rest`, etc.
 
 Tree-shaking means disabling auto-imports has no bundle-size benefit for end users — unused SDK functions don't ship regardless. The option exists for collisions and for teams that prefer explicit imports.
+
+### Pinia Colada
+
+#### `piniaColada`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Controls the [Pinia Colada integration](/guide/data-fetching#pinia-colada-queries). When `@pinia/colada` is installed in your project, the module auto-imports `useDirectusItemsQuery()`, `useDirectusItemQuery()` and `useDirectusSingletonQuery()` and registers `@pinia/nuxt` / `@pinia/colada-nuxt` if they are not already in your `modules`. Does nothing when the package is not installed.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    // Disable even when @pinia/colada is installed
+    piniaColada: false,
+  },
+})
+```
+
+#### `experimental.dataLoaders`
+
+- **Type:** `boolean | { registerPlugin?: boolean }`
+- **Default:** `false`
+
+Opt-in to [vue-router data loaders](/guide/experimental-data-loaders) <Badge type="warning" text="experimental" />. Auto-imports `defineDirectusLoader()` and registers the vue-router `DataLoaderPlugin`. Requires the Pinia Colada packages.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    experimental: {
+      dataLoaders: true,
+    },
+  },
+})
+```
+
+Set `registerPlugin: false` if your app installs the `DataLoaderPlugin` itself.
 
 ### Authentication Options
 

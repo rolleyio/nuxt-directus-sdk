@@ -226,7 +226,7 @@ const { inviteUser } = useDirectusAuth()
 await inviteUser(
   'newuser@example.com',
   'role-uuid',
-  'https://yourapp.com/accept-invite'
+  'https://app.example.com/accept-invite'
 )
 ```
 
@@ -261,7 +261,7 @@ const { passwordRequest } = useDirectusAuth()
 
 await passwordRequest(
   'user@example.com',
-  'https://yourapp.com/reset-password'
+  'https://app.example.com/reset-password'
 )
 ```
 

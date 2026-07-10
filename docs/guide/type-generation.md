@@ -7,7 +7,7 @@ The module generates TypeScript types from your Directus schema at build time, s
 Type generation is enabled by default. Set `DIRECTUS_ADMIN_TOKEN` in your `.env`:
 
 ```dotenv
-DIRECTUS_URL=https://your-directus-instance.com
+DIRECTUS_URL=https://directus.example.com
 DIRECTUS_ADMIN_TOKEN=your_admin_token
 ```
 

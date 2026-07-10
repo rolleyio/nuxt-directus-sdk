@@ -42,7 +42,7 @@ CORS_ORIGIN=http://localhost:3000
 
 ### Cross-Domain Setup
 
-If on different domains (e.g., app.example.com and api.example.com):
+If on different domains (e.g., app.example.com and directus.example.com):
 
 ```dotenv
 # Directus .env

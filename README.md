@@ -61,7 +61,7 @@ export default defineNuxtConfig({
 3. Create a `.env` file:
 
 ```dotenv
-DIRECTUS_URL=https://your-directus-url.com
+DIRECTUS_URL=https://directus.example.com
 DIRECTUS_ADMIN_TOKEN=your_admin_token # Optional: required for type generation
 ```
 
@@ -69,7 +69,7 @@ DIRECTUS_ADMIN_TOKEN=your_admin_token # Optional: required for type generation
 
 That's it! You can now use Directus within your Nuxt app ✨
 
-For cross-domain setups (e.g. `app.example.com` and `api.example.com`), see the [Authentication Guide](https://www.nuxt-directus-sdk.com/guide/authentication.html).
+For cross-domain setups (e.g. `app.example.com` and `directus.example.com`), see the [Authentication Guide](https://www.nuxt-directus-sdk.com/guide/authentication.html).
 
 ## CLI
 
@@ -90,7 +90,8 @@ See the [CLI documentation](https://www.nuxt-directus-sdk.com/api/configuration/
 
 ## Development
 
-> [!IMPORTANT] The playground uses the [directus-template-cli](https://github.com/directus-labs/directus-template-cli?tab=readme-ov-file#applying-a-template) `cms` template.
+> [!IMPORTANT]
+> The playground uses the [directus-template-cli](https://github.com/directus-labs/directus-template-cli?tab=readme-ov-file#applying-a-template) `cms` template.
 > Apply the template with `npx directus-template-cli@latest apply` and follow the interactive prompts.
 
 ```bash

@@ -28,7 +28,7 @@ When `visualEditor: true` is set in your config (the default), the module:
 // nuxt.config.ts
 export default defineNuxtConfig({
   directus: {
-    url: 'https://your-directus-instance.com',
+    url: 'https://directus.example.com',
     visualEditor: true, // This is the default
   },
 })
@@ -305,7 +305,7 @@ const { data: page } = await useAsyncData('page', () =>
 Add `?debug` to any page URL to enable debug logging for the visual editor:
 
 ```
-https://yourapp.com/blog/my-post?debug
+https://app.example.com/blog/my-post?debug
 ```
 
 This outputs detailed logs to the browser console:
@@ -315,7 +315,7 @@ This outputs detailed logs to the browser console:
 [Directus Plugin] Is in iframe: true
 [Directus Visual Editor] Config visualEditor: true
 [Directus Visual Editor] Is in iframe: true
-[Directus Visual Editor] Directus URL: https://your-directus.com
+[Directus Visual Editor] Directus URL: https://directus.example.com
 [Directus Visual Editor] MutationObserver started, waiting for [data-directus] elements
 [Directus Visual Editor] MutationObserver: found 12 [data-directus] elements
 [Directus Visual Editor] Calling apply()...
@@ -424,7 +424,7 @@ const directusVisualEditor = useDirectusVisualEditor()
 
 The `apply()` function uses `postMessage` to handshake with the Directus parent frame. If it returns `false`:
 
-1. **URL mismatch** — The `url` in your nuxt.config must match the exact origin of the Directus admin panel. For example, if your Directus admin is at `https://api.example.com` but your config points to `https://directus.fly.dev`, the handshake will fail
+1. **URL mismatch** — The `url` in your nuxt.config must match the exact origin of the Directus admin panel. For example, if your Directus admin is at `https://directus.example.com` but your config points to `https://directus.fly.dev`, the handshake will fail
 2. **CORS issues** — Ensure your Directus instance allows your Nuxt app origin
 3. **CSP restrictions** — Check that `Content-Security-Policy` allows `frame-ancestors` from your Directus origin
 

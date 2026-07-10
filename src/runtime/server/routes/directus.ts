@@ -1,16 +1,22 @@
 import { useRuntimeConfig } from '#imports'
 import { defineEventHandler, getRequestIP, getRequestURL, proxyRequest, setResponseHeaders } from 'h3'
 import { joinURL } from 'ufo'
+import type { ProxyConfig } from './directus-proxy-path'
 import { rewriteProxiedSetCookie } from './directus-cookie'
+import { resolveProxyPath, stripProxyPrefix } from './directus-proxy-path'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const serverUrl = config.directus?.serverDirectusUrl
   const directusUrl = serverUrl || config.public.directus.directusUrl
 
+  // Strip the configured proxy mount path (not a hardcoded /directus) so
+  // custom `proxy.path` values forward the correct upstream URL.
+  const proxyPath = resolveProxyPath(config.public.directus.proxy as ProxyConfig)
+
   // Get the full URL path with query string
   const url = getRequestURL(event)
-  const path = url.pathname.replace(/^\/directus/, '') + url.search
+  const path = stripProxyPrefix(url.pathname, proxyPath) + url.search
 
   // Whether the request reaching us is HTTPS. We preserve Secure/SameSite=None
   // on HTTPS (production, staging) and downgrade only on HTTP (localhost dev).

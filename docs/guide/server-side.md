@@ -562,7 +562,7 @@ Get the full Directus URL for a given path. On the server, this prefers the `ser
 **Example:**
 ```typescript
 const assetsUrl = useDirectusUrl('assets')
-// With simple URL: https://your-directus.com/assets
+// With simple URL: https://directus.example.com/assets
 // With split URL: http://directus:8055/assets (uses internal server URL)
 ```
 
