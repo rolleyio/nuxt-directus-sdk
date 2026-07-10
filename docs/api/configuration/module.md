@@ -378,6 +378,43 @@ Your `exclude` list is added to the module's built-in exclusions; you don't need
 
 Tree-shaking means disabling auto-imports has no bundle-size benefit for end users — unused SDK functions don't ship regardless. The option exists for collisions and for teams that prefer explicit imports.
 
+### Pinia Colada
+
+#### `piniaColada`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Controls the [Pinia Colada integration](/guide/data-fetching#pinia-colada-queries). When `@pinia/colada` is installed in your project, the module auto-imports `useDirectusItemsQuery()`, `useDirectusItemQuery()` and `useDirectusSingletonQuery()` and registers `@pinia/nuxt` / `@pinia/colada-nuxt` if they are not already in your `modules`. Does nothing when the package is not installed.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    // Disable even when @pinia/colada is installed
+    piniaColada: false,
+  },
+})
+```
+
+#### `experimental.dataLoaders`
+
+- **Type:** `boolean | { registerPlugin?: boolean }`
+- **Default:** `false`
+
+Opt-in to [vue-router data loaders](/guide/experimental-data-loaders) <Badge type="warning" text="experimental" />. Auto-imports `defineDirectusLoader()` and registers the vue-router `DataLoaderPlugin`. Requires the Pinia Colada packages.
+
+```typescript
+export default defineNuxtConfig({
+  directus: {
+    experimental: {
+      dataLoaders: true,
+    },
+  },
+})
+```
+
+Set `registerPlugin: false` if your app installs the `DataLoaderPlugin` itself.
+
 ### Authentication Options
 
 #### `auth`

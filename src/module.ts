@@ -3,7 +3,7 @@ import type { ImageModifiers, ImageProviders } from '@nuxt/image'
 import type { InlinePreset } from 'unimport'
 
 import * as directusSdk from '@directus/sdk'
-import { addComponentsDir, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, hasNuxtModule, installModule, tryResolveModule, useLogger } from '@nuxt/kit'
+import { addComponentsDir, addImports, addImportsDir, addImportsSources, addPlugin, addRouteMiddleware, addServerHandler, addTypeTemplate, createResolver, defineNuxtModule, hasNuxtModule, installModule, tryResolveModule, useLogger } from '@nuxt/kit'
 import { colors } from 'consola/utils'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
@@ -237,6 +237,50 @@ export interface ModuleOptions {
   }
 
   /**
+   * Pinia Colada integration. When `@pinia/colada` is installed in your
+   * project, the module auto-imports cached query composables
+   * (`useDirectusItemsQuery`, `useDirectusItemQuery`,
+   * `useDirectusSingletonQuery`) backed by the Colada query cache, and
+   * registers `@pinia/nuxt` / `@pinia/colada-nuxt` if they are not already
+   * in your modules. Set to `false` to disable even when installed.
+   *
+   * Router data loaders are separate and opt-in: see
+   * `experimental.dataLoaders`.
+   *
+   * @default true
+   */
+  piniaColada?: boolean
+
+  /**
+   * Experimental features. Everything in here builds on upstream APIs that
+   * may change between releases, so each feature is off by default and must
+   * be enabled explicitly.
+   */
+  experimental?: {
+    /**
+     * vue-router data loaders: auto-imports the `defineDirectusLoader()`
+     * factory and registers the `DataLoaderPlugin`. Loaders run during
+     * navigation so page data is ready on first paint.
+     *
+     * Requires `@pinia/colada` (see `piniaColada`) and vue-router with the
+     * `experimental` exports. Experimental because vue-router's data loader
+     * API is itself experimental.
+     *
+     * `true` or an options object enables it.
+     *
+     * @default false
+     */
+    dataLoaders?: boolean | {
+      /**
+       * Register the vue-router `DataLoaderPlugin`. Disable if your app
+       * installs the plugin itself.
+       * @default true
+       */
+      registerPlugin?: boolean
+    }
+  }
+
+  /**
    * Auto-import functions from `@directus/sdk`.
    *
    * - `true` (default) — auto-imports every SDK function except those wrapped by
@@ -283,6 +327,10 @@ export default defineNuxtModule<ModuleOptions>({
       prefix: '',
     },
     autoImportSdk: true,
+    piniaColada: true,
+    experimental: {
+      dataLoaders: false,
+    },
     auth: {
       enabled: true,
       enableGlobalAuthMiddleware: false,
@@ -554,6 +602,82 @@ export default defineNuxtModule<ModuleOptions>({
 
     // Add composables
     addImportsDir(resolver.resolve('./runtime/composables'))
+
+    // Pinia Colada integration: cached query composables, auto-enabled when
+    // @pinia/colada is installed (opt out with piniaColada: false). Router
+    // data loaders build on vue-router's experimental API and are opt-in
+    // via experimental.dataLoaders.
+    const coladaWanted = options.piniaColada !== false
+    const modulesDir = nuxtApp.options.modulesDir
+    const coladaEntry = coladaWanted ? await tryResolveModule('@pinia/colada', modulesDir) : undefined
+
+    const dataLoadersOption = options.experimental?.dataLoaders ?? false
+    const dataLoadersConfig = typeof dataLoadersOption === 'boolean' ? { enabled: dataLoadersOption } : { enabled: true, ...dataLoadersOption }
+
+    if (dataLoadersConfig.enabled && !coladaEntry) {
+      loggerMessage.push(
+        `🍹 ${colors.yellow('experimental.dataLoaders is enabled but Pinia Colada is unavailable')}`,
+        coladaWanted
+          ? `  - Install @pinia/colada (plus @pinia/colada-nuxt, @pinia/nuxt and pinia) to use data loaders`
+          : `  - Remove piniaColada: false to use data loaders`,
+        '',
+      )
+    }
+
+    if (coladaEntry) {
+      const hasPiniaNuxt = hasNuxtModule('@pinia/nuxt') || !!(await tryResolveModule('@pinia/nuxt', modulesDir))
+
+      if (!hasPiniaNuxt) {
+        loggerMessage.push(`🍹 ${colors.yellow('@pinia/colada found but @pinia/nuxt is missing')}`, `  - Install @pinia/nuxt to enable the Directus query composables`, '')
+      }
+      else {
+        await registerModule('@pinia/nuxt', 'pinia', {})
+
+        // Pin a single @pinia/colada instance. The module's runtime imports
+        // it as a peer, which in workspace/layer setups can resolve to a
+        // second copy next to the module instead of the app's copy that the
+        // PiniaColada plugin installed (two copies = "no active Pinia"
+        // errors from the query cache). The alias applies to Vite and Nitro,
+        // including externalized SSR resolution in dev.
+        nuxtApp.options.alias['@pinia/colada'] = coladaEntry
+
+        if (hasNuxtModule('@pinia/colada-nuxt') || await tryResolveModule('@pinia/colada-nuxt', modulesDir)) {
+          await registerModule('@pinia/colada-nuxt', 'colada', {})
+        }
+        else {
+          loggerMessage.push(`  - ${colors.yellow('Install @pinia/colada-nuxt for SSR cache hydration')} (queries will refetch on the client without it)`)
+        }
+
+        addImports(['useDirectusItemsQuery', 'useDirectusItemQuery', 'useDirectusSingletonQuery'].map(name => ({
+          name,
+          from: resolver.resolve('./runtime/colada/queries'),
+        })))
+        loggerMessage.push('🍹 Pinia Colada detected: useDirectusItemsQuery, useDirectusItemQuery and useDirectusSingletonQuery added')
+
+        // Data loaders need the experimental vue-router exports (Nuxt >= 4.2)
+        // and the pages router to exist.
+        const pagesOption = nuxtApp.options.pages as boolean | { enabled?: boolean } | undefined
+        const pagesEnabled = typeof pagesOption === 'object' ? pagesOption?.enabled !== false : pagesOption !== false
+        const hasExperimentalRouter = !!(await tryResolveModule('vue-router/experimental/pinia-colada', modulesDir))
+
+        if (dataLoadersConfig.enabled && pagesEnabled && hasExperimentalRouter) {
+          if (dataLoadersConfig.registerPlugin ?? true) {
+            addPlugin(resolver.resolve('./runtime/colada/data-loaders'))
+          }
+          addImports([{
+            name: 'defineDirectusLoader',
+            from: resolver.resolve('./runtime/colada/loaders'),
+          }])
+          loggerMessage.push('  - Experimental data loaders enabled: defineDirectusLoader added', '')
+        }
+        else if (dataLoadersConfig.enabled && !hasExperimentalRouter) {
+          loggerMessage.push(`  - ${colors.yellow('Data loaders skipped: vue-router experimental exports not found')} (upgrade Nuxt for defineDirectusLoader)`, '')
+        }
+        else {
+          loggerMessage.push('')
+        }
+      }
+    }
 
     // autoImportSdk=false disables auto-imports entirely; the { exclude }
     // shape adds user-provided names on top of the built-in exclusions.
