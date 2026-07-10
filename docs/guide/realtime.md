@@ -98,6 +98,16 @@ WEBSOCKETS_REST_AUTH=strict  # or 'public' or 'handshake'
 WEBSOCKETS_REST_AUTH_TIMEOUT=30000
 ```
 
+::: warning CORS Required on Directus 12.1+
+Since Directus 12.1, WebSocket connections are validated against `CORS_ORIGIN`. Make sure your Nuxt app's origin is included, or connections will be rejected:
+
+```dotenv
+# Directus .env
+CORS_ENABLED=true
+CORS_ORIGIN=https://app.example.com,http://localhost:3000
+```
+:::
+
 ### Nuxt Configuration
 
 Configure realtime auth mode in your Nuxt app:

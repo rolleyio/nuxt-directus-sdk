@@ -67,6 +67,10 @@ AUTH_GITHUB_REDIRECT_ALLOW_LIST=https://app.example.com,http://localhost:3000
 This is a security setting in Directus to prevent open redirect vulnerabilities.
 :::
 
+::: warning SSO Requires a License on Self-Hosted Directus 12
+Directus 12 changed its license to MSCL-1.0-GPL and self-hosted instances now default to the Core tier, which does not include SSO. Instances upgraded to v12 get a 30-day grace period, after which SSO logins stop working unless a license that includes SSO is configured. `loginWithProvider` will fail against an unlicensed self-hosted v12 instance. See the [Directus 12 breaking changes](https://directus.com/docs/releases/breaking-changes/version-12) for details.
+:::
+
 ## User Management
 
 ### Get Current User
