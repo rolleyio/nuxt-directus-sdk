@@ -2,59 +2,103 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+  pull_request:
+    types: [closed]
+    branches: [main]
+  # this is required to trigger releases when the release PR is merged, or to rerun a release if needed
+  workflow_dispatch:
 
-permissions:
-  contents: write
-  id-token: write
+permissions: {}
 
 jobs:
-  ci:
-    uses: ./.github/workflows/ci.yml
-
-  release:
-    needs: ci
+  # Parse commits since the last tag, push a `release/vX.Y.Z` branch, open
+  # or update a draft release PR, and close any superseded release PRs
+  # (e.g. `release/v6.1.4` when the bump is now `release/v6.2.0`).
+  pr:
+    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
+    permissions:
+      contents: write       # push the `release/vX.Y.Z` branch and delete superseded ones
+      pull-requests: write  # create a release PR, update its body, close superseded PRs
+    steps:
+      - uses: danielroe/uppt/pr@7bcfb5397c37202ef882363f755423130419d28a # v0.5.5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # The release PR was merged: tag the squash commit, cut a GitHub release
+  # from the PR body, and dispatch the publish workflow. The `release/v`
+  # head-ref guard keeps regular feature-PR merges from triggering this;
+  # the head-repo guard keeps merged fork PRs from triggering it.
+  release:
+    if: |
+      github.event_name == 'pull_request'
+      && github.event.pull_request.merged == true
+      && startsWith(github.event.pull_request.head.ref, 'release/v')
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    concurrency:
+      group: release-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: write       # push the `vX.Y.Z` tag and create the GitHub release
+      actions: write        # `gh workflow run release.yml --ref vX.Y.Z` chained dispatch
+    steps:
+      - uses: danielroe/uppt/release@7bcfb5397c37202ef882363f755423130419d28a # v0.5.5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # The chained dispatch from `release` lands here as a `workflow_dispatch`
+  # event on a `vX.Y.Z` tag ref. Checkout, install, and playground prepare
+  # are handled here (checkout/install disabled on uppt/pack) because
+  # nuxt-module-build extends playground/.nuxt/tsconfig.json, so `prepack`
+  # fails without `dev:prepare` having run first. Manual recovery uses the
+  # same path (Run workflow -> pick a `v*` tag).
+  pack:
+    if: github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: pack-${{ github.ref }}
+      cancel-in-progress: false
+    permissions: {}
+    outputs:
+      files: ${{ steps.pack.outputs.files }}
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
 
-      # Node 24 ships with npm 11.x, which is required for Trusted Publishing
-      # OIDC handshake. Node 22 ships npm 10.x; self-upgrading it in CI hits
-      # a reify-finish bug. Matches nuxt/image's release pattern.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
 
-      # Required before publish — nuxt-module-build (invoked by npm's prepack
-      # lifecycle hook during publish) extends playground/.nuxt/tsconfig.json
       - run: pnpm run dev:prepare
 
-      - name: Determine npm tag
-        id: npm-tag
-        run: |
-          # Any tag containing a hyphen after the version (e.g. v6.0.0-0,
-          # v6.0.0-beta.1, v6.0.0-rc.2) is a prerelease → publish under `next`.
-          # Clean semver tags (e.g. v6.0.0) → publish under `latest`.
-          case "${{ github.ref_name }}" in
-            *-*) echo "tag=next" >> "$GITHUB_OUTPUT" ;;
-            *) echo "tag=latest" >> "$GITHUB_OUTPUT" ;;
-          esac
+      - id: pack
+        uses: danielroe/uppt/pack@7bcfb5397c37202ef882363f755423130419d28a # v0.5.5
+        with:
+          checkout: false
+          install: false
 
-      # Publish with npm (not pnpm) — pnpm's OIDC support is incomplete
-      # (see pnpm/pnpm#9812). Auth is via npm Trusted Publishing.
-      - name: Publish to npm
-        run: npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }}
-
-      - name: Create GitHub Release
-        run: npx changelogithub
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # `publish` downloads the prebuilt tarball from the pack job's artifact
+  # and stages it for publish on npm (approve on npmjs.com to go live).
+  publish:
+    if: |
+      github.event_name == 'workflow_dispatch'
+      && startsWith(github.ref, 'refs/tags/v')
+      && needs.pack.outputs.files != '[]'
+    needs: pack
+    runs-on: ubuntu-latest
+    concurrency:
+      group: publish-${{ github.ref }}
+      cancel-in-progress: false
+    permissions:
+      id-token: write       # OIDC claim for npm trusted publisher
+    environment: npm        # must match the trusted-publisher entry on npmjs.com
+    steps:
+      - uses: danielroe/uppt/publish@7bcfb5397c37202ef882363f755423130419d28a # v0.5.5
+        with:
+          files: ${{ needs.pack.outputs.files }}

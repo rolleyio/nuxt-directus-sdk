@@ -116,14 +116,13 @@ pnpm run lint
 # Run Vitest
 pnpm run test
 pnpm run test:watch
-
-# Release new version (see RELEASING.md)
-pnpm run release
 ```
+
+Releases are automated; merging the open release PR cuts a release (see [RELEASING.md](./RELEASING.md)).
 
 ## Contributing
 
-Contributions are welcome. Please target the `next` branch for new features and fixes; `main` is reserved for stable releases and hotfixes. See [RELEASING.md](./RELEASING.md) for the release process.
+Contributions are welcome. Please target the `main` branch; every pull request gets an installable preview package via pkg.pr.new. See [RELEASING.md](./RELEASING.md) for the release process.
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/nuxt-directus-sdk/latest.svg?style=flat&colorA=18181B&colorB=28CF8D

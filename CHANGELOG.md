@@ -1,5 +1,8 @@
 # Changelog
 
+> [!NOTE]
+> This file is frozen as of v6.1.3. Release notes for newer versions live on [GitHub Releases](https://github.com/rolleyio/nuxt-directus-sdk/releases).
+
 ## v6.1.3
 
 [compare changes](https://github.com/rolleyio/nuxt-directus-sdk/compare/v6.1.2...v6.1.3)

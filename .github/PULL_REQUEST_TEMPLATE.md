@@ -11,5 +11,5 @@
 - [ ] Tests added or updated (new features and bug fixes)
 - [ ] Playground updated if the feature is user-visible
 - [ ] Docs updated if behaviour or configuration changed
-- [ ] Targeting `next` branch (unless this is a hotfix for `main`)
+- [ ] PR title follows conventional commits (it becomes the changelog entry on release)
 - [ ] `pnpm lint` and `pnpm test` pass locally
