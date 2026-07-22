@@ -73,7 +73,9 @@ jobs:
           node-version: 24
           cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
+      # --ignore-scripts matches uppt's own install hardening: no dependency
+      # lifecycle scripts run on the runner that builds the publish tarball
+      - run: pnpm install --frozen-lockfile --ignore-scripts
 
       - run: pnpm run dev:prepare
 
