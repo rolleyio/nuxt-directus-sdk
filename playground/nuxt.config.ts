@@ -25,6 +25,9 @@ export default defineNuxtConfig({
     },
     devtools: true,
     visualEditor: true,
+    experimental: {
+      dataLoaders: {},
+    },
     types: {
       enabled: true,
       prefix: 'Rolley',

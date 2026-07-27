@@ -27,12 +27,19 @@ export default defineConfig({
         text: 'Features',
         items: [
           { text: 'Authentication', link: '/guide/authentication' },
+          { text: 'Data Fetching', link: '/guide/data-fetching' },
           { text: 'Realtime & WebSockets', link: '/guide/realtime' },
           { text: 'File Management', link: '/guide/files' },
           { text: 'Visual Editor', link: '/guide/visual-editor' },
           { text: 'Type Generation', link: '/guide/type-generation' },
           { text: 'Proxy', link: '/guide/proxy' },
           { text: 'Server-Side Utils', link: '/guide/server-side' },
+        ],
+      },
+      {
+        text: 'Experimental',
+        items: [
+          { text: 'Data Loaders', link: '/guide/experimental-data-loaders' },
         ],
       },
       {

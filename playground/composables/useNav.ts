@@ -32,6 +32,7 @@ export function useNav(): NavGroup[] {
       links: [
         { label: 'Auto-Imports', to: '/data/auto-import', description: '<code>readSingleton()</code> vs. <code>useAsyncData()</code>' },
         { label: 'Blog (readItems)', to: '/blog', description: '<code>useDirectus()</code> + <code>readItems()</code> with filter &amp; sort' },
+        { label: 'Pinia Colada', to: '/data/colada', description: '<code>defineDirectusLoader()</code>, <code>useDirectusSingletonQuery()</code>' },
       ],
     },
     {
