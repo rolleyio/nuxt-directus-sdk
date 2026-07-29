@@ -7,11 +7,11 @@
     "generate": "nuxi generate"
   },
   "devDependencies": {
-    "@directus/sdk": "^22.0.0",
+    "@directus/sdk": "^24.0.0",
     "@directus/types": "^16.0.0",
     "@directus/visual-editing": "^2.1.0",
     "@nuxt/devtools": "latest",
-    "@nuxt/image": "^2.0.0",
+    "@nuxt/image": "^2.1.0",
     "@nuxt/ui": "^4.0.0",
     "nuxt": "latest"
   }

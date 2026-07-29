@@ -27,7 +27,7 @@
 ## Requirements
 
 - **Nuxt 4.0+**
-- **Directus v11.16.0+** (required by the bundled `@directus/visual-editing` v2 and `@directus/sdk` v21)
+- **Directus v11.16.0+** (required by the bundled `@directus/visual-editing` v2; developed and tested against `@directus/sdk` v24)
 
 ## Quick Setup
 
