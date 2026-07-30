@@ -64,7 +64,7 @@ DIRECTUS_ADMIN_TOKEN=your-admin-token
 ## Requirements
 
 - Nuxt 4.0+
-- Directus v11.16.0+ (required by `@directus/visual-editing` v2 and `@directus/sdk` v21)
+- Directus v11.16.0+ (required by `@directus/visual-editing` v2; developed and tested against `@directus/sdk` v24)
 
 ## SDK access
 
