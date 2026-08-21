@@ -1,6 +1,6 @@
 import { defineNuxtPlugin, refreshNuxtData, useCookie, useRoute, useRuntimeConfig } from '#app'
 import { useDirectusAuth } from './composables/auth'
-import { useDirectus, useDirectusOriginUrl, useDirectusPreview, useDirectusVisualEditor } from './composables/directus'
+import { useDirectus, useDirectusOriginUrl, useDirectusPreview, useDirectusPreviewToken, useDirectusVisualEditor } from './composables/directus'
 import { isQueryParamEnabled } from './utils'
 
 export default defineNuxtPlugin({
@@ -31,10 +31,13 @@ export default defineNuxtPlugin({
     }
 
     if (directusPreview.value) {
-      // If we are in preview mode, we need to use the token from the query string
+      // Live preview: store token in shared state so every useDirectus() client
+      // (including per-request SSR instances) applies it in createDirectusClient.
       const token = route.query.token as string | undefined
+      const previewToken = useDirectusPreviewToken()
 
       if (token) {
+        previewToken.value = token
         directus.setToken(token)
         log('Preview token set')
 
