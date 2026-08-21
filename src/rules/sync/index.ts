@@ -6,6 +6,7 @@ export type { CompareOptions } from './diff'
 
 export { compareRulesPayloads, diffRemoteRules, diffRules, fetchRemoteRules, fetchRemoteRulesAsJson, pullRules } from './diff'
 export { formatDiff } from './format'
+export { isProtectedPolicy, isProtectedRole } from './protect'
 export { formatPushResult, pushRules } from './push'
 export type {
   ChangeType,

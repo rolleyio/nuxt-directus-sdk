@@ -613,6 +613,33 @@ describe('sync: formatPushResult', () => {
     expect(output).toContain('1 errors')
   })
 
+  it('lists intentionally skipped protected entities without marking them as errors', () => {
+    const result: PushResult = {
+      success: true,
+      roles: [
+        { type: 'skipped', name: 'Administrator', id: 'role-1', reason: 'Protected role "Administrator" was not deleted' },
+      ],
+      policies: [
+        { type: 'skipped', name: 'Public', id: 'policy-1', reason: 'Protected policy "Public" was not deleted' },
+      ],
+      permissions: [],
+      summary: {
+        roles: { created: 0, updated: 0, deleted: 0, errors: 0 },
+        policies: { created: 0, updated: 0, deleted: 0, errors: 0 },
+        permissions: { created: 0, updated: 0, deleted: 0, errors: 0 },
+      },
+      errors: [],
+    }
+
+    const output = formatPushResult(result)
+
+    expect(output).toContain('SUCCESS')
+    expect(output).toContain('Skipped:')
+    expect(output).toContain('Protected role "Administrator" was not deleted')
+    expect(output).toContain('Protected policy "Public" was not deleted')
+    expect(output).not.toContain('Errors:')
+  })
+
   it('formats empty push result (no changes)', () => {
     const result: PushResult = {
       success: true,

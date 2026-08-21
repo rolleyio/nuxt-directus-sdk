@@ -21,6 +21,7 @@ import {
 } from '@directus/sdk'
 import { serializeToDirectusApi } from '../utils/serialize'
 import { compareRulesPayloads, fetchRemoteRules } from './diff'
+import { isProtectedPolicy, isProtectedRole } from './protect'
 
 /**
  * Push local rules to a remote Directus instance
@@ -57,7 +58,7 @@ export async function pushRules<Schema>(
   localRules: RulesConfig<Schema>,
   options: PushOptions = {},
 ): Promise<PushResult> {
-  const { addOnly = false, skipDeletes = false, onProgress } = options
+  const { addOnly = false, skipDeletes = true, onProgress } = options
 
   const result: PushResult = {
     success: true,
@@ -331,7 +332,8 @@ export async function pushRules<Schema>(
       }
     }
 
-    // 6. Delete in reverse order (if not skipped)
+    // 6. Delete in reverse order (if not skipped). Built-in Administrator /
+    // Public entities are never deleted, even when skipDeletes is false.
     if (!skipDeletes && !addOnly) {
       // Delete permissions first
       const permsToDelete = diff.permissions.filter(p => p.type === 'removed')
@@ -369,6 +371,16 @@ export async function pushRules<Schema>(
           total: rolesToDelete.length,
         })
 
+        if (change.remote && isProtectedRole(change.remote)) {
+          result.roles.push({
+            type: 'skipped',
+            name: change.name,
+            id: change.remote.id,
+            reason: `Protected role "${change.name}" was not deleted`,
+          })
+          continue
+        }
+
         try {
           await client.request(deleteRole(change.remote!.id!))
           result.roles.push({ type: 'deleted', name: change.name, id: change.remote!.id })
@@ -393,6 +405,16 @@ export async function pushRules<Schema>(
           current: idx + 1,
           total: policiesToDelete.length,
         })
+
+        if (change.remote && isProtectedPolicy(change.remote)) {
+          result.policies.push({
+            type: 'skipped',
+            name: change.name,
+            id: change.remote.id,
+            reason: `Protected policy "${change.name}" was not deleted`,
+          })
+          continue
+        }
 
         try {
           await client.request(deletePolicy(change.remote!.id!))
@@ -434,6 +456,17 @@ export function formatPushResult(result: PushResult): string {
   lines.push(`  Policies: +${summary.policies.created} ~${summary.policies.updated} -${summary.policies.deleted}${summary.policies.errors ? ` (${summary.policies.errors} errors)` : ''}`)
   lines.push(`  Roles:    +${summary.roles.created} ~${summary.roles.updated} -${summary.roles.deleted}${summary.roles.errors ? ` (${summary.roles.errors} errors)` : ''}`)
   lines.push(`  Perms:    +${summary.permissions.created} ~${summary.permissions.updated} -${summary.permissions.deleted}${summary.permissions.errors ? ` (${summary.permissions.errors} errors)` : ''}`)
+
+  const skipped = [...result.policies, ...result.roles, ...result.permissions]
+    .filter(item => item.type === 'skipped' && item.reason)
+
+  if (skipped.length > 0) {
+    lines.push('')
+    lines.push('Skipped:')
+    for (const item of skipped) {
+      lines.push(`  - ${item.reason}`)
+    }
+  }
 
   if (result.errors.length > 0) {
     lines.push('')
