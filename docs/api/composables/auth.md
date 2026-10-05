@@ -20,7 +20,7 @@ interface DirectusAuth {
   loginWithProvider: (provider: string, redirectOnLogin?: boolean | string) => Promise<void>
   logout: (redirect?: boolean | RouteLocationRaw) => Promise<void>
   createUser: (data: RegisterUserInput) => Promise<DirectusUser>
-  register: (data: RegisterUserInput) => Promise<DirectusUser>
+  register: (data: DirectusRegisterInput) => Promise<void>
   inviteUser: (email: string, role: string, inviteUrl?: string) => Promise<void>
   acceptUserInvite: (token: string, password: string) => Promise<void>
   passwordRequest: (email: string, resetUrl?: string) => Promise<void>
@@ -189,23 +189,46 @@ await logout(false)
 await logout('/login')
 ```
 
-##### `createUser(data)` / `register(data)`
+##### `register(data)`
 
-Create a new user account. `register()` is an alias for `createUser()`.
+Public sign-up via `POST /users/register`. Works without being logged in, but public registration must be enabled in your Directus project settings. Directus returns no body, so log the user in (or send them to verify their email) afterwards.
 
 **Parameters:**
-- `data: RegisterUserInput` - User registration data
+- `data: DirectusRegisterInput`
+  - `email: string`
+  - `password: string`
+  - `first_name?: string`
+  - `last_name?: string`
+  - `verification_url?: string` - Where the verification email links to, when email verification is on
 
-**Returns:** `Promise<DirectusUser>`
+**Returns:** `Promise<void>`
 
 ```typescript
 const { register } = useDirectusAuth()
 
-const newUser = await register({
+await register({
   email: 'new@example.com',
   password: 'secure-password',
   first_name: 'John',
   last_name: 'Doe',
+})
+```
+
+##### `createUser(data)`
+
+Create a user via `POST /users`. Requires create permission on `directus_users`, so use it for admin flows rather than public sign-up.
+
+**Parameters:**
+- `data: RegisterUserInput` - User data
+
+**Returns:** `Promise<DirectusUser>`
+
+```typescript
+const { createUser } = useDirectusAuth()
+
+const newUser = await createUser({
+  email: 'new@example.com',
+  password: 'secure-password',
 })
 ```
 

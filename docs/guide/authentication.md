@@ -94,10 +94,12 @@ await updateMe({
 
 ### User Registration
 
+`register()` uses Directus public registration (`POST /users/register`), so enable public registration in your Directus project settings first. It returns nothing; log the user in afterwards, or let them verify their email first if verification is on.
+
 ```typescript
 const { register } = useDirectusAuth()
 
-const newUser = await register({
+await register({
   email: 'newuser@example.com',
   password: 'secure-password',
   first_name: 'John',
@@ -324,7 +326,7 @@ const {
   login, // (email, password, options?) => Promise<DirectusUser>
   loginWithProvider, // (provider, redirect?) => Promise<void>
   logout, // (redirect?) => Promise<void>
-  register, // (data) => Promise<DirectusUser>
+  register, // (data) => Promise<void>
   createUser, // (data) => Promise<DirectusUser>
   inviteUser, // (email, role, inviteUrl?) => Promise<void>
   acceptUserInvite, // (token, password) => Promise<void>
