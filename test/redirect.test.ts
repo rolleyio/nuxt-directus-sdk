@@ -24,4 +24,10 @@ describe('resolveSafeRedirectPath', () => {
     expect(resolveSafeRedirectPath('//evil.com', '/')).toBe('/')
     expect(resolveSafeRedirectPath('https://evil.com', '/home')).toBe('/home')
   })
+
+  it('falls back for encoded and double-encoded external targets', () => {
+    expect(resolveSafeRedirectPath(encodeURIComponent('//evil.com'))).toBe('/')
+    expect(resolveSafeRedirectPath(encodeURIComponent(encodeURIComponent('//evil.com')))).toBe('/')
+    expect(resolveSafeRedirectPath('%E0%A4%A')).toBe('/')
+  })
 })
