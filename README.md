@@ -27,7 +27,7 @@
 ## Requirements
 
 - **Nuxt 4.0+**
-- **Directus v12+** (v7 of this module targets Directus 12 and `@directus/sdk` v23; for Directus 11 use v6)
+- **Directus v12+** (v7 of this module targets Directus 12 and `@directus/sdk` v24; for Directus 11 use v6)
 
 ## Quick Setup
 
@@ -116,14 +116,13 @@ pnpm run lint
 # Run Vitest
 pnpm run test
 pnpm run test:watch
-
-# Release new version (see RELEASING.md)
-pnpm run release
 ```
+
+Releases are automated; merging the open release PR cuts a release (see [RELEASING.md](./RELEASING.md)).
 
 ## Contributing
 
-Contributions are welcome. Please target the `next` branch for new features and fixes; `main` is reserved for stable releases and hotfixes. See [RELEASING.md](./RELEASING.md) for the release process.
+Contributions are welcome. Please target the `main` branch; every pull request gets an installable preview package via pkg.pr.new. See [RELEASING.md](./RELEASING.md) for the release process.
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/nuxt-directus-sdk/latest.svg?style=flat&colorA=18181B&colorB=28CF8D
@@ -146,3 +145,12 @@ Contributions are welcome. Please target the `next` branch for new features and 
 
 [nuxt-src]: https://img.shields.io/badge/Nuxt-18181B?logo=nuxt.js
 [nuxt-href]: https://nuxt.com
+
+## Sponsored by
+
+<a href="https://rolley.io" aria-label="Rolley | Bespoke development projects built using Directus, Medusa and Nuxt">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/rolleyio/nuxt-directus-sdk/main/docs/public/rolley-dark.svg">
+    <img src="https://raw.githubusercontent.com/rolleyio/nuxt-directus-sdk/main/docs/public/rolley-light.svg" alt="Rolley" width="160">
+  </picture>
+</a>

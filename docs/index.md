@@ -135,3 +135,5 @@ const { subscription } = await directus.subscribe('posts')
 ## License
 
 MIT License - Free to use in personal and commercial projects
+
+<SponsoredBy />
