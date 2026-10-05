@@ -8,7 +8,7 @@ export const usePostsLoader = defineDirectusLoader({
   key: ['playground', 'posts'],
   query: directus => directus.request(readItems('posts', {
     fields: ['id', 'title', 'slug'],
-    sort: ['-date_created'],
+    sort: ['-published_at'],
     limit: 5,
   })),
   staleTime: 1000 * 60, // fresh for a minute; instant back/forward navigation
