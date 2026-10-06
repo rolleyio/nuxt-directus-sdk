@@ -27,7 +27,7 @@
 ## Requirements
 
 - **Nuxt 4.0+**
-- **Directus v12+** (v7 of this module targets Directus 12 and `@directus/sdk` v24; for Directus 11 use v6)
+- **Directus v12+** (v7 of this module targets Directus 12 and `@directus/sdk` v26; for Directus 11 use v6)
 
 ## Quick Setup
 

@@ -22,8 +22,8 @@ importers:
         version: 1.6.4
     devDependencies:
       '@directus/sdk':
-        specifier: ^24.0.0
-        version: 24.0.0
+        specifier: ^26.0.0
+        version: 26.0.0
       '@directus/types':
         specifier: ^16.0.0
         version: 16.0.0(knex@3.1.0)(sharp@0.34.5)(vue@3.5.38(typescript@6.0.3))
@@ -88,8 +88,8 @@ importers:
   playground:
     devDependencies:
       '@directus/sdk':
-        specifier: ^24.0.0
-        version: 24.0.0
+        specifier: ^26.0.0
+        version: 26.0.0
       '@directus/types':
         specifier: ^16.0.0
         version: 16.0.0(knex@3.1.0)(sharp@0.34.5)(vue@3.5.38(typescript@6.0.3))
@@ -483,8 +483,8 @@ packages:
   '@directus/schema@14.0.0':
     resolution: {integrity: sha512-b0QiePeIxHeAa9gZxv7rxC+YpiL41SldR18xtasKw3xiHjsAhgLIXudjvg15xF7bBFv136mv5r7mNslaTe/lDA==}
 
-  '@directus/sdk@24.0.0':
-    resolution: {integrity: sha512-8sibVOa1OZAgDg9d3NwIX51mhXrvUmobChYe4QvaVCyq/rECD57yHYzKfjfjmbFMogkVxI8tnqyoA+TIJVcAoQ==}
+  '@directus/sdk@26.0.0':
+    resolution: {integrity: sha512-t6G900Rx43bTPPFtSrIX0EE6awIeJSoLbictRAVC0P/Eh4Nmud9lLfFodMAikFWe5IbocJ33Y3eio+hLZMqLTA==}
     engines: {node: '>=22'}
 
   '@directus/types@16.0.0':
@@ -7948,7 +7948,7 @@ snapshots:
       - supports-color
       - tedious
 
-  '@directus/sdk@24.0.0': {}
+  '@directus/sdk@26.0.0': {}
 
   '@directus/types@16.0.0(knex@3.1.0)(sharp@0.34.5)(vue@3.5.38(typescript@6.0.3))':
     dependencies:
