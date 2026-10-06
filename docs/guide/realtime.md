@@ -4,6 +4,31 @@ nuxt-directus-sdk provides full WebSocket support for realtime updates from your
 
 ## Quick Start
 
+### `useDirectusSubscription` (Recommended)
+
+Subscribe to a collection from a component. The composable connects on the client, keeps a reactive `items` list in sync with `init`, `create`, `update` and `delete` events, and unsubscribes when the component unmounts.
+
+```vue
+<script setup lang="ts">
+const { items: posts, status, error } = useDirectusSubscription('posts', {
+  query: {
+    fields: ['id', 'title'],
+    filter: { status: { _eq: 'published' } },
+  },
+})
+</script>
+
+<template>
+  <p v-if="status === 'connecting'">Connecting...</p>
+  <p v-else-if="error">{{ error.message }}</p>
+  <div v-for="post in posts" :key="post.id">
+    {{ post.title }}
+  </div>
+</template>
+```
+
+It does nothing during SSR, so pair it with `useDirectusItems()` if the first render needs data. See the [`useDirectusSubscription` API](#usedirectussubscription-collection-options) for every option.
+
 ### Basic Subscription
 
 ```typescript
@@ -182,6 +207,29 @@ In development mode, WebSocket connections use a special proxy route (`/directus
 This is automatic - no configuration needed!
 
 ## Subscription API
+
+### `useDirectusSubscription(collection, options?)`
+
+**Options** (plus everything `directus.subscribe()` accepts, such as `query`, `event` and `uid`):
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `syncList` | `true` | Keep `items` in sync from subscription events. Set `false` to only use `lastEvent`. |
+| `keyField` | `'id'` | Field used to match `update` and `delete` events to existing items. |
+| `immediate` | `true` | Connect on setup. Set `false` and call `connect()` yourself. |
+
+**Returns:**
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `items` | `Ref<Item[]>` | The synced list (empty when `syncList` is `false`). |
+| `status` | `Ref<'idle' \| 'connecting' \| 'open' \| 'error' \| 'closed'>` | Connection state. |
+| `error` | `Ref<Error \| null>` | The last subscription or connection error. |
+| `lastEvent` | `Ref<{ event, data } \| null>` | The most recent message. |
+| `connect()` | `() => Promise<void>` | Connect, or reconnect after `disconnect()`. |
+| `disconnect()` | `() => void` | Unsubscribe. Also runs automatically when the scope is disposed. |
+
+If an item arrives without the `keyField`, the composable sets `error`, moves to `'error'` and unsubscribes rather than guessing. Include the key field in `query.fields`.
 
 ### Subscribe to Collection
 
