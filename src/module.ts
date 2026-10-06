@@ -154,8 +154,10 @@ export interface ModuleOptions {
     credentials?: RequestCredentials
 
     /**
-     * Realtime/WebSocket authentication mode
-     * @default 'handshake'
+     * Realtime/WebSocket authentication mode. `'public'` relies on the session
+     * cookie for auth; `'handshake'` and `'strict'` need an access token the
+     * SDK can read, which session auth does not expose.
+     * @default 'public'
      * @type 'public' | 'handshake' | 'strict'
      */
     realtimeAuthMode?: 'public' | 'handshake' | 'strict'

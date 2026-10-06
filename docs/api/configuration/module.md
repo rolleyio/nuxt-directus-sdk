@@ -67,7 +67,7 @@ export default defineNuxtConfig({
       enableGlobalAuthMiddleware: false,
       autoRefresh: true,
       credentials: 'include',
-      realtimeAuthMode: 'handshake',
+      realtimeAuthMode: 'public',
       readMeFields: ['id', 'email', 'first_name', 'last_name', 'avatar', 'role'],
       redirect: {
         home: '/',
@@ -532,9 +532,9 @@ export default defineNuxtConfig({
 ```
 
 **Modes:**
-- `'public'` - No authentication required
-- `'handshake'` - Authenticate during connection
-- `'strict'` - Full authentication required
+- `'public'` - The SDK sends no auth message. With the module's session auth, the browser's session cookie authenticates the WebSocket upgrade, so this works for both logged-in and anonymous users.
+- `'handshake'` - The SDK sends an access token as the first message. Session auth keeps the token in an httpOnly cookie the SDK cannot read, so the connection fails unless you set a token yourself (for example with `setToken()`).
+- `'strict'` - The SDK passes an access token in the connection URL. Same token requirement as `'handshake'`.
 
 ##### `auth.readMeFields`
 
