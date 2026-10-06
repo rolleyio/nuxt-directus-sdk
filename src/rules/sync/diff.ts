@@ -243,6 +243,97 @@ function isInternalSystemCollection(collection: string): boolean {
   return EXCLUDED_SYSTEM_COLLECTIONS.has(collection)
 }
 
+function countByName(entities: Array<{ name: string }>): Map<string, number> {
+  const counts = new Map<string, number>()
+  for (const entity of entities) {
+    if (entity.name)
+      counts.set(entity.name, (counts.get(entity.name) ?? 0) + 1)
+  }
+  return counts
+}
+
+/** Name -> ID map limited to names that appear exactly once. */
+function uniqueNameIdMap(entities: Array<{ name: string, id?: string }>): Map<string, string> {
+  const counts = countByName(entities)
+  const map = new Map<string, string>()
+  for (const entity of entities) {
+    if (entity.name && entity.id && counts.get(entity.name) === 1)
+      map.set(entity.name, entity.id)
+  }
+  return map
+}
+
+/**
+ * Remap local policy/role IDs onto remote IDs by matching entity names.
+ *
+ * Code-authored rules assign ephemeral UUIDs in {@link serializeToDirectusApi}.
+ * Roles and policies are matched by name, but permissions are keyed by
+ * `` `${policyId}:${collection}:${action}` `` and role equality compares
+ * policy ID arrays. Without remapping, semantically identical local/remote
+ * states always appear as delete+create for permissions and modified roles.
+ *
+ * Names are the only join key, and Directus does not enforce unique role or
+ * policy names. A name that appears more than once on either side is
+ * ambiguous, so those entities are left untouched instead of risking a remap
+ * onto the wrong entity.
+ *
+ * Returns a shallow-cloned local payload with IDs rewritten where a unique
+ * remote counterpart with the same name exists. The input is never mutated.
+ */
+export function alignLocalIdsToRemote(
+  local: DirectusRulesPayload,
+  remote: DirectusRulesPayload,
+): DirectusRulesPayload {
+  const remotePolicyIdByName = uniqueNameIdMap(remote.policies)
+  const remoteRoleIdByName = uniqueNameIdMap(remote.roles)
+  const localPolicyNameCounts = countByName(local.policies)
+  const localRoleNameCounts = countByName(local.roles)
+
+  const localPolicyIdToRemote = new Map<string, string>()
+  for (const policy of local.policies) {
+    if (!policy.id || localPolicyNameCounts.get(policy.name) !== 1)
+      continue
+    const remoteId = remotePolicyIdByName.get(policy.name)
+    if (remoteId)
+      localPolicyIdToRemote.set(policy.id, remoteId)
+  }
+
+  const mapPolicyId = (id: string | null | undefined): string | null | undefined => {
+    if (id == null)
+      return id
+    return localPolicyIdToRemote.get(id) ?? id
+  }
+
+  const mapRoleId = (role: { id?: string, name: string }): string | undefined => {
+    if (!role.id || localRoleNameCounts.get(role.name) !== 1)
+      return role.id
+    return remoteRoleIdByName.get(role.name) ?? role.id
+  }
+
+  return {
+    roles: local.roles.map((role) => {
+      const parentRole = role.parent ? local.roles.find(r => r.id === role.parent) : undefined
+
+      return {
+        ...role,
+        id: mapRoleId(role),
+        parent: role.parent
+          ? ((parentRole && mapRoleId(parentRole)) ?? remoteRoleIdByName.get(role.parent) ?? role.parent)
+          : role.parent,
+        policies: role.policies?.map(id => mapPolicyId(id) ?? id),
+      }
+    }),
+    policies: local.policies.map(policy => ({
+      ...policy,
+      id: (policy.id && localPolicyNameCounts.get(policy.name) === 1 && remotePolicyIdByName.get(policy.name)) || policy.id,
+    })),
+    permissions: local.permissions.map(permission => ({
+      ...permission,
+      policy: mapPolicyId(permission.policy) ?? permission.policy,
+    })),
+  }
+}
+
 /**
  * Compare two DirectusRulesPayload objects and generate diff
  *
@@ -266,14 +357,18 @@ export function compareRulesPayloads(
 ): RulesDiff {
   const { excludeSystemCollections = true } = options
 
-  const roles = compareRoles(local.roles, remote.roles)
-  const policies = comparePolicies(local.policies, remote.policies)
+  // Align local policy/role IDs to remote by name so code-authored rules
+  // (random UUIDs) converge with a live instance on subsequent syncs.
+  const alignedLocal = alignLocalIdsToRemote(local, remote)
+
+  const roles = compareRoles(alignedLocal.roles, remote.roles)
+  const policies = comparePolicies(alignedLocal.policies, remote.policies)
 
   // Filter permissions:
   // - Exclude internal system collections if option is set
   // - Always exclude permissions with policy: null (these are Directus "app access" permissions
   //   that aren't managed through the rules DSL)
-  const localPerms = local.permissions.filter((p) => {
+  const localPerms = alignedLocal.permissions.filter((p) => {
     if (p.policy === null)
       return false
     if (excludeSystemCollections && isInternalSystemCollection(p.collection))
