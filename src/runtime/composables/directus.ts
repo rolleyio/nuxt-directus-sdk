@@ -9,6 +9,11 @@ export function useDirectusPreview(): Ref<boolean> {
   return useState('directus.preview', () => false)
 }
 
+/** Live-preview static token from `?token=`; shared so SSR + client clients apply it. */
+export function useDirectusPreviewToken(): Ref<string | null> {
+  return useState<string | null>('directus.previewToken', () => null)
+}
+
 export function useDirectusVisualEditor(): Ref<boolean> {
   return useState('directus.visualEditor', () => false)
 }
@@ -132,6 +137,12 @@ function createDirectusClient() {
       authMode: authConfig.realtimeAuthMode as WebSocketAuthModes || 'public',
       ...(realtimeUrl ? { url: realtimeUrl } : {}),
     }))
+
+  // Apply shared preview token so SSR component fetches see live preview too
+  // (plugin.setToken alone only hit the first server client instance).
+  const previewToken = useDirectusPreviewToken().value
+  if (previewToken)
+    directus.setToken(previewToken)
 
   return directus
 }
