@@ -1,57 +1,35 @@
 # Releasing
 
-## Cutting a release
+Releases are automated with [uppt](https://github.com/danielroe/uppt), the same flow used by nuxt/nuxt and nuxt/image. Nobody releases from a laptop and no npm tokens exist.
 
-From `main`, with a clean working tree:
+## The release cycle
 
-```bash
-pnpm release
-```
+1. **Merge PRs into `main`.** Every squash commit's title is a conventional commit; that is what drives version bumps and changelog entries. Every PR also gets an installable preview package via pkg.pr.new for testing before merge.
+2. **A draft release PR appears automatically.** On every push to `main`, `uppt/pr` parses commits since the last tag, picks the bump (a `fix:` opens `release/v6.1.4`, a later `feat:` supersedes it with `release/v6.2.0`), and opens or updates a release PR containing only the `package.json` version bump. Its body is the generated changelog.
+3. **Curate the release PR.** Edit the body freely: anything above the `## 👉 Changelog` heading is preserved when the changelog regenerates, so put highlights, timetables, or TODO checklists there. The body becomes the GitHub release notes verbatim.
+4. **Merge the release PR to cut the release.** `uppt/release` tags the squash commit, creates the GitHub release from the PR body, and dispatches the publish jobs on the tag.
+5. **Approve the staged publish.** `uppt/pack` builds the tarball (see build notes below) and `uppt/publish` stages it on npm via OIDC trusted publishing. Approve it on npmjs.com (requires 2FA) and the version goes live.
 
-That runs lint + tests + build, then invokes `changelogen --release --push --no-github`, which:
+The changelog lives in GitHub Releases from v6.1.3 onward; `CHANGELOG.md` is frozen.
 
-1. Bumps `package.json` version based on conventional-commit history.
-2. Writes `CHANGELOG.md`.
-3. Commits both changes.
-4. Tags the commit (e.g. `v5.1.0`).
-5. Pushes the commit and tag to the current branch.
+## Build notes
 
-The pushed tag fires `.github/workflows/release.yml`, which re-runs CI (via `workflow_call` on `ci.yml`) and, if it passes, publishes to npm and creates the GitHub Release via `changelogithub`.
+`prepack` (`nuxt-module-build build`) extends `playground/.nuxt/tsconfig.json`, so the playground must be prepared before packing. The `pack` job therefore handles checkout and install itself (`checkout: false`, `install: false` on `uppt/pack`) and runs `pnpm run dev:prepare` before the pack step. The pkg.pr.new workflow does the same.
 
-### Node versions
+## Prereleases
 
-- **CI** runs on Node `lts/jod` (v22) — matches Nuxt's LTS floor, which is what end users run against.
-- **Release** runs on Node `lts/krypton` (v24) — required for npm Trusted Publishing's OIDC handshake (needs npm 11, which ships with Node 24). CI passing on LTS gates whether release runs at all.
+uppt has no prerelease channel yet. When the next major needs betas, cut them manually from the major branch (e.g. `v7`): bump the version to `7.0.0-beta.N`, tag it, build with `pnpm run dev:prepare && pnpm run prepack`, and `npm publish --tag next` with a 2FA login. Revisit if uppt grows prerelease support.
 
-### Prereleases
+## One-off configuration this flow depends on
 
-From `next`, with a clean working tree:
-
-```bash
-pnpm release:next
-```
-
-Adds `--prerelease` to `changelogen` (producing tags like `v5.1.0-beta.0`) and the CI workflow publishes under the `next` npm dist-tag. The changelog on `next` stays on `next` — `main`'s changelog is not touched.
-
-### Which branch owns what
-
-- `main` is the source of truth for stable releases. `CHANGELOG.md` on `main` reflects stable history only.
-- `next` cuts prereleases. Its `CHANGELOG.md` evolves independently and never writes back to `main`.
-- When `next` work is ready to ship stable, merge `next` → `main` and run `pnpm release` from `main`. The stable changelog entry is generated from commits that landed on `main`.
-
-### Authentication
-
-Publishing uses **npm Trusted Publishing** (OIDC) — no `NPM_TOKEN` secret stored in the repo. The OIDC token is granted by the `id-token: write` permission in `release.yml`, and the npmjs.com package is configured with `rolleyio/nuxt-directus-sdk` + `release.yml` as a Trusted Publisher.
-
-If the Trusted Publishing config on npmjs.com ever gets removed or the workflow filename changes, publish will fail with a 403. Re-add the repo as a Trusted Publisher on the package's Access page.
-
-### Repo settings that matter
-
-- Squash-merge only, with "default commit message = pull request title" — `changelogen` reads conventional commits from the PR title that lands on the release branch.
-- Branch protection on `main` should allow tag creation; no direct pushes are needed for releases (the tag is pushed from your laptop by `pnpm release`).
+- **npm trusted publisher** on the package's Access page: repo `rolleyio/nuxt-directus-sdk`, workflow `release.yml`, environment `npm`, with the `npm stage publish` permission. Staged publishing means every release needs a manual approval on npmjs.com before it goes live.
+- **GitHub environment `npm`**, matching the trusted publisher entry (scoped to `v*` tags).
+- **Allow GitHub Actions to create and approve pull requests** under Settings, Actions, General. Without it, `uppt/pr` fails with 403 when opening the release PR.
+- **Squash merge with PR title as the commit message**, so conventional PR titles land on `main`.
 
 ## Troubleshooting
 
-- **Tag already exists** — `changelogen` bumped but the push failed. Inspect with `git tag` and delete locally (`git tag -d vX.Y.Z`) if you need to retry. Avoid force-pushing tags that have already hit the remote.
-- **Publish workflow ran but no npm release** — check the workflow run; `npm publish` can fail silently if provenance can't be signed. Requires Node 22.14+ and `id-token: write` permissions (both configured).
-- **`ERR_PNPM_OUTDATED_LOCKFILE`** — the lockfile drifted from `package.json`. Run `pnpm install` locally, commit `pnpm-lock.yaml`, push.
+- **Publish failed or was never staged.** Re-run the publish path manually: Actions, Release, Run workflow, pick the `vX.Y.Z` tag. `pack` and `publish` are idempotent from a tag.
+- **`uppt/pr` 403 when opening the release PR.** The "allow Actions to create pull requests" setting was turned off; re-enable it.
+- **Trusted publishing 403 on publish.** The trusted publisher entry on npmjs.com was removed or the workflow filename or environment name changed. Re-add it on the package's Access page.
+- **Wrong version in the release PR.** Check the commit titles on `main` since the last tag; the bump is derived from them. Fix by landing a correctly-typed commit; the PR updates on the next push.
