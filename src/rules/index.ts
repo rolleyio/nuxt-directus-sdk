@@ -91,6 +91,8 @@ export {
   fetchRemoteRulesAsJson,
   formatDiff,
   formatPushResult,
+  isProtectedPolicy,
+  isProtectedRole,
   pullRules,
   pushRules,
 } from './sync'

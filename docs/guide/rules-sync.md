@@ -59,9 +59,11 @@ npx nuxt-directus-sdk rules:push rules.json
 # Only add new items, don't modify or delete existing ones
 npx nuxt-directus-sdk rules:push rules.json --add-only
 
-# Add and update, but don't delete items missing locally
-npx nuxt-directus-sdk rules:push rules.json --skip-deletes
+# Also delete remote items that are missing locally (off by default)
+npx nuxt-directus-sdk rules:push rules.json --delete
 ```
+
+Pushes never delete by default. With `--delete`, the built-in Administrator and Public roles and any policy with admin access are still protected and reported as skipped.
 
 ### Environment Variables
 
@@ -132,8 +134,10 @@ const result = await pushRules(client, localRules, {
   // Only create, don't update or delete
   addOnly: false,
 
-  // Don't delete items that exist remotely but not locally
-  skipDeletes: false,
+  // Leave items that exist remotely but not locally alone (default).
+  // Set to false to delete them; Administrator, Public and admin-access
+  // policies are never deleted.
+  skipDeletes: true,
 
   // Progress callback
   onProgress: (event) => {

@@ -113,7 +113,9 @@ Options:
   --compact                 Output compact JSON (no pretty-print)
   --dry-run                 Show what would be changed without making changes (rules:push)
   --add-only                Only add new items, don't modify or delete existing (rules:push)
-  --skip-deletes            Skip deleting items that exist remotely but not locally (rules:push)
+  --skip-deletes            Skip deleting remote-only items (rules:push; default)
+  --delete                  Allow deleting remote roles/policies/permissions missing from the local file
+                            (Administrator / Public still never deleted)
   --prefix <prefix>         Prefix for custom collection type names (generate-types)
   --include <names>         Comma-separated collection names to include (generate-types).
                             When set, only these collections (plus any they reference
@@ -155,6 +157,9 @@ Examples:
 
   # Push only new items (safe mode)
   npx nuxt-directus-sdk rules:push rules.json --add-only
+
+  # Also delete remote items missing from the local file
+  npx nuxt-directus-sdk rules:push rules.json --delete
 
   # Compare local file with remote
   npx nuxt-directus-sdk rules:diff rules.json
@@ -411,7 +416,10 @@ async function main(): Promise<void> {
       'compact': { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
       'add-only': { type: 'boolean', default: false },
+      // Deletes are off by default; --delete opts in. --skip-deletes is kept as
+      // an explicit no-op alias of the new default for backwards compatibility.
       'skip-deletes': { type: 'boolean', default: false },
+      'delete': { type: 'boolean', default: false },
       'prefix': { type: 'string', default: '' },
       'include': { type: 'string' },
       'exclude': { type: 'string' },
@@ -459,6 +467,10 @@ async function main(): Promise<void> {
           console.error('Usage: npx nuxt-directus-sdk rules:push <file> [--dry-run]')
           process.exit(1)
         }
+        if (values['skip-deletes'] && values.delete) {
+          console.error('Error: --skip-deletes and --delete cannot be used together')
+          process.exit(1)
+        }
         const connection = getConnectionConfig(
           values['source-url'] ?? values.url,
           values['source-token'] ?? values.token,
@@ -467,7 +479,9 @@ async function main(): Promise<void> {
         await commandPush(positionals[1], connection, {
           dryRun: values['dry-run']!,
           addOnly: values['add-only']!,
-          skipDeletes: values['skip-deletes']!,
+          // Default skips deletes; --delete opts in. --skip-deletes remains a no-op
+          // (same as default) for scripts written against the old flag.
+          skipDeletes: !values.delete,
         })
         break
       }

@@ -78,7 +78,11 @@ export interface PushOptions {
 
   /**
    * If true, skip deleting items that exist remotely but not locally.
-   * @default false
+   * Defaults to true so partial hand-authored rulesets cannot wipe remote
+   * roles/policies by omission. Pass `false` (or CLI `--delete`) to enable
+   * destructive sync. Built-in Administrator/Public entities are never deleted
+   * regardless of this flag.
+   * @default true
    */
   skipDeletes?: boolean
 
@@ -103,6 +107,8 @@ export interface PushOperationResult {
   name: string
   id?: string
   error?: string
+  /** Present when the item was skipped intentionally (e.g. protected system entity) */
+  reason?: string
 }
 
 /** Result of pushing rules */

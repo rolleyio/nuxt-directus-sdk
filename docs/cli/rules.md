@@ -48,8 +48,8 @@ npx nuxt-directus-sdk rules:push rules.json
 # Only add new items, never modify or delete existing ones
 npx nuxt-directus-sdk rules:push rules.json --add-only
 
-# Skip deletions (useful for additive migrations)
-npx nuxt-directus-sdk rules:push rules.json --skip-deletes
+# Also delete remote items that are missing from the local file
+npx nuxt-directus-sdk rules:push rules.json --delete
 ```
 
 **Flags:**
@@ -58,7 +58,10 @@ npx nuxt-directus-sdk rules:push rules.json --skip-deletes
 | --- | --- | --- |
 | `--dry-run` | `false` | Report what would be changed, don't actually change anything |
 | `--add-only` | `false` | Only create new items, never modify or delete existing items |
-| `--skip-deletes` | `false` | Don't delete items that exist remotely but not locally |
+| `--delete` | `false` | Also delete roles, policies and permissions that exist remotely but not locally |
+| `--skip-deletes` | | No-op kept for older scripts; skipping deletes is now the default |
+
+Pushes are additive by default, so a partial rules file never removes anything from the remote instance. Even with `--delete`, the built-in Administrator and Public roles and any policy with admin access are never deleted; they are reported as skipped.
 
 ### `rules:diff`
 
