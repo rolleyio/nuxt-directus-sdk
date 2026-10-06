@@ -68,6 +68,37 @@ export default defineEventHandler(async (event) => {
 })
 ```
 
+## Route Guards
+
+### `requireDirectusUser(event)`
+
+Returns the current session user, or throws a `401` when there is no session cookie or Directus rejects it.
+
+```typescript
+// server/api/me/orders.get.ts
+export default defineEventHandler(async (event) => {
+  const user = await requireDirectusUser(event)
+  const directus = useSessionDirectus(event)
+
+  return directus.request(readItems('orders', {
+    filter: { customer: { _eq: user.id } },
+  }))
+})
+```
+
+### `requireDirectusAdmin(event)`
+
+Like `requireDirectusUser()`, but also throws a `403` unless the user has admin access. Admin access is read from Directus' effective policies (`readPolicyGlobals`), so it covers policies attached directly, through a role, or inherited from a parent role. It does not trust role names.
+
+```typescript
+// server/api/admin/stats.get.ts
+export default defineEventHandler(async (event) => {
+  await requireDirectusAdmin(event)
+
+  return useAdminDirectus().request(aggregate('orders', { aggregate: { count: '*' } }))
+})
+```
+
 ## Admin Authentication
 
 ### `useAdminDirectus()`
@@ -207,29 +238,10 @@ export default defineEventHandler((event) => {
 // server/api/protected/data.ts
 
 export default defineEventHandler(async (event) => {
-  // Verify user is authenticated
-  const token = getDirectusSessionToken(event)
-  if (!token) {
-    throw createError({
-      status: 401,
-      statusText: 'Unauthorized',
-    })
-  }
+  // Throws 401 without a valid session, 403 without admin access
+  await requireDirectusAdmin(event)
 
   const directus = useSessionDirectus(event)
-
-  // Get user data
-  const user = await directus.request(readMe())
-
-  // Check user role
-  if (user.role.name !== 'Admin') {
-    throw createError({
-      status: 403,
-      statusText: 'Forbidden - Admin access required',
-    })
-  }
-
-  // Fetch sensitive data
   const data = await directus.request(readItems('sensitive_data'))
 
   return { data }
@@ -549,6 +561,28 @@ if (token) {
   console.log('User is authenticated')
 }
 ```
+
+### `requireDirectusUser(event)`
+
+Resolve the current session user or throw.
+
+**Parameters:**
+- `event: H3Event` - The Nuxt server event
+
+**Returns:** `Promise<DirectusUser>`
+
+**Throws:** `401` when there is no session or Directus rejects it
+
+### `requireDirectusAdmin(event)`
+
+Resolve the current session user and require admin access.
+
+**Parameters:**
+- `event: H3Event` - The Nuxt server event
+
+**Returns:** `Promise<DirectusUser>`
+
+**Throws:** `401` when there is no valid session, `403` when the user's effective policies do not grant admin access
 
 ### `useDirectusUrl(path?)`
 
