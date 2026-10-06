@@ -3,6 +3,7 @@ import { mockUser, mockUpdatedUser } from './fixtures/directus-sdk/auth.data'
 import {
   acceptUserInviteSdkMock,
   createUserSdkMock,
+  registerUserSdkMock,
   inviteUserSdkMock,
   loginMock,
   logoutMock,
@@ -57,6 +58,7 @@ vi.mock('@directus/sdk', async () => {
     readMeSdkMock,
     updateMeSdkMock,
     createUserSdkMock,
+    registerUserSdkMock,
     inviteUserSdkMock,
     acceptUserInviteSdkMock,
     passwordRequestSdkMock,
@@ -66,6 +68,7 @@ vi.mock('@directus/sdk', async () => {
     readMe: readMeSdkMock,
     updateMe: updateMeSdkMock,
     createUser: createUserSdkMock,
+    registerUser: registerUserSdkMock,
     inviteUser: inviteUserSdkMock,
     acceptUserInvite: acceptUserInviteSdkMock,
     passwordRequest: passwordRequestSdkMock,
@@ -86,6 +89,7 @@ beforeEach(() => {
   readMeSdkMock.mockReset()
   updateMeSdkMock.mockReset()
   createUserSdkMock.mockReset()
+  registerUserSdkMock.mockReset()
   inviteUserSdkMock.mockReset()
   acceptUserInviteSdkMock.mockReset()
   passwordRequestSdkMock.mockReset()
@@ -94,6 +98,7 @@ beforeEach(() => {
   readMeSdkMock.mockImplementation((...args: unknown[]) => args)
   updateMeSdkMock.mockImplementation((...args: unknown[]) => args)
   createUserSdkMock.mockImplementation((...args: unknown[]) => args)
+  registerUserSdkMock.mockImplementation((...args: unknown[]) => args)
   inviteUserSdkMock.mockImplementation((...args: unknown[]) => args)
   acceptUserInviteSdkMock.mockImplementation((...args: unknown[]) => args)
   passwordRequestSdkMock.mockImplementation((...args: unknown[]) => args)
@@ -404,12 +409,22 @@ describe('useDirectusAuth', () => {
       expect(result).toStrictEqual(mockUser)
     })
 
-    it('register is an alias for createUser and produces the same result', async () => {
-      requestMock.mockResolvedValue(mockUser)
+    it('register calls public registerUser and returns void', async () => {
+      requestMock.mockResolvedValue(undefined)
 
-      const result = await useDirectusAuth().register({ email: 'new@example.com', password: 'pass' })
+      const result = await useDirectusAuth().register({
+        email: 'new@example.com',
+        password: 'pass',
+        first_name: 'New',
+      })
 
-      expect(result).toStrictEqual(mockUser)
+      expect(result).toBeUndefined()
+      expect(registerUserSdkMock).toHaveBeenCalledWith(
+        'new@example.com',
+        'pass',
+        { first_name: 'New', last_name: undefined, verification_url: undefined },
+      )
+      expect(createUserSdkMock).not.toHaveBeenCalled()
     })
   })
 
